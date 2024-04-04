@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "dotfiles"
+version = "0.1.0"
+description = ""
+authors = []
+
+[tool.poetry.dependencies]
+python = ">=3.10,<3.13"
+
+[tool.poetry.group.dev.dependencies]
+pip = "^23.3.1"
+ipython = "^8.17.2"
+black = "^24.2.0"
+isort = "^5.13.2"
+poetry = "^1.8.2"
+
+matplotlib = "^3.8.3"
+cchardet = "^2.1.7"
+
+
+# build deps
+setuptools = "^69.2.0"
+pytest-mock = "^3.14.0"

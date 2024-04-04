@@ -1,0 +1,28 @@
+# https://github.com/rust-lang/rust-analyzer/issues/7637#issuecomment-1495008329
+[workspace]
+resolver = "1"
+members = [
+  "library/alloc",
+  "library/core",
+  "library/panic_unwind",
+  "library/proc_macro",
+  # "library/rtstartup",
+  "library/rustc-std-workspace-core",
+  "library/std",
+  "library/test",
+  # "library/backtrace",
+  "library/panic_abort",
+  # "library/portable-simd",
+  "library/profiler_builtins",
+  "library/rustc-std-workspace-alloc",
+  "library/rustc-std-workspace-std",
+  # "library/stdarch",
+  "library/unwind",
+]
+
+[patch.crates-io]
+# https://github.com/rust-lang/rust/issues/95736#issuecomment-1094819100
+rustc-std-workspace-core = { path = 'library/rustc-std-workspace-core' }
+rustc-std-workspace-alloc = { path = 'library/rustc-std-workspace-alloc' }
+rustc-std-workspace-std = { path = 'library/rustc-std-workspace-std' }
+std_detect = { path = 'library/stdarch/crates/std_detect' }

@@ -1,0 +1,29 @@
+;; -*- lexical-binding: t -*-
+
+(require 'alan-core)
+
+(require 'format-all-autoloads)
+(startup-queue-package 'format-all 40)
+
+
+(general-def [remap evil-indent] #'format-all-region-or-buffer)
+
+(eval-after-load! format-all
+  (alan-set-ignore-debug-on-error #'format-all--prompt-for-formatter)
+
+
+  (defadvice! alan-format-all--language-id-buffer ()
+    :before-until #'format-all--language-id-buffer
+    (and (eq major-mode 'LilyPond-mode) "_lilypond"))
+
+  (define-format-all-formatter python-ly
+    (:executable "ly")
+    (:install)
+    (:languages "_lilypond")
+    (:features)
+    (:format (format-all--buffer-easy executable "reformat")))
+
+  )
+
+
+(provide 'alan-format-all)

@@ -1,0 +1,6 @@
+result*
+
+*.elc
+
+node_modules
+target

@@ -1,0 +1,11 @@
+{
+  "name": "js",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "devDependencies": {
+    "@fsouza/prettierd": "^0.25.2",
+    "typescript": "^5.4.3",
+    "typescript-language-server": "^4.3.3"
+  }
+}
