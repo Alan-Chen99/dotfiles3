@@ -72,6 +72,7 @@
       glibcLocales
       gnugrep
       gnused
+      keychain
       nix
       nix-doc
       nix-plugins

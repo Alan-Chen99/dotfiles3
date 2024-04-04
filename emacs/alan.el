@@ -456,3 +456,18 @@
   (error "hello"))
 
 ;; (add-hook! 'pre-redisplay-functions #'alan-throwe)
+
+;; https://emacs.stackexchange.com/questions/18262/tramp-how-to-add-a-agent-forwarding-to-ssh-connections
+(eval-after-load! tramp
+  (add-to-list 'tramp-connection-properties
+               (list (regexp-quote "/ssh:host@192.168.0.236:")
+                     "login-args"
+                     '(("-A") ("-l" "%u") ("-p" "%p") ("%c")
+                       ("-e" "none") ("%h"))))
+  ;; (cl-pushnew '("-A")
+  ;;             (cadr (assoc 'tramp-login-args
+  ;;                                       ; if on Windows using Putty with Pageant,
+  ;;                                       ; replace "ssh" with "plink"
+  ;;                          (assoc "ssh" tramp-methods)))
+  ;;             :test #'equal)
+  )

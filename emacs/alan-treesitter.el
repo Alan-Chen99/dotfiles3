@@ -3,7 +3,8 @@
 (require 'alan-core)
 
 (pkg! 'tree-sitter)
-(pkg! 'tree-sitter-langs
+(pkg! '(tree-sitter-langs
+        :remotes ("alan" :repo "Alan-Chen99/tree-sitter-langs" :branch "master"))
   (startup-queue-package 'tree-sitter-langs 0))
 
 (pkg! 'evil-textobj-tree-sitter

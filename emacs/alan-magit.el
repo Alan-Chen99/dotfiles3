@@ -65,6 +65,7 @@
     "d" #'magit-diff
     "c" #'magit-commit
     "b" #'magit-branch
+    "p" #'magit-push
 
     ;; TODO: when can i use these?
     "SPC e" #'magit-edit-thing

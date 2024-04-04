@@ -17,6 +17,7 @@
   glibcLocales,
   gnugrep,
   gnused,
+  keychain,
   lib,
   nix,
   nixmeta,
@@ -101,6 +102,7 @@
       glibcLocales
       gnugrep
       gnused
+      keychain
       nix.doc
       nixmeta
       nixrepl-wrapper

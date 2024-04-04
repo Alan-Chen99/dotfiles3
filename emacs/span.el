@@ -619,6 +619,7 @@ designed to be created at compile time and used as constant"
       :blocking inhibit-quit-old
 
       (when (and (not inhibit-quit-old) (input-pending-p))
+        (span--backtrace)
         (signal 'quit-nodebug nil)
         ;; (setq quit-flag t)
         ;; (let (inhibit-quit debug-on-quit)

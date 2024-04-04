@@ -96,6 +96,7 @@
       `(alan-elpaca-queue ,order (lambda () ,@body))
     `(elpaca--queue ,order)))
 
+(discard-input)
 (pkg! elpaca-order)
 
 (defalias 'try #'elpaca-try)

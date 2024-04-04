@@ -12,9 +12,9 @@
         :host github :repo "Alan-Chen99/hotfuzz-rs" :protocol ssh
 	    :pre-build
 	    (
-	     ("cargo" "build" "--release")
-	     ("rm" "hotfuzz-rs-module.so")
-	     ("ln" "-s" "./target/release/libhotfuzz_rs_module.so" "hotfuzz-rs-module.so")
+	     (cl-assert (zerop (shell-command "cargo build --release")))
+	     (shell-command "rm hotfuzz-rs-module.so")
+	     (cl-assert (zerop (shell-command "ln -s ./target/release/libhotfuzz_rs_module.so hotfuzz-rs-module.so")))
 	     ;; ("cargo" "build")
 	     ;; ("rm" "hotfuzz-rs-module.so")
 	     ;; ("ln" "-s" "./target/debug/libhotfuzz_rs_module.so" "hotfuzz-rs-module.so")

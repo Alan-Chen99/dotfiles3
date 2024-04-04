@@ -2,6 +2,7 @@
 
 (require 'alan-elpaca)
 
+(discard-input)
 (elpaca-wait)
 
 (require 'alan-utils2)

@@ -4,7 +4,7 @@
 (require 'evil)
 
 (pkg! '(gptel :host github :repo "karthink/gptel" :protocol ssh
-              ;; :remotes ("alan" :repo "Alan-Chen99/gptel" :branch "dev")
+              :remotes ("alan" :repo "Alan-Chen99/gptel" :branch "master")
               )
 
   (defun gptn ()

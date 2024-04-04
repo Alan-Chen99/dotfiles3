@@ -1,5 +1,6 @@
 {
   description = "configs";
+  # nix --experimental-features "nix-command flakes" --allow-import-from-derivation build .#profile -v --print-build-logs
 
   inputs = {
     crane = {
@@ -168,6 +169,14 @@
               prev.deps
               // {
                 python = prev.legacypkgs.python310;
+              };
+          });
+
+          emacs29-gtk3 = default (final: prev: {
+            deps =
+              prev.deps
+              // {
+                emacs = prev.legacypkgs.emacs29-gtk3;
               };
           });
         };

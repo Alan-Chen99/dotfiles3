@@ -16,12 +16,15 @@
 
 ;; so that when visiting the source of say nixpkgs,
 ;; it automatically changes to ~/.nix-profile/repos/nixpkgs/ if possible
-(with-demoted-errors "error adding nix repos to directory-abbrev-alist: %S"
-  (let (file-name-handler-alist)
-    (dolist (x (directory-files "~/.nix-profile/repos/" t (rx bos (not "."))))
-      (alan-add-to-directory-abbrev-alist x))
-    (alan-add-to-directory-abbrev-alist-rec "~/.nix-profile")
-    (alan-add-to-directory-abbrev-alist-rec "~/aliases/music/")))
+(condition-case err
+    (let (file-name-handler-alist)
+      (dolist (x (directory-files "~/.nix-profile/repos/" t (rx bos (not "."))))
+        (alan-add-to-directory-abbrev-alist x))
+      (alan-add-to-directory-abbrev-alist-rec "~/.nix-profile")
+      (alan-add-to-directory-abbrev-alist-rec "~/aliases/music/"))
+  (error
+   (message "error adding nix repos to directory-abbrev-alist: %S" err)
+   nil))
 
 (eval-after-load! nix-mode
   (modify-syntax-entry (string-to-char "-") "w" nix-mode-syntax-table)
