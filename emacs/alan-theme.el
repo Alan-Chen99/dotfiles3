@@ -82,6 +82,13 @@
 
 (setq custom-safe-themes t)
 
+(defun startup-switch-theme (theme)
+  (let ((message-log-max nil))
+    (unless custom-enabled-themes
+      (switch-theme-silent theme)
+      (push (symbol-name theme) my-switch-theme-hist))))
+
+
 ;; (package! spacemacs-common
 ;;   :elpaca '(spacemacs-theme :type git :host github :repo "lebensterben/spacemacs-theme")
 ;;   :defines (spacemacs-theme-comment-bg spacemacs-theme-comment-italic)
@@ -114,32 +121,36 @@
 ;;     (spacemacs-theme-custom-face 'light 'spacemacs-light)))
 
 (pkg! 'ef-themes
-  (require 'ef-themes))
+  (startup-switch-theme 'ef-day))
 
 (defvar ef-themes-faces-overwrites)
 (setq ef-themes-faces-overwrites
       '(
         `(mode-line-buffer-id ((,c :foreground ,keyword)))
-        ;; `(ansi-color-green ((,c :background ,bg-green :foreground ,green)))
-        ;; `(ansi-color-yellow ((,c :background ,bg-yellow :foreground ,yellow)))
+        `(ansi-color-green ((,c :background ,bg-green-subtle :foreground ,fg-term-green-bright)))
+        `(ansi-color-yellow ((,c :background ,bg-yellow-subtle :foreground ,fg-term-yellow-bright)))
         `(markdown-code-face ((,c :inherit ef-themes-fixed-pitch :extend t)))))
 
-(defmacro ef-themes-theme-custom (name palette &optional overrides)
-  `(let
-       (
-        (custom-push-theme-always-reset-enable t)
-        (ef-themes-custom-variables nil)
-        (ef-themes-faces ef-themes-faces-overwrites))
-     (eval '(ef-themes-theme ,name ,palette ,overrides) 'lexical)))
+(eval-after-load! ef-themes
+  (defvar ef-themes-all)
+  (setq ef-themes-all (append ef-themes-light-themes ef-themes-dark-themes))
+  (defun ef-themes-do-override-one (theme)
+    (let*
+        (
+         (name (symbol-name theme))
+         (sym-palette (intern (concat name "-palette")))
+         (sym-override (intern (concat name "-palette-overrides")))
+         (custom-push-theme-always-reset-enable t)
+         (ef-themes-custom-variables nil)
+         (ef-themes-faces ef-themes-faces-overwrites))
+      (eval `(ef-themes-theme ,theme ,sym-palette ,sym-override) 'lexical)))
 
-(add-hook! 'ef-cyprus-theme-hook
-  (ef-themes-theme-custom ef-cyprus ef-cyprus-palette ef-cyprus-palette-overrides))
-(add-hook! 'ef-frost-theme-hook
-  (ef-themes-theme-custom ef-frost ef-frost-palette ef-frost-palette-overrides))
-(add-hook! 'ef-light-theme-hook
-  (ef-themes-theme-custom ef-light ef-light-palette ef-light-palette-overrides))
-(add-hook! 'ef-day-theme-hook
-  (ef-themes-theme-custom ef-day ef-day-palette ef-day-palette-overrides))
+  (dolist (theme ef-themes-all)
+    (add-hook
+     (intern (concat (symbol-name theme) "-theme-hook"))
+     (lambda ()
+       (with-no-warnings (ef-themes-do-override-one theme))))))
+
 
 ;; (package! doom-themes
 ;;   :init
@@ -191,19 +202,6 @@
 
 ;; ;; (use-package kaolin-themes)
 
-(with-eval-after-load 'ef-themes
-  (let ((message-log-max nil))
-    (unless custom-enabled-themes
-      (let ((theme
-             ;; 'spacemacs-dark
-             ;; 'ef-light
-             ;; 'doom-peacock
-             ;; 'ef-night
-             ;; 'ef-night
-             'ef-day
-             ))
-        (switch-theme-silent theme)
-        (push (symbol-name theme) my-switch-theme-hist)))))
 
 
 (defun alan-face-ensure (face prop val)

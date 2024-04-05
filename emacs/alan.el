@@ -25,6 +25,48 @@
 (require-noerr 'alan-font)
 (require-noerr 'alan-hl-line)
 
+(unless (display-graphic-p)
+  (pkg! 'evil-terminal-cursor-changer
+    (require 'evil-terminal-cursor-changer)
+    (evil-terminal-cursor-changer-activate) ; or (etcc-on)
+    ;; (setq evil-motion-state-cursor 'box)  ; █
+    ;; (setq evil-visual-state-cursor 'box)  ; █
+    ;; (setq evil-normal-state-cursor 'box)  ; █
+    ;; (setq evil-insert-state-cursor 'bar)  ; ⎸
+    ;; (setq evil-emacs-state-cursor  'hbar) ; _
+
+    ;; TODO: find out why (getenv "TERM") returns "dumb"
+    (setq etcc-term-type-override 'xterm)
+
+    ;; TODO: maybe i should do this after each evil cursor change?
+    (add-hook! 'after-load-theme-hook
+      (etcc--evil-set-cursor-color (frame-parameter nil 'cursor-color)))
+
+    ;; TODO: to reset cursor after exit emacs,
+    ;; maybe i should add a cursor setting to prompt as someone said here
+    ;; https://github.com/7696122/evil-terminal-cursor-changer/issues/12
+    )
+
+  (span :set-left-margin
+    (setq-default left-margin-width 1)
+    (mapc
+     (lambda (buf)
+       (with-current-buffer buf
+         (kill-local-variable 'left-margin-width)))
+     (buffer-list))
+
+    (mapc
+     (lambda (win)
+       (set-window-buffer win (window-buffer win)))
+     (window-list nil t))
+    (span-msg "done"))
+
+  ;; (set-window-buffer WINDOW BUFFER-OR-NAME &optional KEEP-MARGINS)
+  ;; (add-hook 'window-configuration-change-hook
+  ;;           (lambda ()
+  ;;             (set-window-margins (car (get-buffer-window-list (current-buffer) nil t)) 2)))
+  )
+
 ;; global stuff
 (require-noerr 'alan-commands)
 (require-noerr 'alan-iflipb)
@@ -105,12 +147,21 @@
     [remap evil-jump-forward] #'better-jumper-jump-forward
     [remap evil-jump-backward] #'better-jumper-jump-backward))
 
+(pkg! 'clipetty
+  (unless (display-graphic-p)
+    (startup-queue-package 'clipetty 70)))
+
 (unless (display-graphic-p)
-  (pkg! 'clipetty
-    (startup-queue-package 'clipetty 70))
   (eval-after-load! clipetty
     (global-clipetty-mode)))
 
+
+
+(pkg! '(visual-basic-mode :host github :repo "emacsmirror/visual-basic-mode")
+  (autoload 'visual-basic-mode "visual-basic-mode" "Visual Basic mode." t)
+  (push '("\\.\\(?:frm\\|\\(?:ba\\|vb\\)s\\)\\'" . visual-basic-mode)
+        auto-mode-alist)
+  (setq-default visual-basic-mode-indent 4))
 
 
 (span-notef "[end-of-init-hook]")

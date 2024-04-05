@@ -56,47 +56,6 @@
 (pkg! 'format-all)
 (pkg! 'hydra)
 
-
-(unless (display-graphic-p)
-  (pkg! 'evil-terminal-cursor-changer
-    (require 'evil-terminal-cursor-changer)
-    (evil-terminal-cursor-changer-activate) ; or (etcc-on)
-    ;; (setq evil-motion-state-cursor 'box)  ; █
-    ;; (setq evil-visual-state-cursor 'box)  ; █
-    ;; (setq evil-normal-state-cursor 'box)  ; █
-    ;; (setq evil-insert-state-cursor 'bar)  ; ⎸
-    ;; (setq evil-emacs-state-cursor  'hbar) ; _
-
-    ;; TODO: find out why (getenv "TERM") returns "dumb"
-    (setq etcc-term-type-override 'xterm)
-
-    ;; TODO: maybe i should do this after each evil cursor change?
-    (add-hook! 'after-load-theme-hook
-      (etcc--evil-set-cursor-color (frame-parameter nil 'cursor-color)))
-
-    ;; TODO: to reset cursor after exit emacs,
-    ;; maybe i should add a cursor setting to prompt as someone said here
-    ;; https://github.com/7696122/evil-terminal-cursor-changer/issues/12
-    )
-
-  (setq-default left-margin-width 1)
-  (mapc
-   (lambda (buf)
-     (with-current-buffer buf
-       (kill-local-variable 'left-margin-width)))
-   (buffer-list))
-
-  (mapc
-   (lambda (win)
-     (set-window-buffer win (window-buffer win)))
-   (window-list nil t))
-
-  ;; (set-window-buffer WINDOW BUFFER-OR-NAME &optional KEEP-MARGINS)
-  ;; (add-hook 'window-configuration-change-hook
-  ;;           (lambda ()
-  ;;             (set-window-margins (car (get-buffer-window-list (current-buffer) nil t)) 2)))
-  )
-
 ;; todo: builtin seq is too old, how to deal with this?
 ;; note: seq is already loaded, should we reload it?
 (pkg! '(seq :build (:not elpaca--activate-package)))
