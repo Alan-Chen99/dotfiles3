@@ -328,6 +328,36 @@
           ))
        'face 'modeline-selection-info))))
 
+(defvar-local doom-modeline--vcs nil)
+(put 'doom-modeline--vcs 'risky-local-variable t)
+(defun doom-modeline-update-vcs (&rest _)
+  "Update text of vcs state in mode-line."
+  (setq-local doom-modeline--vcs
+              (when (and vc-mode buffer-file-name)
+                (let*
+                    (
+                     (backend (vc-backend buffer-file-name))
+                     (state (vc-state (file-local-name buffer-file-name) backend))
+                     (icon
+                      (cond ((memq state '(edited added)) "*")
+                            ((eq state 'needs-merge) "?")
+                            ((memq state '(needs-update removed conflict unregistered)) "!")
+                            (t "@")))
+                     (str
+                      (if vc-display-status
+                          (substring vc-mode (+ (if (eq backend 'Hg) 2 3) 2))
+                        "")))
+                  (concat
+                   (propertize icon 'face 'modeline-vcs-icon)
+                   (propertize str 'face 'modeline-vcs-text)
+                   " "
+                   )
+                  ))))
+(add-hook 'find-file-hook #'doom-modeline-update-vcs)
+(add-hook 'after-save-hook #'doom-modeline-update-vcs)
+(advice-add #'vc-refresh-state :after #'doom-modeline-update-vcs)
+
+
 (defun modeline-maybe-add-space (str)
   (when str
     (unless (equal str "")
@@ -365,12 +395,14 @@
 
 (setq alan-modeline-rhs
       `(
-        (vc-mode vc-mode)
-        " "
+        (doom-modeline--vcs doom-modeline--vcs)
+        ;; (vc-mode vc-mode)
         (:propertize mode-name
                      face modeline-mode
                      mouse-face mode-line-highlight
                      local-map ,mode-line-major-mode-keymap)
         " "))
+
+;; (substring-no-properties (format-mode-line 'mode-line-modes))
 
 (provide 'alan-modeline)

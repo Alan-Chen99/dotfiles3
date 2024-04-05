@@ -23,7 +23,7 @@
 
 ;; TODO: this doenst work when called after early init?
 (defvar alan-real-early-init nil)
-(when alan-real-early-init
+(when (and alan-real-early-init (display-graphic-p))
   ;; (face-attribute 'default :background)
   (add-to-list 'default-frame-alist '(background-color . "#000e17"))
   ;; (face-attribute 'default :foreground)
@@ -55,6 +55,29 @@
 (pkg! 'undo-fu-session)
 (pkg! 'format-all)
 (pkg! 'hydra)
+
+
+(unless (display-graphic-p)
+  (pkg! 'evil-terminal-cursor-changer
+    (require 'evil-terminal-cursor-changer)
+    (evil-terminal-cursor-changer-activate) ; or (etcc-on)
+    ;; (setq evil-motion-state-cursor 'box)  ; █
+    ;; (setq evil-visual-state-cursor 'box)  ; █
+    ;; (setq evil-normal-state-cursor 'box)  ; █
+    ;; (setq evil-insert-state-cursor 'bar)  ; ⎸
+    ;; (setq evil-emacs-state-cursor  'hbar) ; _
+
+    ;; TODO: find out why (getenv "TERM") returns "dumb"
+    (setq etcc-term-type-override 'xterm)
+
+    ;; TODO: maybe i should do this after each evil cursor change?
+    (add-hook! 'after-load-theme-hook
+      (etcc--evil-set-cursor-color (frame-parameter nil 'cursor-color)))
+
+    ;; TODO: to reset cursor after exit emacs,
+    ;; maybe i should add a cursor setting to prompt as someone said here
+    ;; https://github.com/7696122/evil-terminal-cursor-changer/issues/12
+    ))
 
 ;; todo: builtin seq is too old, how to deal with this?
 ;; note: seq is already loaded, should we reload it?

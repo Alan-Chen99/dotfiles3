@@ -105,7 +105,11 @@
     [remap evil-jump-forward] #'better-jumper-jump-forward
     [remap evil-jump-backward] #'better-jumper-jump-backward))
 
-
+(unless (display-graphic-p)
+  (pkg! 'clipetty
+    (startup-queue-package 'clipetty 70))
+  (eval-after-load! clipetty
+    (global-clipetty-mode)))
 
 
 

@@ -13,6 +13,7 @@
 
 (general-def
   "C-," #'help-command
+  "N" #'help-command
   "<ignore>" #'ignore
   "<x>" #'yank
 
