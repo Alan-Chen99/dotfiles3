@@ -77,7 +77,25 @@
     ;; TODO: to reset cursor after exit emacs,
     ;; maybe i should add a cursor setting to prompt as someone said here
     ;; https://github.com/7696122/evil-terminal-cursor-changer/issues/12
-    ))
+    )
+
+  (setq-default left-margin-width 1)
+  (mapc
+   (lambda (buf)
+     (with-current-buffer buf
+       (kill-local-variable 'left-margin-width)))
+   (buffer-list))
+
+  (mapc
+   (lambda (win)
+     (set-window-buffer win (window-buffer win)))
+   (window-list nil t))
+
+  ;; (set-window-buffer WINDOW BUFFER-OR-NAME &optional KEEP-MARGINS)
+  ;; (add-hook 'window-configuration-change-hook
+  ;;           (lambda ()
+  ;;             (set-window-margins (car (get-buffer-window-list (current-buffer) nil t)) 2)))
+  )
 
 ;; todo: builtin seq is too old, how to deal with this?
 ;; note: seq is already loaded, should we reload it?

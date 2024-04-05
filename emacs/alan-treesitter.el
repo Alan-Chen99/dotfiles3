@@ -2,6 +2,7 @@
 
 (require 'alan-core)
 
+(pkg! '(tsc :files ("core/*.el" "core/Cargo.toml" "core/Cargo.lock" "core/src" "core/tsc-dyn.so")))
 (pkg! 'tree-sitter)
 (pkg! '(tree-sitter-langs
         :remotes ("alan" :repo "Alan-Chen99/tree-sitter-langs" :branch "master"))
