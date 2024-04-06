@@ -2,6 +2,7 @@
 
 (require 'alan-core)
 (require 'alan-flycheck)
+(require 'evil)
 
 (setq print-circle t)
 ;; (setq print-level 10)
@@ -81,6 +82,7 @@
     ;; (rainbow-delimiters-enable-lazy)
     ;; (my-flycheck-deferred)
     (alan-flycheck-deferred)
+    (rainbow-mode-lazy)
     ;; (dash-fontify-mode)
     ))
 
@@ -93,5 +95,20 @@
 
 (eval-after-load! pp
   (setq pp-use-max-width nil))
+
+
+(eval-after-load! edebug
+  (clear-and-backup-keymap edebug-mode-map)
+  (general-def edebug-mode-map
+    :states 'motion
+    ;; "SPC" edebug-mode-map-origional
+    [remap eval-buffer] #'edebug-safe-eval
+    "i" #'edebug-step-in
+    "o" #'edebug-step-out
+    "d" #'edebug-step-mode
+    "a" #'edebug-goto-here
+    [remap pp-eval-expression] #'edebug-eval-expression
+    [remap pp-eval-last-sexp] #'edebug-eval-last-sexp)
+  (add-hook 'edebug-mode-hook #'evil-normalize-keymaps))
 
 (provide 'alan-elisp)

@@ -5,11 +5,7 @@
 
 (set-buffer (get-buffer-create " *initialization*"))
 
-(defvar alan-dotemacs-dir)
-(when load-file-name
-  (setq alan-dotemacs-dir (file-name-directory (file-chase-links load-file-name))))
-
-(add-to-list 'load-path alan-dotemacs-dir)
+(defvar alan-dotemacs-dir nil)
 
 (require 'alan-utils)
 
@@ -74,7 +70,6 @@
       (message "Emacs ready in %s with %d garbage collections."
                (format "%.3f seconds" (float-time (time-subtract (current-time) before-init-time)))
                gcs-done))))
-
 
 
 (span-dbgf (face-attributes-as-vector 'default))

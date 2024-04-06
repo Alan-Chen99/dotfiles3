@@ -8,6 +8,13 @@
 (setq read-process-output-max (* 1024 1024)) ;; 1mb
 (setq bidi-paragraph-direction 'left-to-right)
 
+(setq redisplay-skip-fontification-on-input t)
+;; (setq max-redisplay-ticks 500000)
+(setq max-redisplay-ticks 1000000)
+;; 1000000
+
+(setq-default native-comp-speed 3)
+
 ;;; logging stuff
 ;; Do not show the startup screen.
 (setq inhibit-startup-message t)
@@ -17,16 +24,24 @@
 (add-hook! 'alan-end-of-init-hook
   (setq warning-minimum-level :error))
 
+(setq backtrace-on-redisplay-error t)
+;; (setq inhibit-eval-during-redisplay nil)
+
+
 ;; disable alarm sound. TODO: is this a good idea?
 (setq ring-bell-function 'ignore)
 
 
 ;;; editing
 
+(setq disabled-command-function nil)
+
 ;; https://stackoverflow.com/questions/22024765/how-to-copy-paste-without-source-font-lock-in-emacs
 ;; yank-handled-properties
 ;; (add-to-list 'yank-excluded-properties 'face)
 (setq yank-excluded-properties t)
+
+(setq-default x-select-request-type '(text/plain\;charset=utf-8 UTF8_STRING COMPOUND_TEXT TEXT STRING))
 
 (setq save-interprogram-paste-before-kill t)
 
@@ -49,12 +64,12 @@
 ;; Highlight matching parenthesis in normal mode
 (setq-default show-paren-delay 0)
 (show-paren-mode t)
-(set-face-attribute
- 'show-paren-match nil
- :underline 'unspecified
- :weight 'unspecified
- :inherit 'unspecified
- :foreground "red")
+;; (set-face-attribute
+;;  'show-paren-match nil
+;;  :underline 'unspecified
+;;  :weight 'unspecified
+;;  :inherit 'unspecified
+;;  :foreground "red")
 
 (defadvice! indent-region-single-undo (func &rest args)
   :around #'indent-region
@@ -131,18 +146,6 @@
 ;; (advice-add #'kill-buffer :around #'yes-or-no-p->-y-or-n-p)
 ;; (advice-add #'save-buffers-kill-emacs :around #'yes-or-no-p->-y-or-n-p)
 ;; (advice-add #'revert-buffer :around #'yes-or-no-p->-y-or-n-p)
-
-
-
-(ignore-errors
-  (set-frame-width (selected-frame)
-                   (- (/ (x-display-pixel-width) 2) (- (frame-native-width) (frame-text-width)))
-                   nil 'pixelwise)
-  (set-frame-height (selected-frame)
-                    (frame-native-height)
-                    nil 'pixelwise))
-
-
 
 
 (defalias 'tde #'toggle-debug-on-error)

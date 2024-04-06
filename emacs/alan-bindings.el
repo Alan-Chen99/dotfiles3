@@ -7,6 +7,7 @@
  consult
  magit
 
+ alan-theme
  alan-minibuffer
  alan-font
  alan-commands)
@@ -88,6 +89,7 @@
 
   "w" 'evil-window-map
   "<w> <t>" #'consult-theme
+  "w <t>" #'alan-switch-theme
   "g h" #'consult-history
   "g l" #'consult-line
   "g <right>" #'consult-line-multi

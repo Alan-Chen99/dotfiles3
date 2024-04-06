@@ -275,4 +275,11 @@
     (message "%s" v)
     (kill-new v)))
 
+(defalias 'sh 'shell)
+(defun shn ()
+  (interactive)
+  (setq current-prefix-arg '(1))
+  (call-interactively 'shell))
+
+
 (provide 'alan-commands)

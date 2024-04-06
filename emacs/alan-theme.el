@@ -88,7 +88,6 @@
       (switch-theme-silent theme)
       (push (symbol-name theme) my-switch-theme-hist))))
 
-
 ;; (package! spacemacs-common
 ;;   :elpaca '(spacemacs-theme :type git :host github :repo "lebensterben/spacemacs-theme")
 ;;   :defines (spacemacs-theme-comment-bg spacemacs-theme-comment-italic)
@@ -121,7 +120,7 @@
 ;;     (spacemacs-theme-custom-face 'light 'spacemacs-light)))
 
 (pkg! 'ef-themes
-  (startup-switch-theme 'ef-day))
+  (startup-switch-theme 'ef-winter))
 
 (defvar ef-themes-faces-overwrites)
 (setq ef-themes-faces-overwrites
@@ -151,7 +150,10 @@
     (add-hook
      (intern (concat (symbol-name theme) "-theme-hook"))
      (lambda ()
-       (with-no-warnings (ef-themes-do-override-one theme))))))
+       (with-no-warnings (ef-themes-do-override-one theme)))))
+
+  (add-to-list 'theme-short-list 'ef-day)
+  (add-to-list 'theme-short-list 'ef-night))
 
 
 ;; (package! doom-themes

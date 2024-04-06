@@ -26,48 +26,9 @@
 (require-noerr 'alan-modeline)
 (require-noerr 'alan-font)
 (require-noerr 'alan-hl-line)
-
-(unless (display-graphic-p)
-  (pkg! 'evil-terminal-cursor-changer
-    (require 'evil-terminal-cursor-changer)
-    (evil-terminal-cursor-changer-activate) ; or (etcc-on)
-    ;; (setq evil-motion-state-cursor 'box)  ; █
-    ;; (setq evil-visual-state-cursor 'box)  ; █
-    ;; (setq evil-normal-state-cursor 'box)  ; █
-    ;; (setq evil-insert-state-cursor 'bar)  ; ⎸
-    ;; (setq evil-emacs-state-cursor  'hbar) ; _
-
-    ;; TODO: find out why (getenv "TERM") returns "dumb"
-    (setq etcc-term-type-override 'xterm)
-
-    ;; TODO: maybe i should do this after each evil cursor change?
-    (add-hook! 'after-load-theme-hook
-      (etcc--evil-set-cursor-color (frame-parameter nil 'cursor-color)))
-
-    ;; TODO: to reset cursor after exit emacs,
-    ;; maybe i should add a cursor setting to prompt as someone said here
-    ;; https://github.com/7696122/evil-terminal-cursor-changer/issues/12
-    )
-
-  (span :set-left-margin
-    (setq-default left-margin-width 1)
-    (mapc
-     (lambda (buf)
-       (with-current-buffer buf
-         (kill-local-variable 'left-margin-width)))
-     (buffer-list))
-
-    (mapc
-     (lambda (win)
-       (set-window-buffer win (window-buffer win)))
-     (window-list nil t))
-    (span-msg "done"))
-
-  ;; (set-window-buffer WINDOW BUFFER-OR-NAME &optional KEEP-MARGINS)
-  ;; (add-hook 'window-configuration-change-hook
-  ;;           (lambda ()
-  ;;             (set-window-margins (car (get-buffer-window-list (current-buffer) nil t)) 2)))
-  )
+(require-noerr 'alan-terminal)
+(pkg! 'rainbow-mode
+  (startup-queue-package 'rainbow-mode -10))
 
 ;; global stuff
 (require-noerr 'alan-commands)
@@ -77,6 +38,15 @@
 (require-noerr 'alan-persistent-undo)
 (require-noerr 'alan-simple)
 (require-noerr 'alan-evil-surround)
+
+(pkg! 'better-jumper
+  (startup-queue-package 'better-jumper 70))
+(eval-after-load! better-jumper
+  (better-jumper-mode +1)
+  (general-def
+    [remap evil-jump-forward] #'better-jumper-jump-forward
+    [remap evil-jump-backward] #'better-jumper-jump-backward))
+
 
 ;; completion ui
 (require-noerr 'alan-vertico)
@@ -108,7 +78,26 @@
 (require-noerr 'alan-nix)
 (require-noerr 'alan-markdown)
 (require-noerr 'alan-js)
+(require-noerr 'alan-lilypond)
 
+
+(pkg! '(visual-basic-mode :host github :repo "emacsmirror/visual-basic-mode")
+  (autoload 'visual-basic-mode "visual-basic-mode" "Visual Basic mode." t)
+  (push '("\\.\\(?:frm\\|\\(?:ba\\|vb\\)s\\)\\'" . visual-basic-mode)
+        auto-mode-alist)
+  (setq-default visual-basic-mode-indent 4)
+  (general-def visual-basic-mode-map
+    [remap evil-indent] #'evil-indent))
+
+(eval-after-load! conf-mode
+  (add-hook! 'conf-toml-mode-hook
+    (defun toml-setup ()
+	  (setq-local
+       format-all-formatters '(("TOML" taplo-fmt))))))
+
+(eval-after-load! arc-mode
+  (general-def archive-mode-map
+    [remap evil-ret] #'archive-view))
 
 
 ;; (alan-set-ignore-debug-on-quit #'flyspell-emacs-popup)
@@ -136,50 +125,16 @@
 
 (setq vc-follow-symlinks t)
 
-(setq-default x-select-request-type '(text/plain\;charset=utf-8 UTF8_STRING COMPOUND_TEXT TEXT STRING))
 
 
 
-(pkg! 'better-jumper
-  (startup-queue-package 'better-jumper 70))
-
-(eval-after-load! better-jumper
-  (better-jumper-mode +1)
-  (general-def
-    [remap evil-jump-forward] #'better-jumper-jump-forward
-    [remap evil-jump-backward] #'better-jumper-jump-backward))
-
-(pkg! 'clipetty
-  (unless (display-graphic-p)
-    (startup-queue-package 'clipetty 70)))
-
-(unless (display-graphic-p)
-  (eval-after-load! clipetty
-    (global-clipetty-mode)))
 
 
 
-(pkg! '(visual-basic-mode :host github :repo "emacsmirror/visual-basic-mode")
-  (autoload 'visual-basic-mode "visual-basic-mode" "Visual Basic mode." t)
-  (push '("\\.\\(?:frm\\|\\(?:ba\\|vb\\)s\\)\\'" . visual-basic-mode)
-        auto-mode-alist)
-  (setq-default visual-basic-mode-indent 4)
-
-  (general-def visual-basic-mode-map
-    [remap evil-indent] #'evil-indent)
-  )
-
-
-(pkg! 'rainbow-mode)
 
 (span-notef "[end-of-init-hook]")
 (run-hooks 'alan-end-of-init-hook)
 
-(defalias 'sh 'shell)
-(defun shn ()
-  (interactive)
-  (setq current-prefix-arg '(1))
-  (call-interactively 'shell))
 
 ;; (defadvice! alan-require-debug (orig-fun feature &optional filename noerror)
 ;;   :around #'require
@@ -226,26 +181,9 @@
 (add-to-list 'read-only-dir-exclude-list (expand-file-name "elpaca_new/repos/gptel" user-emacs-directory))
 (add-to-list 'read-only-dir-exclude-list (expand-file-name "elpaca_new/repos/tree-sitter-langs" user-emacs-directory))
 
-(eval-after-load! edebug
-  (clear-and-backup-keymap edebug-mode-map)
-  (general-def edebug-mode-map
-    :states 'motion
-    ;; "SPC" edebug-mode-map-origional
-    [remap eval-buffer] #'edebug-safe-eval
-    "i" #'edebug-step-in
-    "o" #'edebug-step-out
-    "d" #'edebug-step-mode
-    "a" #'edebug-goto-here
-    [remap pp-eval-expression] #'edebug-eval-expression
-    [remap pp-eval-last-sexp] #'edebug-eval-last-sexp)
-  (add-hook 'edebug-mode-hook #'evil-normalize-keymaps))
 
 
-(eval-after-load! conf-mode
-  (add-hook! 'conf-toml-mode-hook
-    (defun toml-setup ()
-	  (setq-local
-       format-all-formatters '(("TOML" taplo-fmt))))))
+
 
 ;; (setq debug-allow-recursive-debug nil)
 
@@ -262,12 +200,6 @@
 (remove-hook 'xref-after-jump-hook 'xref-pulse-momentarily)
 (remove-hook 'xref-after-return-hook 'xref-pulse-momentarily)
 
-(eval-after-load! arc-mode
-
-  (general-def archive-mode-map
-    [remap evil-ret] #'archive-view)
-
-  )
 
 
 (alan-set-ignore-debug-on-error #'comment-region-default)
@@ -368,22 +300,8 @@
 
 ;; with-silent-modifications
 
-(require-noerr 'alan-lilypond)
 
 
-
-(setq backtrace-on-redisplay-error t)
-;; (setq backtrace-on-redisplay-error nil)
-;; (setq inhibit-eval-during-redisplay nil)
-;; (jit-lock-debug-mode nil)
-
-;; pixel-scroll-precision-mode
-
-(setq redisplay-skip-fontification-on-input t)
-;; (setq max-redisplay-ticks 500000)
-(setq max-redisplay-ticks 1000000)
-;; 1000000
-;; (setq max-redisplay-ticks 0)
 
 ;; (span-wrap redisplay (&optional force)
 ;;   (:explicit-redisplay force)
@@ -477,7 +395,6 @@
 ;; (setq signal-hook-function #'alan-signal)
 (setq-default compilation-mode-font-lock-keywords nil)
 
-(setq disabled-command-function nil)
 
 ;; evil-textobj-tree-sitter--use-builtin-treesitter
 

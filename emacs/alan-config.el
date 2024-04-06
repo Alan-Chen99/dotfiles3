@@ -24,10 +24,5 @@
 (setq custom-file (expand-file-name "custom-file.el" user-emacs-directory))
 
 
-;; (setq-default alan-dependency-alist (expand-file-name "elpaca_new/" ry))
-
-
-
-(setq-default native-comp-speed 3)
 
 (provide 'alan-config)
