@@ -1,5 +1,8 @@
 ;; -*- lexical-binding: t -*-
 
+(ignore-errors
+  (redisplay))
+
 (require 'cl-lib)
 (cl-assert (version<= "29" emacs-version))
 
