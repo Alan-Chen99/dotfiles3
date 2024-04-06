@@ -17,18 +17,18 @@
 
 ;; (add-to-list 'initial-frame-alist '(fullscreen . maximized))
 (add-to-list 'default-frame-alist '(fullscreen . maximized))
+(add-to-list 'default-frame-alist '(background-mode . dark))
 (add-to-list 'default-frame-alist '(menu-bar-lines . 0))
 (add-to-list 'default-frame-alist '(tool-bar-lines . 0))
 (add-to-list 'default-frame-alist '(vertical-scroll-bars . nil))
 
 ;; TODO: this doenst work when called after early init?
 (defvar alan-real-early-init nil)
-(when (and alan-real-early-init (display-graphic-p))
-  ;; (face-attribute 'default :background)
-  (add-to-list 'default-frame-alist '(background-color . "#000e17"))
-  ;; (face-attribute 'default :foreground)
-  (add-to-list 'default-frame-alist '(foreground-color . "#afbcbf")))
 
+(span-dbgf (frame-parameters))
+
+;; (add-hook! 'pre-redisplay-functions
+;;   (span-notef "pre-redisplay-functions"))
 
 ;; (when-let
 ;;     (
@@ -38,7 +38,7 @@
 
 ;; https://www.reddit.com/r/emacs/comments/osscfd/comment/h6ttuoq/
 ;; (pgtk-use-im-context nil)
-(setq pgtk-use-im-context-on-new-connection nil)
+(setq-default pgtk-use-im-context-on-new-connection nil)
 (setq frame-resize-pixelwise t)
 (setq window-resize-pixelwise t)
 (setq frame-inhibit-implied-resize t)
@@ -64,7 +64,7 @@
   (let ((q (car elpaca--queues)))
     (elpaca-process-queues)
     (when (eq (elpaca-q<-status q) 'complete)
-      ;; (span-notef "alan-start from early init")
+      (span-notef "alan-start from early init")
       (require 'alan-start))))
 
 (add-hook! 'emacs-startup-hook
@@ -74,6 +74,49 @@
       (message "Emacs ready in %s with %d garbage collections."
                (format "%.3f seconds" (float-time (time-subtract (current-time) before-init-time)))
                gcs-done))))
+
+
+
+(span-dbgf (face-attributes-as-vector 'default))
+(span-dbgf (frame-parameters))
+
+(defun alan-get-default-theme-attr (prop)
+  (plist-get (cdaadr (car (get 'default 'theme-face))) prop))
+
+;; TODO: should use window-system-default-frame-alist instead
+(when-let ((c (alan-get-default-theme-attr :background)))
+  (unless (eq c 'unspecified)
+    (add-to-list 'default-frame-alist `(background-color . ,c))))
+
+(when-let ((c (alan-get-default-theme-attr :foreground)))
+  (unless (eq c 'unspecified)
+    (add-to-list 'default-frame-alist `(foreground-color . ,c))))
+
+(ignore-errors
+  (span :set-startup-frame-size
+    (span-dbgf (ignore-errors (x-display-pixel-width)))
+    (span-dbgf (ignore-errors (x-display-pixel-height)))
+
+    ;; (display-monitor-attributes-list) can be used after creating frame
+
+    (when (fboundp 'w32-display-monitor-attributes-list)
+      (span-dbgf (ignore-errors (w32-display-monitor-attributes-list))))
+    (when (fboundp 'pgtk-display-monitor-attributes-list)
+      (span-dbgf (ignore-errors (pgtk-display-monitor-attributes-list))))
+
+    ;; this dictates size/position after un-maximizing
+    (add-to-list 'default-frame-alist `(left + -8))
+    (add-to-list 'default-frame-alist `(top . 0))
+
+    ;; values from windows
+    ;; (- (/ (x-display-pixel-width) 2) (frame-text-width))
+    (add-to-list 'default-frame-alist `(width text-pixels . ,(- (/ (x-display-pixel-width) 2) 18)))
+    ;; (- (x-display-pixel-height) (frame-text-height))
+    (add-to-list 'default-frame-alist `(height text-pixels . ,(- (x-display-pixel-height) 99)))
+
+    (span-notef "done")))
+
+(span-dbgf (frame-parameters))
 
 (setq alan-finished-early-init t)
 
