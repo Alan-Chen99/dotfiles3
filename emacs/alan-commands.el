@@ -282,4 +282,66 @@
   (call-interactively 'shell))
 
 
+
+;; TODO: maybe make resizing commands
+
+(defun alan-frame-text-width (&optional frame)
+  (frame-text-width frame))
+(gv-define-setter alan-frame-text-width (val &optional frame)
+  `(set-frame-width ,frame ,val nil 'pixelwise))
+
+;; (setf (alan-frame-text-width) (alan-frame-text-width))
+
+(defun alan-frame-native-width (&optional frame)
+  (frame-native-width frame))
+(defun alan-set-frame-native-width (val &optional frame)
+  (setf (alan-frame-text-width)
+        (- val
+           (- (alan-frame-native-width frame)
+              (alan-frame-text-width frame)))))
+(gv-define-simple-setter alan-frame-native-width alan-set-frame-native-width)
+
+;; (set-frame-parameter nil 'fullscreen 'maximized)
+;; (frame-parameter nil 'fullscreen)
+;; (frame-parameter nil 'height)
+;; (frame-parameter nil 'width)
+
+;; (set-frame-parameter nil 'width 1.0)
+
+;; (window-old-pixel-width)
+;; (toggle-frame-maximized)
+
+;; (frame-parameters)
+;; (gv-define-setter alan-frame-native-width (val &optional frame)
+;;   `(set-frame-width
+;;     (- (alan-frame-native-width ,frame)
+;;        (alan-frame-text-width ,frame))
+;;     ,val nil 'pixelwise))
+
+
+;; (ignore-errors
+;;   (set-frame-width (selected-frame)
+;;                    (- (/ (x-display-pixel-width) 2) (- (frame-native-width) (frame-text-width)))
+;;                    nil 'pixelwise)
+;;   (set-frame-height (selected-frame)
+;;                     (frame-native-height)
+;;                     nil 'pixelwise))
+
+;; set-frame-width sets (frame-text-width)
+;; (set-frame-width (selected-frame)
+;;                  1189
+;;                  ;; (- (frame-pixel-width) (frame-text-width))
+;;                  nil 'pixelwise)
+
+;; (frame-border-width)
+
+;; 1189
+;; (frame-native-width) 1226
+;; (frame-inner-width) 1226
+;; (frame-outer-width) 1244
+;; (frame-text-width)
+
+;; (x-display-pixel-height)
+
+
 (provide 'alan-commands)
