@@ -161,8 +161,14 @@
   (autoload 'visual-basic-mode "visual-basic-mode" "Visual Basic mode." t)
   (push '("\\.\\(?:frm\\|\\(?:ba\\|vb\\)s\\)\\'" . visual-basic-mode)
         auto-mode-alist)
-  (setq-default visual-basic-mode-indent 4))
+  (setq-default visual-basic-mode-indent 4)
 
+  (general-def visual-basic-mode-map
+    [remap evil-indent] #'evil-indent)
+  )
+
+
+(pkg! 'rainbow-mode)
 
 (span-notef "[end-of-init-hook]")
 (run-hooks 'alan-end-of-init-hook)

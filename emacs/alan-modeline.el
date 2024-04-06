@@ -146,7 +146,7 @@
   ;; so we use that
   (let ((v (face-attribute 'mode-line-buffer-id :foreground nil t)))
     (when (eq v 'unspecified)
-      (setq v (face-attribute 'mode-line-buffer-id :foreground nil t)))
+      (setq v (face-attribute 'default :foreground nil t)))
     (alan-face-ensure 'mode-line :distant-foreground v)))
 
 (modeline-set-faces)

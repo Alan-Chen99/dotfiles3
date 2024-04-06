@@ -126,6 +126,8 @@
 (defvar ef-themes-faces-overwrites)
 (setq ef-themes-faces-overwrites
       '(
+        ;; `(modeline-file-or-buffer-name ((,c :weight semibold)))
+        ;; `(modeline-file-or-buffer-name ((,c)))
         `(mode-line-buffer-id ((,c :foreground ,keyword)))
         `(ansi-color-green ((,c :background ,bg-green-subtle :foreground ,fg-term-green-bright)))
         `(ansi-color-yellow ((,c :background ,bg-yellow-subtle :foreground ,fg-term-yellow-bright)))
@@ -210,6 +212,7 @@
 
 
 ;; (setq-default face-near-same-color-threshold 70000)
+(setq-default face-near-same-color-threshold 50000)
 ;; (setq-default face-near-same-color-threshold 30000)
 ;; (clear-face-cache)
 
@@ -228,15 +231,21 @@
   ;; (ensure-distant-foreground 'default)
 
 
+  ;; (color-distance (face-attribute 'modeline-file-or-buffer-name :foreground nil t) (face-attribute 'mode-line :background nil t))
+  ;; (color-distance (face-attribute 'modeline-linenum :foreground nil t) (face-attribute 'mode-line :background nil t))
+  ;; (color-distance (face-attribute 'default :foreground nil t) (face-attribute 'default :background nil t))
+
+
+
   ;; modeline-project-name
   ;; (face-attribute 'mode-line :distant-foreground nil t)
 
 
   ;; TODO: is this a good idea?
-  (setq-default face-near-same-color-threshold
-                (min
-                 (round (/ (color-distance (face-attribute 'default :foreground nil t) (face-attribute 'default :background nil t)) 2))
-                 100000))
+  ;; (setq-default face-near-same-color-threshold
+  ;;               (min
+  ;;                (round (/ (color-distance (face-attribute 'default :foreground nil t) (face-attribute 'default :background nil t)) 2))
+  ;;                50000))
 
   ;; (color-distance (face-attribute 'default :foreground nil t) (face-attribute 'default :background nil t))
 
@@ -259,7 +268,8 @@
 
   )
 (set-standard-faces)
-(add-hook! 'after-load-theme-hook #'set-standard-faces)
+(add-hook! 'after-load-theme-hook :depth 99 #'set-standard-faces)
+;; TODO: do this do anything
 (add-hook! 'after-load-theme-hook :depth 100 #'clear-face-cache)
 
 
