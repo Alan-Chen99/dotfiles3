@@ -644,12 +644,14 @@ designed to be created at compile time and used as constant"
 (defun span--wrap-redisplay (orig-fn &optional force)
   (span-wrap-redisplay (:explicit-redisplay force)
     :flush-on-err t
+    :blocking t
     (funcall orig-fn force)))
 
 (advice-add #'redisplay--pre-redisplay-functions :around #'span--wrap-redisplay--pre-redisplay-functions)
 (defun span--wrap-redisplay--pre-redisplay-functions (orig-fn windows)
   (span-wrap-redisplay (:pre-redisplay-functions (:unsafe windows))
     :flush-on-err t
+    :blocking t
     (let ((pre-redisplay-function #'ignore))
       (funcall orig-fn windows))))
 

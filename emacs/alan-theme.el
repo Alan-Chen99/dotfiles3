@@ -193,8 +193,8 @@
 (face-spec-set 'font-lock-bracket-face '((t :weight bold)))
 
 ;; (setq-default face-near-same-color-threshold 70000)
-(setq-default face-near-same-color-threshold 50000)
-;; (setq-default face-near-same-color-threshold 30000)
+;; (setq-default face-near-same-color-threshold 50000)
+(setq-default face-near-same-color-threshold 30000)
 ;; (clear-face-cache)
 
 (defun alan-map-spec-from-face-for (face fn)
