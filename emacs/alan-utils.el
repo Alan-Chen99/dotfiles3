@@ -1,5 +1,6 @@
 ;; -*- lexical-binding: t -*-
 
+(defvar alan-real-early-init nil)
 (defvar alan-gc-cons-threshold (* 800000 2))
 
 (setq debug-on-error t)

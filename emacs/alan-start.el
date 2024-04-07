@@ -9,11 +9,10 @@
 (require 'alan-core)
 
 (require-noerr 'alan-theme)
+(require-noerr 'alan-modeline)
 
 (discard-input)
 (elpaca-wait)
-
-(require 'ef-themes)
 
 (require 'evil)
 

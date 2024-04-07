@@ -27,7 +27,8 @@
   ;; (message "%s . %s" (default-font-height) (default-font-width))
   ;; (aref (query-font (face-attribute 'default :font)) 3)
   (setq alan-current-font-height size)
-  (run-hooks 'after-load-theme-hook))
+  ;; (run-hooks 'after-load-theme-hook)
+  )
 
 (let ((message-log-max nil))
   (with-no-minibuffer-message
@@ -95,7 +96,7 @@
 ;;  (put face 'face-defface-spec spec))
 
 
-;; this able font and height settings for some builtin faces
+;; disable font and height settings for some builtin faces
 ;; TODO: do i actualy want this?
 
 (face-spec-set 'fixed-pitch '((t :inherit default)) 'face-defface-spec)
@@ -103,40 +104,6 @@
 (face-spec-set 'variable-pitch-text '((t :inherit default)) 'face-defface-spec)
 (face-spec-set 'fixed-pitch-serif '((t :weight bold :inherit default)) 'face-defface-spec)
 
-
-(defun set-standard-faces ()
-  ;; (set-face-attribute 'default nil :font (font-spec :name default-font :size my-current-font-height))
-  ;; (face-attribute 'fixed-pitch :family)
-
-  ;; (set-face-attribute 'fixed-pitch nil :family 'unspecified :inherit '(default))
-  ;; (face-attributes-as-vector 'fixed-pitch)
-  ;; (set-face-attribute 'fixed-pitch nil :font )
-  ;; `(fixed-pitch ((t (:font unspecified :inherit default))))
-
-  ;; (mapc
-  ;; (lambda (face)
-  ;;    (when
-  ;;        (not
-  ;;            (or
-  ;;                (eq (face-attribute face :height) 'unspecified)
-  ;;                (memq face faces-allow-height)))
-  ;;        (set-face-attribute face nil :height 'unspecified)))
-  ;; (face-list))
-  ;; (custom-theme-set-faces 'user
-  ;;    `(fixed-pitch ((t (:font unspecified :inherit default))))
-  ;;    `(tooltip ((t (:foreground unspecified :inherit default))))
-  ;;    `(fixed-pitch-serif ((t (:weight bold :font unspecified :inherit default))))
-  ;;    `(variable-pitch-text ((t (:height unspecified :inherit default))))
-  ;;    )
-  (set-face-attribute 'vertical-border nil :distant-foreground (face-attribute 'vertical-border :foreground nil t))
-
-  (set-face-attribute 'font-lock-operator-face nil :weight 'bold)
-  (set-face-attribute 'font-lock-bracket-face nil :weight 'bold)
-
-  )
-
-(set-standard-faces)
-(add-hook 'after-load-theme-hook #'set-standard-faces)
 
 
 (provide 'alan-font)

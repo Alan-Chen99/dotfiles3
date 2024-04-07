@@ -87,70 +87,63 @@
 (modeline-defface modeline-file-path)
 (modeline-defface modeline-file-or-buffer-name)
 
-(modeline-defface modeline-unsaved :weight ultra-bold)
-(modeline-defface modeline-readonly :weight ultra-bold)
+(modeline-defface modeline-unsaved :weight extra-bold)
+(modeline-defface modeline-readonly :weight extra-bold)
 
 (modeline-defface modeline-evil :weight bold)
 
 (modeline-defface modeline-mode :weight bold)
 
-(modeline-defface modeline-vcs-icon :weight ultra-bold)
+(modeline-defface modeline-vcs-icon :weight extra-bold)
 (modeline-defface modeline-vcs-text)
 
 (modeline-defface modeline-selection-info :weight bold)
 
 
-;; (defun get-box-color (face)
-;;   (let*
-;;       (
-;;        (ans (plist-get (face-attribute face :box nil t) :color))
-;;        (foreground (face-attribute face :foreground nil t)))
-;;     (if ans
-;;         ans
-;;       (if (eq foreground 'unspecified)
-;;           (face-attribute 'default :foreground nil t)
-;;         foreground))))
-(defun fix-box-color (face)
-  (set-face-attribute face nil :box 'unspecified)
-  ;; (when (face-attribute face :box nil t)
-  ;;   (set-face-attribute face nil :box (list :color (get-box-color face) :line-width -1 :style nil)))
-  )
+(face-spec-set 'mode-line '((t :box unspecified :foreground unspecified)))
+(face-spec-set 'mode-line-active '((t :box unspecified :foreground unspecified)))
+(face-spec-set 'mode-line-inactive '((t :box unspecified :foreground unspecified)))
 
-(defun modeline-set-faces ()
-  (fix-box-color 'mode-line)
-  (fix-box-color 'mode-line-inactive)
+(add-hook! 'after-load-theme-hook
+  (defun modeline-set-faces-spec ()
+    ;; we want to set a :distant-foreground for mode-line
+    ;; in case any is too close to :background of mode-line
+    ;; whatever color the buffer name is for the default modeline will surely work
+    ;; so we use that
+    ;; this need to go before the direct attribute settings below
+    (face-spec-set
+     'mode-line
+     (alan-map-spec-from-face-for 'mode-line-buffer-id
+       (lambda (p)
+         (unless (plist-get p :distant-foreground)
+           `(:distant-foreground ,(plist-get p :foreground))))))
 
-  (transfer-face-attr 'modeline-linenum 'font-lock-keyword-face :foreground)
+    ))
+(modeline-set-faces-spec)
 
-  (transfer-face-attr 'modeline-project-name 'font-lock-string-face :foreground)
-  (transfer-face-attr 'modeline-file-or-buffer-name 'mode-line-buffer-id :foreground)
 
-  (transfer-face-attr 'modeline-unsaved 'font-lock-warning-face :foreground)
-  (transfer-face-attr 'modeline-readonly 'font-lock-doc-face :foreground)
+(add-hook! 'after-load-theme-hook :depth 50
+  (defun modeline-set-faces ()
+    (unless alan-real-early-init
+      (span-notef "modeline-set-faces")
 
-  (transfer-face-attr 'modeline-mode 'font-lock-type-face :foreground)
+      (transfer-face-attr 'modeline-linenum 'font-lock-keyword-face :foreground)
 
-  (transfer-face-attr 'modeline-selection-info 'font-lock-string-face :foreground)
+      (transfer-face-attr 'modeline-project-name 'font-lock-string-face :foreground)
+      (transfer-face-attr 'modeline-file-or-buffer-name 'mode-line-buffer-id :foreground)
 
-  (transfer-face-attr 'modeline-vcs-icon 'font-lock-doc-face :foreground)
-  (transfer-face-attr 'modeline-vcs-text 'font-lock-doc-face :foreground)
+      (transfer-face-attr 'modeline-unsaved 'font-lock-warning-face :foreground)
+      (transfer-face-attr 'modeline-readonly 'font-lock-doc-face :foreground)
 
-  (set-face-attribute 'mode-line-inactive nil :foreground 'unspecified)
-  (set-face-attribute 'mode-line-active nil :foreground 'unspecified)
-  (set-face-attribute 'mode-line nil :foreground 'unspecified)
-  ;;
+      (transfer-face-attr 'modeline-mode 'font-lock-type-face :foreground)
 
-  ;; we want to set a :distant-foreground for mode-line
-  ;; in case any of the above is too close to :background of mode-line
-  ;; whatever color the buffer name is for the default modeline will surely work
-  ;; so we use that
-  (let ((v (face-attribute 'mode-line-buffer-id :foreground nil t)))
-    (when (eq v 'unspecified)
-      (setq v (face-attribute 'default :foreground nil t)))
-    (alan-face-ensure 'mode-line :distant-foreground v)))
+      (transfer-face-attr 'modeline-selection-info 'font-lock-string-face :foreground)
+
+      (transfer-face-attr 'modeline-vcs-icon 'font-lock-doc-face :foreground)
+      (transfer-face-attr 'modeline-vcs-text 'font-lock-doc-face :foreground))))
 
 (modeline-set-faces)
-(add-hook! 'after-load-theme-hook #'modeline-set-faces)
+(add-hook! 'alan-start-of-init-hook #'modeline-set-faces)
 
 
 (defun modeline-calc-modified ()

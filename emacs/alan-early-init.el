@@ -19,8 +19,6 @@
 (add-to-list 'default-frame-alist '(vertical-scroll-bars . nil))
 
 ;; TODO: this doenst work when called after early init?
-(defvar alan-real-early-init nil)
-
 (span-dbgf (frame-parameters))
 
 ;; (add-hook! 'pre-redisplay-functions

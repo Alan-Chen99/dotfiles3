@@ -8,6 +8,8 @@
 
 (require 'alan-start)
 
+(run-hooks 'alan-start-of-init-hook)
+
 (span-dbgf (frame-parameters))
 
 (require 'alan-base-bindings)
