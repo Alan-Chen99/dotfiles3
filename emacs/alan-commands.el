@@ -311,7 +311,7 @@
 ;; (window-old-pixel-width)
 ;; (toggle-frame-maximized)
 
-;; (frame-parameters)
+;; (setf (frame-parameter nil 'left) 0)
 ;; (gv-define-setter alan-frame-native-width (val &optional frame)
 ;;   `(set-frame-width
 ;;     (- (alan-frame-native-width ,frame)
@@ -319,13 +319,7 @@
 ;;     ,val nil 'pixelwise))
 
 
-;; (ignore-errors
-;;   (set-frame-width (selected-frame)
-;;                    (- (/ (x-display-pixel-width) 2) (- (frame-native-width) (frame-text-width)))
-;;                    nil 'pixelwise)
-;;   (set-frame-height (selected-frame)
-;;                     (frame-native-height)
-;;                     nil 'pixelwise))
+
 
 ;; set-frame-width sets (frame-text-width)
 ;; (set-frame-width (selected-frame)

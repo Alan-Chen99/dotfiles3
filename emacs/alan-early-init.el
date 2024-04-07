@@ -2,6 +2,8 @@
 
 (setq load-prefer-newer t)
 (setq package-enable-at-startup nil)
+(setq font-log t)
+;; (length font-log)
 
 (set-buffer (get-buffer-create " *initialization*"))
 
@@ -13,7 +15,7 @@
 
 ;; (add-to-list 'initial-frame-alist '(fullscreen . maximized))
 (add-to-list 'default-frame-alist '(fullscreen . maximized))
-(add-to-list 'default-frame-alist '(background-mode . dark))
+;; (add-to-list 'default-frame-alist '(background-mode . dark))
 (add-to-list 'default-frame-alist '(menu-bar-lines . 0))
 (add-to-list 'default-frame-alist '(tool-bar-lines . 0))
 (add-to-list 'default-frame-alist '(vertical-scroll-bars . nil))
@@ -73,17 +75,6 @@
 (span-dbgf (face-attributes-as-vector 'default))
 (span-dbgf (frame-parameters))
 
-(defun alan-get-default-theme-attr (prop)
-  (plist-get (cdaadr (car (get 'default 'theme-face))) prop))
-
-;; TODO: should use window-system-default-frame-alist instead
-(when-let ((c (alan-get-default-theme-attr :background)))
-  (unless (eq c 'unspecified)
-    (add-to-list 'default-frame-alist `(background-color . ,c))))
-
-(when-let ((c (alan-get-default-theme-attr :foreground)))
-  (unless (eq c 'unspecified)
-    (add-to-list 'default-frame-alist `(foreground-color . ,c))))
 
 (ignore-errors
   (span :set-startup-frame-size
@@ -109,7 +100,31 @@
 
     (span-notef "done")))
 
-(span-dbgf (frame-parameters))
+(defun alan-maybe-set-frame-shape (frame)
+  (when (eq (window-system frame) 'pgtk)
+    ;; this sets size after un-maxmizing on wsl
+    ;; it seems that only setting both width and height works
+    (span :alan-maybe-set-frame-shape
+      (with-selected-frame frame
+        (span-dbgf (frame-parameters))
+        (span-dbgf (frame-native-height))
+        (span-dbgf (frame-geometry))
+
+        (span-dbgf (frame-parameter frame 'fullscreen))
+        (set-frame-width nil
+                         (- (/ (x-display-pixel-width) 2) (- (frame-native-width) (frame-text-width)))
+                         nil 'pixelwise)
+        ;; (- (x-display-pixel-height) (frame-native-height))
+        (set-frame-height nil
+                          (- (x-display-pixel-height) 79)
+                          nil 'pixelwise)))))
+
+(add-hook 'after-make-frame-functions #'alan-maybe-set-frame-shape)
+
+
+(add-hook 'after-make-frame-functions
+          (lambda (frame)
+            (span-msg "after-make-frame-functions: %s" frame)))
 
 (setq alan-finished-early-init t)
 

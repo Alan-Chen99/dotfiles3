@@ -116,9 +116,9 @@
      (alan-map-spec-from-face-for 'mode-line-buffer-id
        (lambda (p)
          (unless (plist-get p :distant-foreground)
-           `(:distant-foreground ,(plist-get p :foreground))))))
+           (when (plist-get p :foreground)
+             `(:distant-foreground ,(plist-get p :foreground)))))))))
 
-    ))
 (modeline-set-faces-spec)
 
 

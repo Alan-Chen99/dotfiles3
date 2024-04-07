@@ -4,6 +4,7 @@
   crate2nix,
   dream2nix,
   gitignore-lib,
+  home-manager,
   nix,
   nix-filter,
   nixd,
@@ -59,6 +60,7 @@
       buildFHSUserEnv
       cacert
       cachix
+      dejavu_fonts
       diffstat
       diffutils
       direnv
@@ -73,6 +75,7 @@
       gnugrep
       gnused
       keychain
+      nerdfonts
       nix
       nix-doc
       nix-plugins
@@ -87,6 +90,8 @@
       tzdata
       which
       ;
+
+    home-manager-bin = pkgs.home-manager;
 
     coreutils = pkgs.coreutils-full;
     emacs = pkgs.emacs29-pgtk;
@@ -109,6 +114,7 @@
       crate2nix
       dream2nix
       gitignore-lib
+      home-manager
       nix-filter
       nixd
       poetry2nix

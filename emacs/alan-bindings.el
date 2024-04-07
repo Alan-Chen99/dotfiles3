@@ -51,6 +51,7 @@
   "]" #'describe-keymap
   "v" #'describe-variable
   "f" #'describe-function
+  "c" #'describe-char
 
   "x" #'alan-describe-ex-command
   "=" #'customize-face

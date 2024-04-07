@@ -1,5 +1,7 @@
 ;; -*- lexical-binding: t -*-
 
+(require 'alan-utils)
+
 (require 'general)
 (require 'dash)
 
@@ -31,9 +33,31 @@
   "<linefeed>" "LFD"
   "<return>" "RET")
 
-;; disable default C-x bindings, else C-x dont type capital X
-(general-def local-function-key-map
-  "C-x" nil)
+(defun alan-base-bindings-per-frame (frame)
+  (with-selected-frame frame
+    ;; disable default C-x bindings, else C-x dont type capital X
+    (general-def local-function-key-map
+      "C-x" nil)
+
+    (general-def input-decode-map
+      ";" "<leader>"
+      ":" "<leader>"
+      "C-;" "<leader>"
+      "C-:" "<leader>"
+      ;; (kbd "M-;") [134217787]
+      ;; (read-kbd-macro "M-;") [134217787]
+      ;; (key-description [134217787])
+      ;; (keymap-lookup local-function-key-map "M-;")
+      ;; (keymap-lookup function-key-map "M-;")
+
+
+      ;; otherwise 0 dont work in terminal
+      ;; TODO: why?
+      "M-;" "M-;"
+      )))
+
+(alan-run-per-frame #'alan-base-bindings-per-frame)
+
 
 ;; https://stackoverflow.com/questions/63306647/various-forms-of-looping-and-iteration-in-elisp
 ;; https://www.gnu.org/software/emacs/manual/html_node/elisp/String-Conversion.html
@@ -49,11 +73,6 @@
       (concat "C-S-" p) (concat "C-" p))))
  lowercase-letters)
 
-(general-def input-decode-map
-  ";" "<leader>"
-  ":" "<leader>"
-  "C-;" "<leader>"
-  "C-:" "<leader>")
 
 ;; using shift translation
 (general-def key-translation-map
@@ -78,16 +97,6 @@
   "M-k" "S-8"
   "M-l" "S-9"
   "M-;" "S-0")
-
-;; (kbd "M-;") [134217787]
-;; (read-kbd-macro "M-;") [134217787]
-;; (key-description [134217787])
-;; (keymap-lookup local-function-key-map "M-;")
-;; (keymap-lookup function-key-map "M-;")
-
-;; otherwise 0 dont work in terminal
-;; TODO: why?
-(general-def input-decode-map "M-;" "M-;")
 
 (defvar translation-leader-map (make-sparse-keymap))
 (general-def translation-leader-map

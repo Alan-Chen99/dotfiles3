@@ -3,44 +3,69 @@
 (require 'alan-core)
 (require 'alan-theme)
 
-
-(defvar default-font
-  (cond
-   ((find-font (font-spec :name "DejaVu Sans Mono")) "DejaVu Sans Mono")
-   ((find-font (font-spec :name "Courier New")) "Courier New")
-   (t nil)))
+(defun alan-font-exist (name)
+  (when (find-font (font-spec :name name))
+    name))
 
 (defvar alan-default-font-height)
 (setq alan-default-font-height 19)
-(defvar alan-current-font-height alan-default-font-height)
 
-(defun alan-set-font-size (size)
-  (let ((fontspec (if default-font (font-spec :name default-font :size size) (font-spec :size size))))
-    (face-spec-set 'default `((t :font ,fontspec))))
-  (when-let
-      (
-       (font (face-attribute 'default :font))
-       (query (and (fontp font) (query-font font))))
-    (message "size %s height %s width %s"
-             (aref query 2) (+ (aref query 4) (aref query 5)) (aref query 7)))
-  ;; (font-info (face-attribute 'default :font))
-  ;; (message "%s . %s" (default-font-height) (default-font-width))
-  ;; (aref (query-font (face-attribute 'default :font)) 3)
-  (setq alan-current-font-height size)
-  ;; (run-hooks 'after-load-theme-hook)
-  )
+;; (face-attribute 'default :font)
+(defun alan-init-font-in-frame (frame)
+  (with-selected-frame frame
+    (let ((font (cond
+                 ;; https://github.com/ryanoasis/nerd-fonts/discussions/1103
+                 ;;x©x©xxxx
+                 ;;xxxxxxxx
+                 ;;x😀x😀xx
+                 ;;x󰊤x󰊤xx
+                 ((alan-font-exist "Hack Nerd Font Propo"))
+                 ((alan-font-exist "Iosevka Nerd Font Propo"))
+                 ((alan-font-exist "FiraCode Nerd Font Propo"))
+                 ((alan-font-exist "Source Code Pro"))
+                 ((alan-font-exist "DejaVu Sans Mono"))
+                 ((alan-font-exist "Courier New"))
+                 (t nil))))
+      (when font
+        (set-face-attribute 'default frame :font (font-spec :name font :size alan-default-font-height))))))
+(alan-run-per-frame #'alan-init-font-in-frame)
 
-(let ((message-log-max nil))
-  (with-no-minibuffer-message
-   (alan-set-font-size alan-current-font-height)))
+
+(defun select-font ()
+  (interactive)
+  (let* ((font (x-select-font))
+         (fam (symbol-name (font-get font :family)))
+         (entity (find-font (font-spec :family fam :weight 'regular :slant 'normal))))
+    (set-face-attribute 'default (selected-frame) :font entity)
+    (message "switching to font %S\nfrom %S" fam (aref (query-font (face-attribute 'default :font)) 1))
+    (kill-new (prin1-to-string fam))))
+
+(defun alan-get-font-size ()
+  (when (display-graphic-p)
+    (when-let ((font (face-attribute 'default :font)))
+      (font-get font :size))))
+
+(defun alan-set-font-size (newsz &optional silent)
+  (when (display-graphic-p)
+    (set-face-attribute 'default (selected-frame) :font (font-spec :size newsz))
+    (unless silent
+      (when-let
+          (
+           (font (face-attribute 'default :font))
+           (query (and (fontp font) (query-font font))))
+        (let (message-log-max
+              (sz (aref query 2))
+              (height (+ (aref query 4) (aref query 5)))
+              (width (aref query 7)))
+          (message "size %s height %s width %s ratio %.3f" sz height width (/ (float height) width)))))))
 
 
 (defun alan-font-inc (&optional amt)
   (interactive "p")
-  (alan-set-font-size (+ alan-current-font-height (or amt 1))))
+  (alan-set-font-size (+ (alan-get-font-size) (or amt 1))))
 (defun alan-font-dec (&optional amt)
   (interactive "p")
-  (alan-set-font-size (- alan-current-font-height (or amt 1))))
+  (alan-set-font-size (- (alan-get-font-size) (or amt 1))))
 (defun alan-font-reset ()
   (interactive)
   (alan-set-font-size alan-default-font-height)
@@ -58,47 +83,14 @@
 
 ;; (face-attribute 'default :font)
 
-;; (font-spec :name "DejaVu Sans Mono" :size 23)
 ;; (line-pixel-height)
 ;; (window-font-height)
 ;; (font-info (face-font 'default))
 ;; (display-pixel-height)
 
-;; (font-xlfd-name (find-font (font-spec :name "DejaVu Sans Mono" :size 12)))
-;; (font-xlfd-name (font-spec :name "DejaVu Sans Mono" :size 12))
-;; (font-xlfd-name (find-font (font-spec :name "DejaVu Sans Mono" :size 19)))
-;; (font-xlfd-name (face-attribute 'default :font))
-;; (let ((font (find-font (font-spec :name "DejaVu Sans Mono" :size 12))))
-;;  (font-put font :size 19)
-;;  (font-xlfd-name font)
-;;  font)
-;; (default-font-height)
-;; (font-get (face-attribute 'default :font) :size)
-;; (font-xlfd-name (face-attribute 'default :font))
-;; (default-font-height)
-;; (font-info (font-xlfd-name (face-attribute 'default :font)))
-;; (font-get (face-attribute 'default :font) :pixel)
-;; (font-get (face-attribute 'default :font) :height)
-
-
-;; see function face-spec-set
-;; (mapc
-;;  (lambda (spec-type)
-;;      (put face spec-type nil))
-;;  '(face-defface-spec face-override-spec
-;; (setq-default
-;;  evil-search-wrap nil)
-;; (set-face-attribute 'evil-ex-lazy-highlight nil
-;;  :background 'unspecified :inherit 'font-lock-warning-face)
-;;       customized-face saved-face))
-
-;; (defun face-redef (face spec)
-;;  (put face 'face-defface-spec spec))
-
 
 ;; disable font and height settings for some builtin faces
 ;; TODO: do i actualy want this?
-
 (face-spec-set 'fixed-pitch '((t :inherit default)) 'face-defface-spec)
 (face-spec-set 'variable-pitch '((t :inherit default)) 'face-defface-spec)
 (face-spec-set 'variable-pitch-text '((t :inherit default)) 'face-defface-spec)

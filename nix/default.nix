@@ -29,6 +29,7 @@
       rust-overlay = flakes.rust-overlay.overlays.default;
       poetry2nix = flakes.poetry2nix;
       dream2nix = flakes.dream2nix;
+      home-manager = flakes.home-manager;
     } (final: prev: {
       lib-orig = prev.lib;
       lib = final.lib-orig.extend mod.printing-overlay.lib-overlay;
@@ -51,11 +52,13 @@
           cleansrc
           dbg
           deps
+          home-manager-bin-wrapped
           legacypkgs
           lib
           nixmeta
           nixrepl-wrapper
           nixwrapper
+          profile
           run-cmd
           source-ver
           src
@@ -78,6 +81,10 @@
   }));
 
   mod.printing-overlay = callpackage ./printing-overlay.nix {};
+
+  mod.home = callpackage ./home.nix {} (reexport (prev: {
+    inherit (prev) home home-manager-bin-wrapped;
+  }));
 
   mod.profile = callpackage ./profile.nix {} (reexport (prev: {
     inherit (prev) profile;

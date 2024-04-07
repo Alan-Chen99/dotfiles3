@@ -120,4 +120,9 @@
     (require feature))
   `(alan-eval-after-load ',feature (lambda () ,@body)))
 
+(defun alan-run-per-frame (fn)
+  (dolist (f (frame-list))
+    (funcall fn f))
+  (add-hook 'after-make-frame-functions fn))
+
 (provide 'alan-utils)
