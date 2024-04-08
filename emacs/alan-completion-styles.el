@@ -11,15 +11,12 @@
 (pkg! '(hotfuzz-rs
         :host github :repo "Alan-Chen99/hotfuzz-rs" :protocol ssh
 	    :pre-build
-	    (
-	     (cl-assert (zerop (shell-command "cargo build --release")))
-	     (shell-command "rm hotfuzz-rs-module.so")
-	     (cl-assert (zerop (shell-command "ln -s ./target/release/libhotfuzz_rs_module.so hotfuzz-rs-module.so")))
-	     ;; ("cargo" "build")
-	     ;; ("rm" "hotfuzz-rs-module.so")
-	     ;; ("ln" "-s" "./target/debug/libhotfuzz_rs_module.so" "hotfuzz-rs-module.so")
-         )
-	    :files (:defaults "hotfuzz-rs-module.so"))
+	    (let ((target-file (if (eq system-type 'windows-nt) "hotfuzz-rs-module.dll" "hotfuzz-rs-module.so"))
+              (cargo-res (if (eq system-type 'windows-nt) "./target/release/hotfuzz_rs_module.dll" "./target/release/libhotfuzz_rs_module.so")))
+	      (cl-assert (zerop (shell-command "cargo build --release")))
+	      (delete-file target-file)
+          (rename-file cargo-res target-file))
+	    :files (:defaults "hotfuzz-rs-module.so" "hotfuzz-rs-module.dll"))
   (startup-queue-package 'hotfuzz-rs 76))
 
 
