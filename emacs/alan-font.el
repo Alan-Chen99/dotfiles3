@@ -4,7 +4,7 @@
 (require 'alan-theme)
 
 (defun alan-font-exist (name)
-  (when (find-font (font-spec :name name))
+  (when (find-font (font-spec :family name))
     name))
 
 (defvar alan-default-font-height)
@@ -20,21 +20,23 @@
                  ;;x😀x😀xx
                  ;;x󰊤x󰊤xx
                  ((alan-font-exist "Hack Nerd Font Propo"))
-                 ((alan-font-exist "Iosevka Nerd Font Propo"))
-                 ((alan-font-exist "FiraCode Nerd Font Propo"))
+                 ((alan-font-exist "Iosevka NFP"))
+                 ((alan-font-exist "FiraCode NFP"))
                  ((alan-font-exist "Source Code Pro"))
                  ((alan-font-exist "DejaVu Sans Mono"))
                  ((alan-font-exist "Courier New"))
                  (t nil))))
       (when font
-        (set-face-attribute 'default frame :font (font-spec :name font :size alan-default-font-height))))))
+        (set-face-attribute 'default frame :font (font-spec :family font :size alan-default-font-height))))))
 (alan-run-per-frame #'alan-init-font-in-frame)
 
 
+;; (setq testfont (x-select-font))
 (defun select-font ()
   (interactive)
   (let* ((font (x-select-font))
-         (fam (symbol-name (font-get font :family)))
+         (spec (if (fontp font) font (font-spec :name font)))
+         (fam (symbol-name (font-get spec :family)))
          (entity (find-font (font-spec :family fam :weight 'regular :slant 'normal))))
     (set-face-attribute 'default (selected-frame) :font entity)
     (message "switching to font %S\nfrom %S" fam (aref (query-font (face-attribute 'default :font)) 1))
@@ -56,6 +58,7 @@
         (let (message-log-max
               (sz (aref query 2))
               (height (+ (aref query 4) (aref query 5)))
+              ;; TODO: isnt correct on windows
               (width (aref query 7)))
           (message "size %s height %s width %s ratio %.3f" sz height width (/ (float height) width)))))))
 
