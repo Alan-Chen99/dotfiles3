@@ -65,6 +65,10 @@
 (require-noerr 'alan-markdown)
 (require-noerr 'alan-js)
 
+(add-to-list 'auto-mode-alist '("\\.ya?ml\\'" . yaml-ts-mode))
+(add-hook! 'yaml-ts-mode-hook
+  (setq-local format-all-formatters '(("YAML" prettierd))))
+
 
 
 ;; (alan-set-ignore-debug-on-quit #'flyspell-emacs-popup)

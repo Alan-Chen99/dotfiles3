@@ -43,6 +43,7 @@
       typescript
       lilypond
       json
+      yaml
       )))
 
 
