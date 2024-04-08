@@ -15,7 +15,9 @@
 (add-hook! 'minibuffer-setup-hook :depth 100 #'evil-normalize-keymaps)
 ;; (add-hook! 'minibuffer-mode-hook #'evil-normalize-keymaps)
 
-(defvar minibuffer-height 3.0)
+;; (frame-parameter nil 'minibuffer-height)
+
+;; (defvar minibuffer-height 3.0)
 (setq resize-mini-windows nil)
 
 ;; (setq max-mini-window-height 1)
@@ -25,20 +27,28 @@
 
 (defvar resize-minibuffer-hook nil)
 (defun resize-minibuffer (&rest _)
-  (with-selected-window (minibuffer-window)
-    (if track-mouse
-        (setq minibuffer-height (window-pixel-height))
-      (window-resize
-       (minibuffer-window)
-       (-
-        (if (integerp minibuffer-height)
-            minibuffer-height
-          (1+ (round (* minibuffer-height (line-pixel-height)))))
-        (window-pixel-height))
-       nil nil 'pixelwise))
-    (setq max-mini-window-height (window-height))
-    (run-hooks 'resize-minibuffer-hook)))
-(resize-minibuffer)
+  (when (minibuffer-window)
+    (with-selected-window (minibuffer-window)
+      (if track-mouse
+          (setf (frame-parameter nil 'minibuffer-height) (window-pixel-height))
+        (let ((minibuffer-height (frame-parameter nil 'minibuffer-height)))
+          (window-resize
+           (minibuffer-window)
+           (-
+            (if (integerp minibuffer-height)
+                minibuffer-height
+              (1+ (round (* minibuffer-height (line-pixel-height)))))
+            (window-pixel-height))
+           nil nil 'pixelwise))
+        (setq max-mini-window-height (window-height))
+        (run-hooks 'resize-minibuffer-hook)))))
+
+(defun alan-init-minibuffer-size (frame)
+  (with-selected-frame frame
+    (setf (frame-parameter nil 'minibuffer-height) 3.0)
+    (resize-minibuffer)))
+
+(alan-run-per-frame #'alan-init-minibuffer-size)
 
 ;; https://emacs.stackexchange.com/questions/45507/which-hooks-guarantee-proper-redisplaying-of-windows-after-windows-configurati
 ;; TODO: where does default resize kick in?
@@ -49,12 +59,10 @@
 ;; (setq-default read-minibuffer-restore-windows t)
 ;; not neccessary
 ;; (add-hook 'minibuffer-exit-hook 'resize-minibuffer)
-;; TODO: why was this here?
-;; (add-hook 'minibuffer-setup-hook 'resize-minibuffer -90)
 
 (evil-define-command alan-minibuffer-resize-count (count)
   (interactive "<c>")
-  (setq minibuffer-height (float (if count count 3)))
+  (setf (frame-parameter nil 'minibuffer-height) (float (if count count 3)))
   (resize-minibuffer))
 ;; (evil-define-command alan-minibuffer-resize (arg)
 ;;   (interactive "<a>")

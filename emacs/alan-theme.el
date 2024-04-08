@@ -59,7 +59,7 @@
            (--remove (memq it res) theme-settings)))))
 
 (defvar theme-short-list nil)
-(setq theme-short-list nil)
+;; (setq theme-short-list nil)
 
 
 (defun switch-theme-silent (theme)
@@ -81,6 +81,12 @@
   (message "%s" theme))
 
 (setq custom-safe-themes t)
+
+(defun startup-switch-theme (theme)
+  (let ((message-log-max nil))
+    (unless custom-enabled-themes
+      (switch-theme-silent theme)
+      (push (symbol-name theme) my-switch-theme-hist))))
 
 ;; (package! spacemacs-common
 ;;   :elpaca '(spacemacs-theme :type git :host github :repo "lebensterben/spacemacs-theme")
@@ -114,74 +120,66 @@
 ;;     (spacemacs-theme-custom-face 'light 'spacemacs-light)))
 
 (pkg! 'ef-themes
-  (require 'ef-themes))
+  (add-to-list 'theme-short-list 'ef-day)
+  (add-to-list 'theme-short-list 'ef-night)
+  (add-to-list 'theme-short-list 'ef-winter)
+
+  (startup-switch-theme 'ef-winter))
 
 (defvar ef-themes-faces-overwrites)
 (setq ef-themes-faces-overwrites
       '(
+        ;; `(modeline-file-or-buffer-name ((,c :weight semibold)))
+        ;; `(modeline-file-or-buffer-name ((,c)))
         `(mode-line-buffer-id ((,c :foreground ,keyword)))
-        ;; `(ansi-color-green ((,c :background ,bg-green :foreground ,green)))
-        ;; `(ansi-color-yellow ((,c :background ,bg-yellow :foreground ,yellow)))
+        `(ansi-color-green ((,c :background ,bg-green-subtle :foreground ,fg-term-green-bright)))
+        `(ansi-color-yellow ((,c :background ,bg-yellow-subtle :foreground ,fg-term-yellow-bright)))
         `(markdown-code-face ((,c :inherit ef-themes-fixed-pitch :extend t)))))
 
-(defmacro ef-themes-theme-custom (name palette &optional overrides)
-  `(let
-       (
-        (custom-push-theme-always-reset-enable t)
-        (ef-themes-custom-variables nil)
-        (ef-themes-faces ef-themes-faces-overwrites))
-     (eval '(ef-themes-theme ,name ,palette ,overrides) 'lexical)))
+(eval-after-load! ef-themes
+  (defvar ef-themes-all)
+  (setq ef-themes-all (append ef-themes-light-themes ef-themes-dark-themes))
+  (defun ef-themes-do-override-one (theme)
+    (let*
+        (
+         (name (symbol-name theme))
+         (sym-palette (intern (concat name "-palette")))
+         (sym-override (intern (concat name "-palette-overrides")))
+         (custom-push-theme-always-reset-enable t)
+         (ef-themes-custom-variables nil)
+         (ef-themes-faces ef-themes-faces-overwrites))
+      ;; (when (memq theme ef-themes-dark-themes)
+      ;;   (push
+      ;;    '
+      ;;    `(ansi-color-black ((,c :background ,bg-term-black :foreground ,fg-main)))
+      ;;    ef-themes-faces))
 
-(add-hook! 'ef-cyprus-theme-hook
-  (ef-themes-theme-custom ef-cyprus ef-cyprus-palette ef-cyprus-palette-overrides))
-(add-hook! 'ef-frost-theme-hook
-  (ef-themes-theme-custom ef-frost ef-frost-palette ef-frost-palette-overrides))
-(add-hook! 'ef-light-theme-hook
-  (ef-themes-theme-custom ef-light ef-light-palette ef-light-palette-overrides))
-(add-hook! 'ef-day-theme-hook
-  (ef-themes-theme-custom ef-day ef-day-palette ef-day-palette-overrides))
+      (eval `(ef-themes-theme ,theme ,sym-palette ,sym-override) 'lexical)))
 
-;; (package! doom-themes
-;;   :init
-;;   (setq theme-short-list (append '(doom-peacock doom-dracula) theme-short-list)))
+  (dolist (theme ef-themes-all)
+    (add-hook
+     (intern (concat (symbol-name theme) "-theme-hook"))
+     (lambda ()
+       (with-no-warnings (ef-themes-do-override-one theme))))))
 
-;; (aio-with-async
-;;   ;; (aio-await (promise! spacemacs-theme))
-;;   (aio-await (promise! doom-themes))
-;;   (let ((message-log-max nil))
-;;     (unless custom-enabled-themes
-;;       (let ((theme
-;;              ;; 'spacemacs-dark
-;;              ;; 'ef-light
-;;              ;; 'doom-peacock
-;;              'ef-day
-;;              ))
-;;         (switch-theme-silent theme)
-;;         (push (symbol-name theme) my-switch-theme-hist))))
-;;   (early-init-append-graphic-frame 'background-color (face-attribute 'default :background))
-;;   (early-init-append-graphic-frame 'foreground-color (face-attribute 'default :foreground)))
 
-;; ;; (use-package zenburn-theme)
 
-;; ;; (use-package atom-one-dark-theme)
+(pkg! 'doom-themes
+  (add-to-list 'theme-short-list 'doom-peacock)
+  (add-to-list 'theme-short-list 'doom-dracula))
 
-;; ;; (use-package doom-themes
-;; ;;  :config
-;; ;;  ;; Global settings (defaults)
-;; ;;  ;; (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
-;; ;;  ;;  doom-themes-enable-italic t) ; if nil, italics is universally disabled
-;; ;;  ;; (load-theme 'doom-one t)
+(eval-after-load! doom-themes-base
+  ;; note: this need to be before indivial doom themes to take effect
+  (setf
+   (alist-get 'ansi-color-green doom-themes-base-faces)
+   '(:foreground green :background (doom-blend green bg 0.5))
+   )
 
-;; ;;  ;; ;; Enable flashing mode-line on errors
-;; ;;  ;; (doom-themes-visual-bell-config)
-;; ;;  ;; ;; Enable custom neotree theme (all-the-icons must be installed!)
-;; ;;  ;; ;; (doom-themes-neotree-config)
-;; ;;  ;; ;; or for treemacs users
-;; ;;  ;; ;; (setq doom-themes-treemacs-theme "doom-atom") ; use "doom-colors" for less minimal icon theme
-;; ;;  ;; ;; (doom-themes-treemacs-config)
-;; ;;  ;; ;; Corrects (and improves) org-mode's native fontification.
-;; ;;  ;; (doom-themes-org-config)
-;; ;;  )
+  )
+
+;; (pkg! 'zenburn-theme)
+
+;; (pkg! 'atom-one-dark-theme)
 
 ;; ;; (use-package solarized-theme)
 
@@ -191,78 +189,62 @@
 
 ;; ;; (use-package kaolin-themes)
 
-(with-eval-after-load 'ef-themes
-  (let ((message-log-max nil))
-    (unless custom-enabled-themes
-      (let ((theme
-             ;; 'spacemacs-dark
-             ;; 'ef-light
-             ;; 'doom-peacock
-             ;; 'ef-night
-             ;; 'ef-night
-             'ef-day
-             ))
-        (switch-theme-silent theme)
-        (push (symbol-name theme) my-switch-theme-hist)))))
-
-
-(defun alan-face-ensure (face prop val)
-  (when (eq (face-attribute face prop nil t) 'unspecified)
-    (set-face-attribute face nil prop val)))
-
+(face-spec-set 'font-lock-operator-face '((t :weight bold)))
+(face-spec-set 'font-lock-bracket-face '((t :weight bold)))
 
 ;; (setq-default face-near-same-color-threshold 70000)
-;; (setq-default face-near-same-color-threshold 30000)
+;; (setq-default face-near-same-color-threshold 50000)
+(setq-default face-near-same-color-threshold 30000)
 ;; (clear-face-cache)
 
-(defun set-standard-faces ()
-  ;; face-near-same-color-threshold
+(defun alan-map-spec-from-face-for (face fn)
+  (declare (indent 1))
+  ;; see `face-spec-choose' and `face-spec-recalc'
+  (let ((default-spec (cadar (get 'default 'theme-face))))
+    (mapcar
+     (lambda (entry)
+       (let* ((display (car entry))
+	          (attrs (cdr entry))
+              (default-attrs (alist-get display default-spec nil nil #'equal))
+              ans-attrs
+              key val)
+	     (setq attrs (if (null (cdr attrs)) (car attrs) attrs))
+	     (setq default-attrs (if (null (cdr default-attrs)) (car default-attrs) default-attrs))
 
-  ;; (round (/ (color-distance (face-attribute 'default :foreground nil t) (face-attribute 'default :background nil t)) 2))
+         (setq ans-attrs (copy-sequence default-attrs))
+         (while attrs
+           (setq key (pop attrs))
+           (setq val (pop attrs))
+           (plist-put ans-attrs key val))
+         (cons display (funcall fn ans-attrs))))
+     (cadar (get face 'theme-face)))))
 
-  ;; (symbol-plist 'default)
-  ;; (custom-theme-recalc-face 'default)
+(add-hook! 'after-load-theme-hook
+  (defun set-standard-faces-spec ()
+    (span-notef "set-standard-faces-spec")
 
-  ;; (face-attribute 'default :background nil t)
+    ;; ensures that, as long as background is visible against default foreground, the text is visible
+    (face-spec-set
+     'default
+     (alan-map-spec-from-face-for 'default
+       (lambda (p)
+         (unless (plist-get p :distant-foreground)
+           `(:distant-foreground ,(plist-get p :foreground))))))
 
-  ;; (face-attribute 'default :background nil t)
-  ;; (face-attribute 'default :inherit nil t)
-  ;; (ensure-distant-foreground 'default)
+    ;; make vertical-border always same color
+    (face-spec-set
+     'vertical-border
+     (alan-map-spec-from-face-for 'vertical-border
+       (lambda (p)
+         `(:distant-foreground ,(plist-get p :foreground)))))
 
+    ))
 
-  ;; modeline-project-name
-  ;; (face-attribute 'mode-line :distant-foreground nil t)
-
-
-  ;; TODO: is this a good idea?
-  (setq-default face-near-same-color-threshold
-                (min
-                 (round (/ (color-distance (face-attribute 'default :foreground nil t) (face-attribute 'default :background nil t)) 2))
-                 100000))
-
-  ;; (color-distance (face-attribute 'default :foreground nil t) (face-attribute 'default :background nil t))
-
-
-
-  ;; (color-distance (face-attribute 'modeline-project-name :foreground nil t) (face-attribute 'mode-line :background nil t))
-
-  ;; (color-distance (face-attribute 'default :foreground nil t) (face-attribute 'default :background nil t))
-
-
-  ;; (when (eq (face-attribute 'default :distant-foreground nil t) 'unspecified)
-  ;;   (set-face-attribute 'default nil :distant-foreground (face-attribute 'default :background nil t)))
+(set-standard-faces-spec)
 
 
-
-  ;; (face-attribute 'default :distant-foreground nil t)
-
-  (set-face-attribute 'vertical-border nil :distant-foreground (face-attribute 'vertical-border :foreground nil t))
-
-
-  )
-(set-standard-faces)
-(add-hook! 'after-load-theme-hook #'set-standard-faces)
-(add-hook! 'after-load-theme-hook :depth 100 #'clear-face-cache)
+;; TODO: do this do anything
+;; (add-hook! 'after-load-theme-hook :depth 100 #'clear-face-cache)
 
 
 (provide 'alan-theme)

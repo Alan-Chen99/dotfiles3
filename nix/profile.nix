@@ -17,6 +17,7 @@
   glibcLocales,
   gnugrep,
   gnused,
+  home-manager-bin-wrapped,
   keychain,
   lib,
   nix,
@@ -102,6 +103,7 @@
       glibcLocales
       gnugrep
       gnused
+      home-manager-bin-wrapped
       keychain
       nix.doc
       nixmeta

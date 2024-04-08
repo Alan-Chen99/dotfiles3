@@ -47,6 +47,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    home-manager = {
+      url = "github:nix-community/home-manager";
+      # inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     nix = {
       url = "github:edolstra/nix/19ec1c9fd4d4bf6e941b046b8549ba2a1a690937";
       inputs = {
@@ -142,6 +147,7 @@
                 test
                 test2
                 ;
+              homeConfigurations."alan" = prev.home;
             };
             pkgs = (builtins.mapAttrs (name: pkg: appendversion pkg) pkgs-versioned) // pkgs-other;
           in
@@ -151,6 +157,8 @@
 
       export = rec {
         packages = default.pkgs;
+
+        # homeConfigurations."alan" = default.home;
 
         # devShells.rust = default.rust-devshell;
         # devShells.cargo = default.test-cargo;

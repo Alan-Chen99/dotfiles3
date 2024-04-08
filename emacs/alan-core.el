@@ -152,13 +152,15 @@
   (declare (indent 1))
   `(alan--lsp-deferred ,client (lambda () ,@body)))
 
-(autoload 'lsp-completion-at-point "lsp-completion")
-(autoload 'lsp-completion-mode "lsp-completion")
-
 
 
 (make-lazy tree-sitter-hl-mode-lazy 'tree-sitter 'tree-sitter-hl-mode)
 
 (autoload 'treesit-major-mode-setup "treesit")
+
+
+
+(make-lazy rainbow-mode-lazy 'rainbow-mode 'rainbow-mode)
+
 
 (provide 'alan-core)

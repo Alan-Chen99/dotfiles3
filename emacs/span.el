@@ -619,7 +619,8 @@ designed to be created at compile time and used as constant"
       :blocking inhibit-quit-old
 
       (when (and (not inhibit-quit-old) (input-pending-p))
-        (span--backtrace)
+        (span-flush)
+        ;; (span--backtrace)
         (signal 'quit-nodebug nil)
         ;; (setq quit-flag t)
         ;; (let (inhibit-quit debug-on-quit)
@@ -643,12 +644,14 @@ designed to be created at compile time and used as constant"
 (defun span--wrap-redisplay (orig-fn &optional force)
   (span-wrap-redisplay (:explicit-redisplay force)
     :flush-on-err t
+    :blocking t
     (funcall orig-fn force)))
 
 (advice-add #'redisplay--pre-redisplay-functions :around #'span--wrap-redisplay--pre-redisplay-functions)
 (defun span--wrap-redisplay--pre-redisplay-functions (orig-fn windows)
   (span-wrap-redisplay (:pre-redisplay-functions (:unsafe windows))
     :flush-on-err t
+    :blocking t
     (let ((pre-redisplay-function #'ignore))
       (funcall orig-fn windows))))
 
@@ -685,8 +688,7 @@ designed to be created at compile time and used as constant"
              (err-sym (car-safe signal-args))
              (data (cdr-safe signal-args)))
         (span (:span--debug "error: %S" `(list ,(:unsafe err-sym) ,(:unsafe data)))
-          (span-flush)
-          ;; (span--backtrace)
+          (span--backtrace)
           (let ((inhibit-debugger t))
             (signal err-sym data))))
     (span-notef "debug: %S %S" type (:unsafe args))

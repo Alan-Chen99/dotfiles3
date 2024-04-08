@@ -9,6 +9,8 @@
 ;; (pkg! 'python-black)
 ;; (pkg! '(python-isort :repo "https://github.com/wyuenho/emacs-python-isort"))
 
+(declare-function lsp-completion-at-point "lsp-completion")
+(declare-function lsp-completion-mode "lsp-completion")
 
 (defun alan-redef-python-mode ()
   ;; remove uneeded stuff from python

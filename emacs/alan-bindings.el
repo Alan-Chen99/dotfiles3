@@ -7,13 +7,13 @@
  consult
  magit
 
+ alan-theme
  alan-minibuffer
  alan-font
  alan-commands)
 
 (general-def
   "C-," #'help-command
-  "N" #'help-command
   "<ignore>" #'ignore
   "<x>" #'yank
 
@@ -50,6 +50,7 @@
   "]" #'describe-keymap
   "v" #'describe-variable
   "f" #'describe-function
+  "c" #'describe-char
 
   "x" #'alan-describe-ex-command
   "=" #'customize-face
@@ -87,7 +88,10 @@
   [remap self-insert-command] #'undefined
 
   "w" 'evil-window-map
+  "N" #'help-command
+
   "<w> <t>" #'consult-theme
+  "w <t>" #'alan-switch-theme
   "g h" #'consult-history
   "g l" #'consult-line
   "g <right>" #'consult-line-multi

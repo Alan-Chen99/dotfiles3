@@ -1,5 +1,6 @@
 ;; -*- lexical-binding: t -*-
 
+(defvar alan-real-early-init nil)
 (defvar alan-gc-cons-threshold (* 800000 2))
 
 (setq debug-on-error t)
@@ -118,5 +119,10 @@
   (when (bound-and-true-p byte-compile-current-file)
     (require feature))
   `(alan-eval-after-load ',feature (lambda () ,@body)))
+
+(defun alan-run-per-frame (fn)
+  (dolist (f (frame-list))
+    (funcall fn f))
+  (add-hook 'after-make-frame-functions fn))
 
 (provide 'alan-utils)

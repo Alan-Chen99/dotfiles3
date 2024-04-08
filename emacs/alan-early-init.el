@@ -2,14 +2,12 @@
 
 (setq load-prefer-newer t)
 (setq package-enable-at-startup nil)
+(setq font-log t)
+;; (length font-log)
 
 (set-buffer (get-buffer-create " *initialization*"))
 
-(defvar alan-dotemacs-dir)
-(when load-file-name
-  (setq alan-dotemacs-dir (file-name-directory (file-chase-links load-file-name))))
-
-(add-to-list 'load-path alan-dotemacs-dir)
+(defvar alan-dotemacs-dir nil)
 
 (require 'alan-utils)
 
@@ -17,18 +15,16 @@
 
 ;; (add-to-list 'initial-frame-alist '(fullscreen . maximized))
 (add-to-list 'default-frame-alist '(fullscreen . maximized))
+;; (add-to-list 'default-frame-alist '(background-mode . dark))
 (add-to-list 'default-frame-alist '(menu-bar-lines . 0))
 (add-to-list 'default-frame-alist '(tool-bar-lines . 0))
 (add-to-list 'default-frame-alist '(vertical-scroll-bars . nil))
 
 ;; TODO: this doenst work when called after early init?
-(defvar alan-real-early-init nil)
-(when (and alan-real-early-init (display-graphic-p))
-  ;; (face-attribute 'default :background)
-  (add-to-list 'default-frame-alist '(background-color . "#000e17"))
-  ;; (face-attribute 'default :foreground)
-  (add-to-list 'default-frame-alist '(foreground-color . "#afbcbf")))
+(span-dbgf (frame-parameters))
 
+;; (add-hook! 'pre-redisplay-functions
+;;   (span-notef "pre-redisplay-functions"))
 
 ;; (when-let
 ;;     (
@@ -38,7 +34,7 @@
 
 ;; https://www.reddit.com/r/emacs/comments/osscfd/comment/h6ttuoq/
 ;; (pgtk-use-im-context nil)
-(setq pgtk-use-im-context-on-new-connection nil)
+(setq-default pgtk-use-im-context-on-new-connection nil)
 (setq frame-resize-pixelwise t)
 (setq window-resize-pixelwise t)
 (setq frame-inhibit-implied-resize t)
@@ -56,47 +52,6 @@
 (pkg! 'format-all)
 (pkg! 'hydra)
 
-
-(unless (display-graphic-p)
-  (pkg! 'evil-terminal-cursor-changer
-    (require 'evil-terminal-cursor-changer)
-    (evil-terminal-cursor-changer-activate) ; or (etcc-on)
-    ;; (setq evil-motion-state-cursor 'box)  ; █
-    ;; (setq evil-visual-state-cursor 'box)  ; █
-    ;; (setq evil-normal-state-cursor 'box)  ; █
-    ;; (setq evil-insert-state-cursor 'bar)  ; ⎸
-    ;; (setq evil-emacs-state-cursor  'hbar) ; _
-
-    ;; TODO: find out why (getenv "TERM") returns "dumb"
-    (setq etcc-term-type-override 'xterm)
-
-    ;; TODO: maybe i should do this after each evil cursor change?
-    (add-hook! 'after-load-theme-hook
-      (etcc--evil-set-cursor-color (frame-parameter nil 'cursor-color)))
-
-    ;; TODO: to reset cursor after exit emacs,
-    ;; maybe i should add a cursor setting to prompt as someone said here
-    ;; https://github.com/7696122/evil-terminal-cursor-changer/issues/12
-    )
-
-  (setq-default left-margin-width 1)
-  (mapc
-   (lambda (buf)
-     (with-current-buffer buf
-       (kill-local-variable 'left-margin-width)))
-   (buffer-list))
-
-  (mapc
-   (lambda (win)
-     (set-window-buffer win (window-buffer win)))
-   (window-list nil t))
-
-  ;; (set-window-buffer WINDOW BUFFER-OR-NAME &optional KEEP-MARGINS)
-  ;; (add-hook 'window-configuration-change-hook
-  ;;           (lambda ()
-  ;;             (set-window-margins (car (get-buffer-window-list (current-buffer) nil t)) 2)))
-  )
-
 ;; todo: builtin seq is too old, how to deal with this?
 ;; note: seq is already loaded, should we reload it?
 (pkg! '(seq :build (:not elpaca--activate-package)))
@@ -105,7 +60,7 @@
   (let ((q (car elpaca--queues)))
     (elpaca-process-queues)
     (when (eq (elpaca-q<-status q) 'complete)
-      ;; (span-notef "alan-start from early init")
+      (span-notef "alan-start from early init")
       (require 'alan-start))))
 
 (add-hook! 'emacs-startup-hook
@@ -115,6 +70,61 @@
       (message "Emacs ready in %s with %d garbage collections."
                (format "%.3f seconds" (float-time (time-subtract (current-time) before-init-time)))
                gcs-done))))
+
+
+(span-dbgf (face-attributes-as-vector 'default))
+(span-dbgf (frame-parameters))
+
+
+(ignore-errors
+  (span :set-startup-frame-size
+    (span-dbgf (ignore-errors (x-display-pixel-width)))
+    (span-dbgf (ignore-errors (x-display-pixel-height)))
+
+    ;; (display-monitor-attributes-list) can be used after creating frame
+
+    (when (fboundp 'w32-display-monitor-attributes-list)
+      (span-dbgf (ignore-errors (w32-display-monitor-attributes-list))))
+    (when (fboundp 'pgtk-display-monitor-attributes-list)
+      (span-dbgf (ignore-errors (pgtk-display-monitor-attributes-list))))
+
+    ;; this dictates size/position after un-maximizing
+    (add-to-list 'default-frame-alist `(left + -8))
+    (add-to-list 'default-frame-alist `(top . 0))
+
+    ;; values from windows
+    ;; (- (/ (x-display-pixel-width) 2) (frame-text-width))
+    (add-to-list 'default-frame-alist `(width text-pixels . ,(- (/ (x-display-pixel-width) 2) 18)))
+    ;; (- (x-display-pixel-height) (frame-text-height))
+    (add-to-list 'default-frame-alist `(height text-pixels . ,(- (x-display-pixel-height) 99)))
+
+    (span-notef "done")))
+
+(defun alan-maybe-set-frame-shape (frame)
+  (when (eq (window-system frame) 'pgtk)
+    ;; this sets size after un-maxmizing on wsl
+    ;; it seems that only setting both width and height works
+    (span :alan-maybe-set-frame-shape
+      (with-selected-frame frame
+        (span-dbgf (frame-parameters))
+        (span-dbgf (frame-native-height))
+        (span-dbgf (frame-geometry))
+
+        (span-dbgf (frame-parameter frame 'fullscreen))
+        (set-frame-width nil
+                         (- (/ (x-display-pixel-width) 2) (- (frame-native-width) (frame-text-width)))
+                         nil 'pixelwise)
+        ;; (- (x-display-pixel-height) (frame-native-height))
+        (set-frame-height nil
+                          (- (x-display-pixel-height) 79)
+                          nil 'pixelwise)))))
+
+(add-hook 'after-make-frame-functions #'alan-maybe-set-frame-shape)
+
+
+(add-hook 'after-make-frame-functions
+          (lambda (frame)
+            (span-msg "after-make-frame-functions: %s" frame)))
 
 (setq alan-finished-early-init t)
 

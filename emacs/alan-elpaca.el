@@ -40,6 +40,9 @@
 
 (require 'elpaca)
 
+(when (eq system-type 'windows-nt)
+  (elpaca-no-symlink-mode))
+
 (defadvice! alan-elpaca--check-version-advice (orig-fun e)
   ;; fails on magit git-commit. supposedly never throw ig
   :around #'elpaca--check-version
