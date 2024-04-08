@@ -14,7 +14,6 @@
 
 (general-def
   "C-," #'help-command
-  "N" #'help-command
   "<ignore>" #'ignore
   "<x>" #'yank
 
@@ -89,6 +88,8 @@
   [remap self-insert-command] #'undefined
 
   "w" 'evil-window-map
+  "N" #'help-command
+
   "<w> <t>" #'consult-theme
   "w <t>" #'alan-switch-theme
   "g h" #'consult-history
