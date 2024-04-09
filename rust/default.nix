@@ -3,7 +3,7 @@
   crane,
   legacypkgs,
   lib,
-  llvm,
+  llvmpkgs,
   nix,
   nix-filter,
   openssl,

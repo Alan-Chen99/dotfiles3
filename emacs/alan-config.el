@@ -21,6 +21,13 @@
  ;; `(("." . ,(ensure-dir (expand-file-name "undo-tree-history/" user-emacs-directory))))
  )
 
+(setq create-lockfiles nil)
+;; (setq lock-file-name-transforms
+;;       `((".*"
+;;          ,(ensure-dir (expand-file-name "lock/" user-emacs-directory))
+;;          t)))
+;; (setq remote-file-name-inhibit-locks t)
+
 (setq custom-file (expand-file-name "custom-file.el" user-emacs-directory))
 
 

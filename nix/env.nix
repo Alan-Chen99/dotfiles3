@@ -8,19 +8,28 @@
   std,
   dbg,
 }: rec {
-  flake-registry-inputs = let
+  flakelock = let
     flakelock = builtins.fromJSON (builtins.readFile ../flake.lock);
-    root =
-      flakelock.nodes."${flakelock.root}";
   in
-    assert flakelock.version == 7;
-      builtins.mapAttrs (name: val: flakelock.nodes."${name}".locked) root.inputs;
+    assert flakelock.version == 7; flakelock;
+
+  hash-to-source-mapping = builtins.listToAttrs (
+    lib.attrsets.mapAttrsToList (name: value: {
+      name = value.locked.narHash + (value.locked.dir or "");
+      value = value.locked;
+    })
+    (removeAttrs flakelock.nodes [flakelock.root])
+  );
+
+  flakes-with-source =
+    builtins.mapAttrs (name: val: hash-to-source-mapping."${val.narHash}${val.dir or ""}")
+    (removeAttrs flakes ["self"]);
 
   export.flake-registry =
-    flake-registry-inputs
+    (removeAttrs flakes-with-source ["nixpkgs-lib"])
     // {
       p = source-ver;
-      n = flake-registry-inputs.nixpkgs;
+      n = flakes-with-source.nixpkgs;
       dotfiles = source-ver;
     };
 
@@ -63,7 +72,7 @@
         (builtins.mapAttrs (name: value: "${name}=${value}") self.nix-path));
     flake-registry = "${self.flake-registry-file}/registry.json";
     allow-import-from-derivation = true;
-    extra-experimental-features = "recursive-nix";
+    extra-experimental-features = "nix-command flakes recursive-nix";
   };
 
   export.nixconf-file =

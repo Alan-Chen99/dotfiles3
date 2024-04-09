@@ -1,26 +1,31 @@
 ;; -*- lexical-binding: t -*-
 
 (require 'alan-core)
-
 (require 'evil)
 
+
+(defvar-keymap alan-comint-output-map)
+
+(declare-function evil-comint-next-prompt "alan-comint")
+(declare-function evil-comint-previous-prompt "alan-comint")
 
 ;; https://superuser.com/questions/868680/make-command-line-unmodifiable-in-aquamacs
 ;; https://snarfed.org/why_i_run_shells_inside_emacs
 (eval-after-load! comint
-  ;; ;; https://stackoverflow.com/questions/26985772/fast-emacs-shell-mode
-  ;; (setq
-  ;;    comint-move-point-for-output nil
-  ;;    comint-scroll-show-maximum-output nil
-  ;;    )
+  ;; https://stackoverflow.com/questions/26985772/fast-emacs-shell-mode
+  (setq comint-move-point-for-output nil)
+  (setq comint-scroll-show-maximum-output nil)
 
-  (setq-default comint-use-prompt-regexp nil)
+  (setq comint-buffer-maximum-size 10000)
+  (add-to-list 'comint-output-filter-functions #'comint-truncate-buffer)
+
+  (setq comint-use-prompt-regexp nil)
+  (setq comint-input-ignoredups nil)
 
   ;; https://stackoverflow.com/questions/25819034/colors-in-emacs-shell-prompt
-  ;; FIXME
-  (set-face-attribute 'comint-highlight-prompt nil :inherit 'unspecified)
+  (setq comint-highlight-input nil)
+  ;; (face-spec-set 'comint-highlight-prompt '((t)) 'face-defface-spec)
 
-  ;; https://emacs.stackexchange.com/questions/2883/any-way-to-make-prompts-and-previous-output-uneditable-in-shell-term-mode
   ;; https://github.com/michalrus/dotfiles/blob/c4421e361400c4184ea90a021254766372a1f301/.emacs.d/init.d/040-terminal.el.symlink#L26-L48
   ;; https://emacs.stackexchange.com/questions/13592/how-does-comint-mode-override-beginning-of-line-behavior-i-want-same-functional
   ;; Make processes’ outputs read-only. The prompt is easy.
@@ -28,52 +33,83 @@
   ;; https://www.gnu.org/software/emacs/manual/html_node/efaq-w32/Shell-echo.html
   (setq-default comint-prompt-read-only t)
 
-  (defun comint-output-filter-advice (process string)
-    (let ((oprocbuf (process-buffer process)))
-      ;; repeat check in comint-output-filter
-      (when (and string oprocbuf (buffer-name oprocbuf))
-        (with-current-buffer oprocbuf
-          (let*
-              (
-               (inhibit-read-only t)
-               (saved-point (copy-marker (point) t))
-               )
-            (save-restriction
-              (widen)
-              (with-silent-modifications
-                (add-text-properties comint-last-output-start (process-mark process)
-                                     '(
-                                       front-sticky
-                                       (read-only)
-                                       ;; (read-only field
-                                       ;;    ;; inhibit-line-move-field-capture
-                                       ;;    )
-                                       inhibit-line-move-field-capture t
-                                       read-only t
-                                       )))))))))
-  (advice-add 'comint-output-filter :after #'comint-output-filter-advice)
-  (defun comint-send-input-advice (&rest args)
-    (add-text-properties comint-last-input-start comint-last-input-end
-                         '(
-                           read-only t
-                           front-sticky (read-only)
-                           rear-nonsticky (read-only)
-                           ;; front-sticky nil
-                           )))
-  (advice-add 'comint-send-input :after #'comint-send-input-advice)
-  ;; make shell not print control c on kill, --and go to newline on kill when input
-  ;; FIXME
-  (defun my-comint-skip-input ()
-    (cl-letf ;; change to cl-letf since original file use dynamic binding
-        (
-         ((symbol-value 'comint-input-sender) #'ignore)
-         ((symbol-value 'comint-input-filter-functions) nil)
-         )
-      (comint-send-input t t)
-      )
-    (end-of-line)
-    )
-  (advice-add 'comint-skip-input :override 'my-comint-skip-input)
+  (general-def alan-comint-output-map
+    [remap comint-send-input] #'undefined)
+
+  ;; https://emacs.stackexchange.com/questions/2883/any-way-to-make-prompts-and-previous-output-uneditable-in-shell-term-mode
+
+  (advice-add #'comint-output-filter :override 'alan-comint-output-filter)
+  (defun alan-comint-output-filter (process string)
+    (span :alan-comint-output-filter
+      (let ((oprocbuf (process-buffer process)))
+        ;; First check for killed buffer or no input.
+        (when (and string oprocbuf (buffer-name oprocbuf))
+          (with-current-buffer oprocbuf
+
+            ;; (span-notef "alan-comint-output-filter: %s" (length string))
+
+            (setq-local buffer-undo-list nil)
+
+	        ;; Run preoutput filters
+	        (let ((functions comint-preoutput-filter-functions))
+	          (while (and functions string)
+	            (if (eq (car functions) t)
+		            (let ((functions
+                           (default-value 'comint-preoutput-filter-functions)))
+		              (while (and functions string)
+		                (setq string (funcall (car functions) string))
+		                (setq functions (cdr functions))))
+	              (setq string (funcall (car functions) string)))
+	            (setq functions (cdr functions))))
+
+	        (let ((inhibit-read-only t)
+                  (buffer-undo-list t)
+                  (saved-point (copy-marker (point) t)))
+	          (save-restriction
+	            (widen)
+
+	            (goto-char (process-mark process))
+	            (set-marker comint-last-output-start (point))
+
+                (add-text-properties
+                 0 (length string)
+                 `(
+                   field output
+                   read-only t
+                   front-sticky (read-only)
+                   rear-nonsticky (field read-only font-lock-face keymap)
+                   keymap ,alan-comint-output-map)
+                 string)
+
+	            (insert string)
+
+	            ;; Advance process-mark
+	            (set-marker (process-mark process) (point))
+
+	            (unless comint-inhibit-carriage-motion
+	              ;; Interpret any carriage motion characters (newline, backspace)
+	              (comint-carriage-motion comint-last-output-start (point)))
+
+	            (run-hook-with-args 'comint-output-filter-functions string)
+
+                (goto-char saved-point))))))))
+
+  (defadvice! comint-send-input-advice (&rest _args)
+    :after #'comint-send-input
+    (add-text-properties
+     comint-last-input-start comint-last-input-end
+     '(
+       read-only t
+       front-sticky (read-only)
+       rear-nonsticky (read-only))))
+
+  (defun comint-clear-buffer-no-undo ()
+    (interactive)
+    (let ((buffer-undo-list t))
+      (comint-clear-buffer)))
+
+  ;; make shell not print control c on kill
+  (advice-add #'comint-skip-input :override #'ignore)
 
   (evil-define-motion evil-comint-next-prompt (count)
     :jump t
@@ -100,20 +136,21 @@
    "<down>" #'evil-comint-next-prompt
    "<up>" 'evil-comint-previous-prompt
 
-   "SPC c" 'comint-interrupt-subjob
-   "SPC e" 'comint-send-eof
-   "SPC d" 'comint-delete-output
+   "SPC c" #'comint-interrupt-subjob
+   "SPC e" #'comint-send-eof
+   "SPC d" #'comint-delete-output
    ;; "SPC r" 'comint-show-output
    ;; "SPC s" 'comint-write-output
    ;; "SPC u" 'comint-kill-input
-   "SPC z" 'comint-stop-subjob
-   "SPC q" 'comint-quit-subjob
-   "SPC l" 'comint-clear-buffer
-   "SPC t" 'comint-continue-subjob
+   "SPC z" #'comint-stop-subjob
+   "SPC q" #'comint-quit-subjob
+   "SPC l" 'comint-clear-buffer-no-undo
+   "SPC t" #'comint-continue-subjob
+   "SPC <up>" #'comint-kill-subjob
    )
 
   ;; disable wrapping of comint-next-input and comint-previous-input
-  (advice-add 'comint-previous-input :before-until
+  (advice-add #'comint-previous-input :before-until
               (lambda (arg)
                 (if comint-input-ring-index
                     (and (> arg 0)
@@ -131,22 +168,24 @@
       (setq-local completion-at-point-functions '(comint-completion-at-point))
       (setq-local company-backends '(company-capf))
       ;; FIXME: race + does not work when u exit shell and then sh back
-      (company-mode)
+      (when (fboundp 'company-mode)
+        (company-mode))
       (setq-local company-idle-delay nil)
-      (when (file-remote-p default-directory)
-        (setq-local modeline-filename
-                    '(
-                      (:propertize (:eval (file-remote-p default-directory)) face modeline-file-path)
-                      (:propertize (:eval (buffer-name)) face modeline-file-or-buffer-name)))
-        (setq-local shell-dirtrackp nil)
-        ;; (setq-local company-idle-delay nil)
-        )
+      ;; (when (file-remote-p default-directory)
+      ;;   ;; (setq-local modeline-filename
+      ;;   ;;             '(
+      ;;   ;;               (:propertize (:eval (file-remote-p default-directory)) face modeline-file-path)
+      ;;   ;;               (:propertize (:eval (buffer-name)) face modeline-file-or-buffer-name)))
+      ;;   ;; (setq-local shell-dirtrackp nil)
+      ;;   ;; (setq-local company-idle-delay nil)
+      ;;   )
       ))
-
-  (add-to-list 'comint-output-filter-functions 'ansi-color-process-output)
   )
 
 (eval-after-load! shell
+  ;; https://emacs.stackexchange.com/questions/62418/how-to-change-tramp-default-remote-shell-or-any-of-its-descendants
+  (setq explicit-shell-file-name "/bin/bash")
+
   (setq-default shell-font-lock-keywords nil)
   (setq-default company-global-modes '(not shell-mode))
 

@@ -71,6 +71,7 @@
 (require-noerr 'alan-with-editor)
 (require-noerr 'alan-magit)
 (require-noerr 'alan-gpt)
+(require-noerr 'alan-term)
 
 ;; langs
 (require-noerr 'alan-elisp)
@@ -81,6 +82,9 @@
 (require-noerr 'alan-markdown)
 (require-noerr 'alan-js)
 (require-noerr 'alan-lilypond)
+(require-noerr 'alan-shell)
+(require-noerr 'alan-cxx)
+(pkg! 'dockerfile-mode)
 
 (add-to-list 'auto-mode-alist '("\\.ya?ml\\'" . yaml-ts-mode))
 (add-hook! 'yaml-ts-mode-hook
@@ -130,8 +134,6 @@
     (funcall orig-fun mode)))
 
 (setq vc-follow-symlinks t)
-
-
 
 
 
@@ -207,21 +209,8 @@
 (remove-hook 'xref-after-return-hook 'xref-pulse-momentarily)
 
 
-
 (alan-set-ignore-debug-on-error #'comment-region-default)
 (alan-set-ignore-debug-on-error #'revert-buffer)
-
-
-(defadvice! alan-wrap-tramp-file-name-handler (orig-fn &rest args)
-  :around #'tramp-file-name-handler
-  (span (:tramp-file-name-handler "%S" (:seq args))
-    :flush-on-err t
-    (span-dbg
-     inhibit-quit
-     throw-on-input)
-    (with-no-minibuffer-message
-     (apply orig-fn args))))
-
 
 (defadvice! alan-wrap-tramp-debug-message (orig-fn vec fmt-string &rest arguments)
   :around 'tramp-debug-message
@@ -292,7 +281,7 @@
 ;; (throw 'quit nil)
 ;; tramp-maybe-open-connection
 
-;; (setq tramp-verbose 4)
+(setq tmake-lock-file-nameramp-verbose 4)
 ;; tramp-send-command
 
 ;; (setq print-gensym t)
@@ -445,15 +434,167 @@
 
 ;; https://emacs.stackexchange.com/questions/18262/tramp-how-to-add-a-agent-forwarding-to-ssh-connections
 (eval-after-load! tramp
+  ;; https://stackoverflow.com/questions/26630640/tramp-ignores-tramp-remote-path
+  (add-to-list 'tramp-remote-path 'tramp-own-remote-path)
   (add-to-list 'tramp-connection-properties
                (list (regexp-quote "/ssh:host@192.168.0.236:")
                      "login-args"
                      '(("-A") ("-l" "%u") ("-p" "%p") ("%c")
-                       ("-e" "none") ("%h"))))
-  ;; (cl-pushnew '("-A")
-  ;;             (cadr (assoc 'tramp-login-args
-  ;;                                       ; if on Windows using Putty with Pageant,
-  ;;                                       ; replace "ssh" with "plink"
-  ;;                          (assoc "ssh" tramp-methods)))
-  ;;             :test #'equal)
+                       ("-e" "none") ("%h"))
+
+                     ;; "remote-shell" "/usr/bin/bash"
+
+                     ;; "direct-async-process" t
+                     ))
+  ;; TODO: this sends a "kill" but that seems to never work?
+  (advice-add #'tramp-interrupt-process :override #'ignore)
+
+  ;; https://emacs.stackexchange.com/questions/62919/how-to-disable-magit-on-remote-files-with-tramp
+  (setq vc-ignore-dir-regexp
+        (rx-to-string
+         '(seq bos
+               (or (seq (any "/\\") (any "/\\")
+                        (one-or-more (not (any "/\\")))
+                        (any "/\\"))
+                   (seq "/" (or "net" "afs" "...") "/")
+                   ;; Ignore all tramp paths.
+                   (seq "/"
+                        (eval (cons 'or (mapcar #'car tramp-methods)))
+                        ":"
+                        (zero-or-more anything)))
+               eos)))
   )
+
+
+;; (setq remote-file-name-inhibit-cache 10)
+;; (setq vc-ignore-dir-regexp
+;;       (format "%s\\|%s"
+;;               vc-ignore-dir-regexp
+;;               tramp-file-name-regexp))
+;; (setq tramp-verbose 1)
+
+;; (span-msg "load-file-rep-suffixes: %S" load-file-rep-suffixes)
+;; (debug-on-variable-change 'load-file-rep-suffixes)
+
+
+;; (setq load-file-rep-suffixes '(".gz" ""))
+
+;; TODO
+;; This causes err, makes load-file-rep-suffixes nil
+;; (let (file-name-handler-alist)
+;;   (with-auto-compression-mode nil))
+;; temp workaround:
+(advice-add 'jka-compr-uninstall :override #'ignore)
+
+
+;; (setq explicit-bash-args
+;;       (delete "--noediting" explicit-bash-args))
+
+;; (advice-add 'comint-term-environment
+;;             :filter-return (lambda (env) (cons "INSIDE_EMACS" env)))
+
+;; (setq lsp-clients-clangd-library-directories '("/home/alan/.nix-profile/share/emacs/29.2/src/"))
+
+
+(defvar alan-shown-time nil)
+(defun alan-update-time (&optional donot-redisp)
+  ;; (span-msg "alan-update-time")
+  (let ((new (format-time-string "%F %r")))
+    (unless (string= alan-shown-time new)
+      (setq alan-shown-time new)
+      (unless donot-redisp
+        (force-mode-line-update t)))
+    new))
+(defvar alan-update-time-timer nil)
+(ignore-errors
+  (cancel-timer alan-update-time-timer))
+(progn
+  (setq alan-update-time-timer (run-at-time t 1 #'ignore))
+  (timer-set-function alan-update-time-timer #'alan-update-time))
+
+(clear-and-backup-keymap tab-bar-map)
+(defvar alan-tabbar-count 0)
+(defun alan-do-format-tab-bar ()
+  (span :alan-do-format-tab-bar
+    ;; (span--backtrace)
+    (concat
+     (let* ((text " %"))
+       (put-text-property 0 1 'display '(space :align-to (+ left left-fringe left-margin)) text)
+       (put-text-property 1 2 'face 'font-lock-warning-face text)
+       ;; (put-text-property 1 2 'help-echo "hello" text)
+       text)
+     (format-message "%s" (cl-incf alan-tabbar-count))
+     "   "
+     (alan-update-time t)
+     ;; (format-time-string "%F %r")
+     )))
+
+;; See (info "(elisp) Defining Menus")
+(global-set-key [tab-bar]
+                '(keymap "tab-bar-this-str-should-do-nothing"
+                         (any-sym menu-item (alan-do-format-tab-bar) nil :help "..")))
+
+(setq tooltip-delay 0.1)
+(setq tooltip-short-delay 0.1)
+;; (setq use-system-tooltips nil)
+
+(tab-bar-mode)
+
+;; (span-wrap tooltip-show (&rest args)
+;;   (:tooltip-show (:seq args))
+;;   (span-flush))
+
+;; (span-wrap x-show-tip (&rest args)
+;;   (:x-show-tip (:seq args))
+;;   (span-flush))
+
+(span-wrap popup-menu (&rest args)
+  (:popup-menu (:seq args))
+  (span-flush))
+
+(span-wrap x-popup-menu (&rest args)
+  (:x-popup-menu (:seq args))
+  (span--backtrace)
+  (span-flush))
+
+(setf (alist-get 'internal-border-width tooltip-frame-parameters) 0)
+(setf (alist-get 'border-width tooltip-frame-parameters) 0)
+
+;; (span-instrument force-mode-line-update)
+
+;; (span-wrap force-mode-line-update (&rest args)
+;;   (_)
+;;   ;; (span--backtrace)
+;;   )
+
+;; (defadvice! byte-compile-let--log (fn &rest args)
+;;   :around #'byte-compile-let
+;;   (span-msg "%s" args)
+;;   (let ((res (apply fn args)))
+;;     (span-msg "%s" res)
+;;     res))
+
+;; (get 'let 'byte-compile)
+
+
+;; (time-to-seconds (current-time))
+
+;; (let (current-time-list)
+;;   (current-time))
+
+;; (expand-file-name "/ssh:host@192.168.0.238:~/jitsi/config/transcripts/" "/ssh:host@192.168.0.238:~/jitsi/config/transcripts/")
+
+;; (span-instrument tramp-file-name-handler)
+
+;; (span-instrument tramp-handler)
+;; ;; (span-instrument rename-file)
+;; (span-instrument tramp-handle-write-region)
+;; (span-instrument tramp-sh-handle-write-region)
+
+;; (setq print-circle nil)
+
+(setq tramp-inhibit-progress-reporter t)
+
+;; (span-wrap lock-file (file)
+;;   (_ "%S" file)
+;;   (span--backtrace))

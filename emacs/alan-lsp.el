@@ -22,8 +22,8 @@
     :states 'motion
     ;; :definer 'minor-mode
     ;; :keymaps 'my-lsp-keymap-mode
-    "<leader> <down>" #'lsp-find-references
-    "<leader> <up>" #'lsp-execute-code-action)
+    "<.> <down>" #'lsp-find-references
+    "<.> <up>" #'lsp-execute-code-action)
 
   ;; (add-hook! 'lsp-mode-hook
   ;;   (my-lsp-keymap-mode (if lsp-mode 1 -1)))

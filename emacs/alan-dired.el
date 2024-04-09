@@ -16,6 +16,8 @@
 
 (eval-after-load! dired
   (setq dired-deletion-confirmer #'y-or-n-p)
+  (setq dired-auto-revert-buffer #'dired-directory-changed-p)
+
   (clear-and-backup-keymap dired-mode-map)
   ;; (add-hook 'dired-mode-hook 'evil-motion-state)
   (add-to-list 'evil-motion-state-modes 'dired-mode)

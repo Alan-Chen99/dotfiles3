@@ -19,12 +19,14 @@
   gnused,
   home-manager-bin-wrapped,
   keychain,
+  legacypkgs,
   lib,
   nix,
   nixmeta,
   nixrepl-wrapper,
   nixwrapper,
   patch,
+  pdf-tools-epdfinfo,
   ripgrep,
   source-ver,
   std,
@@ -34,17 +36,10 @@
   tzdata,
   which,
 }: rec {
-  repos-links = let
-    cmds-attrs = builtins.mapAttrs (name: val: "ln -s ${val} ${name}") (removeAttrs flakes ["self" "nixpkgs-lib"]);
-    cmd-body = builtins.concatStringsSep "\n" (builtins.attrValues cmds-attrs);
-  in
-    std.runCommandLocal "repos" {} ''
-      mkdir $out
-      cd $out
-      mkdir repos
-      cd repos
-      ${cmd-body}
-    '';
+  cmds-attrs = builtins.mapAttrs (name: val: "ln -s ${val} ${name}") (removeAttrs flakes ["self" "nixpkgs-lib"]);
+  cmd-body = builtins.concatStringsSep "\n" (builtins.attrValues cmds-attrs);
+
+  test = removeAttrs flakes ["self" "nixpkgs-lib"];
 
   profile-env = {
     # PATH = [
@@ -61,6 +56,12 @@
     ];
     LOCALE_ARCHIVE = "$HOME/.nix-profile/lib/locale/locale-archive";
     TZDIR = "$HOME/.nix-profile/share/zoneinfo/";
+
+    XDG_DATA_DIRS = [
+      "$HOME/.nix-profile/share"
+      "$XDG_DATA_DIRS"
+    ];
+    # FONTCONFIG_FILE = "$HOME/.nix-profile/etc/fonts/fonts.conf";
   };
 
   profile-text = let
@@ -84,9 +85,6 @@
     name = "profile";
     checkCollisionContents = false;
     paths = [
-      # nix.man
-      repos-links
-
       bashInteractive
       coreutils
       diffstat
@@ -97,7 +95,7 @@
       file
       findutils
       gawk
-      gcc
+      # gcc
       gdb
       git
       glibcLocales
@@ -110,6 +108,7 @@
       nixrepl-wrapper
       nixwrapper
       patch
+      pdf-tools-epdfinfo
       ripgrep
       taplo
       tree
@@ -130,6 +129,8 @@
       echo ${lib.strings.escapeShellArg profile-text} >> $out/env/.env
       ln -s ${source-ver} $out/src
       ln -s $out $out/profile
+      cd $out/repos
+      ${cmd-body}
     '';
   };
 }

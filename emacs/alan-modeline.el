@@ -14,7 +14,8 @@
 
 (defun alan-format-modeline ()
   (span :alan-format-modeline
-    ;; (span-flush)
+    ;; (span-msg "%s" (current-buffer))
+    ;; (span--backtrace)
     (let* ((lhs (format-mode-line alan-modeline-lhs))
            (rhs (format-mode-line alan-modeline-rhs))
            (rhs-width (string-width rhs)))
@@ -276,7 +277,8 @@
                         (alan-set-modeline-filepath t)
                         ;; only if visible
                         (when (or (buffer-modified-p) (get-buffer-window nil t))
-                          (force-mode-line-update)))
+                          (span :alan-set-modeline-filepath
+                            (force-mode-line-update))))
                     (setq-local alan-update-modeline-filepath-timer nil))))))))))))
 
 

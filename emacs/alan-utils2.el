@@ -7,6 +7,29 @@
 (require 'alan-utils)
 (require 'alan-elpaca)
 
+(defun alan-eval-after-load (file form)
+  (declare (indent 1))
+  (eval-after-load file
+    (lambda ()
+      (with-current-buffer (get-buffer-create " *eval-after-load*" t)
+        (funcall form)))))
+
+(string-prefix-p "evil-collection-" (symbol-name 'evil-collection-rg))
+
+(declare-function evil-collection-require "evil-collection")
+
+(defmacro eval-after-load! (feature &rest body)
+  ;; with-eval-after-load but requires feature when byte compiling to silent errors.
+  ;; warning: the byte compiler sees feature being loaded even afte this macro
+  ;; TODO: maybe its possible to fix above?
+  (declare (indent 1) (debug (form def-body)))
+  (when (bound-and-true-p byte-compile-current-file)
+    (when (string-prefix-p "evil-collection-" (symbol-name feature))
+      (require 'evil-collection)
+      (evil-collection-require (intern (string-remove-prefix "evil-collection-" (symbol-name feature)))))
+    (require feature))
+  `(alan-eval-after-load ',feature (lambda () ,@body)))
+
 (defun alan-wrap-callback (fn)
   (let ((buf (current-buffer)))
     (lambda (&rest args)

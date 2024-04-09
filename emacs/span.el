@@ -491,6 +491,26 @@ designed to be created at compile time and used as constant"
        ,defun-form
        (advice-add #',sym :around #',adv-sym))))
 
+(defmacro span-quickwrap (sym)
+  `(span-wrap ,sym (&rest args)
+     (_ (:seq args))))
+
+(defun span--format-instrument (sym args)
+  (cl-prin1-to-string (cons sym args)))
+
+(defun span--instrument-with (sym)
+  (lambda (fn &rest args)
+    (span (:: `(span--format-instrument ,sym ,(:seq args)))
+      (span-msg "buf: %s" (current-buffer))
+      (apply fn args))))
+
+(defun span-add-instrument (sym)
+  (advice-add sym :around (span--instrument-with sym)))
+
+(defmacro span-instrument (sym)
+  (cl-assert (symbolp sym))
+  `(span-add-instrument #',sym))
+
 (advice-add #'message :around #'span--wrap-message)
 (defun span--wrap-message (orig-fun format-string &rest args)
   (if span--handles-message
@@ -618,17 +638,18 @@ designed to be created at compile time and used as constant"
     (span--unchecked (:accept-process-output (:unsafe process))
       :blocking inhibit-quit-old
 
+      (span-note
+        "seconds:%S millisec:%S just-this-one:%S"
+        seconds millisec just-this-one)
+
       (when (and (not inhibit-quit-old) (input-pending-p))
         (span-flush)
         ;; (span--backtrace)
-        (signal 'quit-nodebug nil)
-        ;; (setq quit-flag t)
-        ;; (let (inhibit-quit debug-on-quit)
-	    ;;   (eval '(ignore nil) t))
-        )
-      (span-note
-        "accept-process-output %S %S %S"
-        seconds millisec just-this-one)
+        (if throw-on-input
+            (let (inhibit-quit)
+              (setq quit-flag throw-on-input)
+              (eval '(ignore nil) t))
+          (signal 'quit-nodebug nil)))
 
       (when inhibit-quit-old
         (span-flush))
@@ -695,5 +716,16 @@ designed to be created at compile time and used as constant"
     ;; TODO: should quit here if is here too many times, since might hang
     )
   nil)
+
+
+(advice-add #'tramp-file-name-handler :around #'span--wrap-tramp-file-name-handler)
+(defun span--wrap-tramp-file-name-handler (orig-fn &rest args)
+  (span (:tramp-file-name-handler "%S %S" (buffer-name (current-buffer)) (:seq args))
+    (span-dbg
+     inhibit-quit
+     throw-on-input)
+    ;; (span-with-no-minibuffer-message
+    (apply orig-fn args)))
+
 
 (provide 'span)

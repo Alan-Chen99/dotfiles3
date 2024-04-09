@@ -8,7 +8,7 @@
   system,
   coreutils,
   nix,
-  llvm,
+  llvmpkgs,
   nix_2_16,
 }: {
   export.test = derivation {
@@ -41,7 +41,7 @@
 
   export.test2 = let
     # stdenv = nix.stdenv;
-    stdenv = llvm.stdenv;
+    stdenv = llvmpkgs.stdenv;
     cc = stdenv.cc;
     # CXXFLAGS = builtins.concatStringsSep " " [
     #   (lib.removeSuffix "\n" (builtins.readFile "${cc}/nix-support/cc-cflags"))

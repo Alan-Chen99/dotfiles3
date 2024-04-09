@@ -3,101 +3,125 @@
 (require 'alan-core)
 (pkg! 'transient)
 
-(defun transient-maybe-tranlate-key (key)
-  (when-let ((translate (keymap-lookup key-translation-map (key-description key))))
-    (when (and (not (numberp translate)) (not (equal translate (kbd "<escape>"))))
-      translate)))
-(defun my-transient-substitude (key)
-  (let (did-downcase translate (key (kbd key)))
-    (setq key
-          (cl-map 'vector
-                  (lambda (char)
-                    (elt
-                     (pcase (key-description (vector char))
-                       ("-" (kbd "<leader>"))
-                       ("=" (kbd "SPC"))
-                       ("RET" (kbd "<return>"))
-                       (_ (vector char)))
-                     0))
-                  key))
-    (setq translate (transient-maybe-tranlate-key key))
-    (if translate
-        (setq key translate)
-      (setq key
-            (cl-map 'vector
-                    (lambda (char)
-                      (if (characterp char)
-                          (progn
-                            (setq did-downcase
-                                  (or did-downcase
-                                      (not (eq char (downcase char)))))
-                            (downcase char))
-                        char))
-                    key))
-      (when did-downcase
-        (setq key
-              (cl-map 'vector
-                      (lambda (char)
-                        (if (eq char 'leader)
-                            (elt (kbd "SPC") 0)
-                          char))
-                      key)))
-      (setq key (or (transient-maybe-tranlate-key key) key)))
-    (key-description key)))
+(defun alan-normalize-key (key)
+  (key-description (key-parse key)))
 
+(defun alan-transient-tranlate-key (key)
+  (setq key (vconcat key [dummy dummy]))
+  (let (n subs cur ans)
+    (while (length> key 2)
+      (setq n (lookup-key key-translation-map key))
+      (setq subs (substring key 0 n))
+      (setq cur (lookup-key key-translation-map subs))
+      (if cur
+          (progn
+            (push cur ans)
+            (setq key (substring key n)))
+        (push (list (aref key 0)) ans)
+        (setq key (substring key 1))))
+    (setq ans (nreverse ans))
+    (apply #'vconcat ans)))
+
+;; (my-transient-substitude2 "-a")
+;; (my-transient-substitude2 "-A")
+;; (my-transient-substitude2 "=a")
+;; (my-transient-substitude2 "=A")
+
+;; (my-transient-substitude2 "--")
+;; (my-transient-substitude2 "-S")
+;; (my-transient-substitude2 "=S")
+;; (my-transient-substitude2 "C-x s")
+;; (my-transient-substitude2 "RET")
+
+(defun my-transient-substitude2 (key)
+  (if (get-text-property 0 'alan-transient-did-sub key)
+      key
+    (let ((ans (my-transient-substitude2-impl key)))
+      (propertize ans 'alan-transient-did-sub t))))
+
+(defun my-transient-substitude2-impl (key)
+  (let ((case-fold-search))
+    (span-dbgf key)
+    (setq key (alan-normalize-key key))
+
+    ;; (when (string-match-p (rx bow "S-SPC" eow) key)
+    ;;   (debug)
+    ;;   ;; (span--backtrace)
+    ;;   )
+
+    (while (string-match (rx "- " (group (any "a-z"))) key)
+      (setq key (replace-match (concat "<.> " (match-string 1 key)) t t key)))
+
+    (while (string-match (rx "- " (group (any "A-Z"))) key)
+      (setq key (replace-match (concat "SPC " (downcase (match-string 1 key))) t t key)))
+
+    (while (string-match (rx "= " (group (any "a-z"))) key)
+      (setq key (replace-match (concat "<.> " (upcase (match-string 1 key))) t t key)))
+
+    (while (string-match (rx "= " (group (any "A-Z"))) key)
+      (setq key (replace-match (concat "SPC " (match-string 1 key)) t t key)))
+
+    (setq key (replace-regexp-in-string (rx bow "-" eow) "<.>" key t t))
+    (setq key (replace-regexp-in-string (rx bow "=" eow) "SPC" key t t))
+    (setq key (replace-regexp-in-string (rx bow "RET" eow) "<return>" key t t))
+
+    (setq key (key-description
+               (alan-transient-tranlate-key (key-parse key))))
+
+    (when (string-match-p (rx bow (or "<up>" "<down>" "J" "K") eow) key)
+      (setq key (concat "S-SPC " key)))
+    (span-msg "ans: %S" key)
+    key))
+
+(defvar transient-values nil)
 
 (eval-after-load! transient
+
+  (setq transient-detect-key-conflicts t)
+  ;; (setq transient-detect-key-conflicts nil)
+  (setq transient-default-level 5)
+  (setq transient-show-common-commands nil)
+  ;; (setq transient-show-common-commands t)
+  (setq transient-semantic-coloring t)
+  (setq transient-save-history nil)
+
   (general-def transient-map
-    "s" #'execute-extended-command
+    ;; "s" #'execute-extended-command
     "M-x" #'execute-extended-command
+
+    ;; "w" evil-window-map
     "C-h" help-map
     "<escape>" #'transient-quit-one
     "<up>" #'transient-history-prev
-    "<down>" #'transient-history-next)
+    "<down>" #'transient-history-next
+    "K" #'transient-scroll-down
+    "J" #'transient-scroll-up
+
+    )
 
   (general-def transient-predicate-map
     [execute-extended-command] #'transient--do-stay)
 
-  (setq-default transient-substitute-key-function
-                (lambda (obj)
-                  (my-transient-substitude (oref obj key))))
+  (setq transient-substitute-key-function
+        (lambda (obj)
+          (span-dbgf (oref obj key))
+          (my-transient-substitude2 (oref obj key))))
   ;; (setq transient-substitute-key-function nil)
 
+
+  ;; TODO: transient--make-redisplay-map seems to alwasy fail?
   (defadvice! transient--make-redisplay-map-advice (&rest _args)
-    :override 'transient--make-redisplay-map
+    :override #'transient--make-redisplay-map
     (make-sparse-keymap))
-  ;; (key-description
-  ;;    (cl-map 'vector
-  ;;        (lambda (char)
-  ;;            (elt
-  ;;                (pcase (key-description (vector char))
-  ;;                    ("-" (kbd "SPC"))
-  ;;                    ("=" (kbd "<leader>"))
-  ;;                    (_ (vector (downcase char))))
-  ;;                0))
-  ;;        (kbd "= 1 A")))
-  ;; ;; (elt (kbd "<leader>") 0)
-  ;; (kbd "SPC 1 <leader>")
 
-  ;; (lookup-key key-translation-map "A")
-  ;; (kbd "-")
-  ;; (replace-regexp-in-string (rx "=") " SPC " "==efw=")
-  ;; (kbd "SPC")
-
-  (setq-default transient-save-history nil)
-  ;; (setq-default transient-detect-key-conflicts t)
-  (setq-default transient-show-common-commands nil)
-  ;; transient-history-prev
-  ;; (setq-default transient-semantic-coloring t)
-  ;; transient-substitute-key-function
-  (setq-default transient-display-buffer-action
-                '(display-buffer-in-side-window
-                  (side . bottom)
-                  (dedicated . t)
-                  ;; (inhibit-same-window . t)
-                  ;; (window-parameters (no-other-window . t))
-                  )
-                )
+  (setq transient-display-buffer-action
+        '(display-buffer-in-side-window
+          (side . bottom)
+          (dedicated . t)
+          ;; (inhibit-same-window . t)
+          ;; (window-parameters (no-other-window . t))
+          )
+        )
   ;; (setq-default transient-mode-line-format 'line
   ;; (setq-default transient-enable-popup-navigation nil)
   (defadvice! transient--show-inhibit-cursor (&rest _)

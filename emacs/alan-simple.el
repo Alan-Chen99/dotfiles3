@@ -15,6 +15,8 @@
 
 (setq-default native-comp-speed 3)
 
+(setq vc-handled-backends '(Git))
+
 ;;; logging stuff
 ;; Do not show the startup screen.
 (setq inhibit-startup-message t)
@@ -43,7 +45,8 @@
 
 (setq-default x-select-request-type '(text/plain\;charset=utf-8 UTF8_STRING COMPOUND_TEXT TEXT STRING))
 
-(setq save-interprogram-paste-before-kill t)
+;; TODO: this can hang, if the other prog is not responding
+(setq save-interprogram-paste-before-kill 10000)
 
 ;; by default, don't do any indent
 (setq-default indent-line-function 'ignore)
@@ -102,6 +105,9 @@
 
 ;;; ui
 (setq split-width-threshold 100)
+(setq line-number-display-limit-width 2000)
+
+(setq use-dialog-box nil)
 
 ;; https://stackoverflow.com/questions/3631220/fix-to-get-smooth-scrolling-in-emacs
 ;; https://www.emacswiki.org/emacs/SmoothScrolling
@@ -182,9 +188,12 @@
   (startup-queue-package 'page-break-lines 50))
 (eval-after-load! page-break-lines
   (global-page-break-lines-mode)
-  (define-advice page-break-lines-mode-maybe
-      (:override () redefine)
-    (page-break-lines-mode 1)))
+  ;; TODO: the following activates in temp buffers,
+  ;; causing excessive calls to `force-mode-line-update'
+  ;; (define-advice page-break-lines-mode-maybe
+  ;;     (:override () redefine)
+  ;;   (page-break-lines-mode 1))
+  )
 
 (pkg! 'evil-anzu
   (startup-queue-package 'evil-anzu 75))
@@ -204,9 +213,6 @@
 (eval-after-load! so-long
   (global-so-long-mode 1))
 
-;; (eval-after-load! sh-script
-;;   (setq-default sh-font-lock-keywords-var nil)
-;;   )
 
 
 (eval-after-load! help-mode
@@ -228,12 +234,16 @@
   ;; (alan-set-ignore-debug-on-error #'xref-backend-definitions)
   )
 
-
-(defvar read-only-dir-list '("/nix"))
+;; (defvar read-only-dir-list '("/nix"))
+(defvar read-only-dir-list nil)
 (defvar read-only-dir-exclude-list '())
 
 (defvar emacs-share-dir)
-(setq-default emacs-share-dir (expand-file-name "../share/emacs" invocation-directory))
+(setq-default emacs-share-dir
+              (expand-file-name
+               "../../share/emacs"
+               (file-truename (expand-file-name invocation-name invocation-directory))))
+
 (defvar emacs-share-dir-truename)
 (setq-default emacs-share-dir-truename (file-truename emacs-share-dir))
 

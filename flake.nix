@@ -82,6 +82,12 @@
 
     nixpkgs-lib.url = "github:nixos/nixpkgs/c8e74c2f83fe12b4e5a8bd1abbc090575b0f7611?dir=lib";
 
+    nixpkgs-unstable.url = "github:nixos/nixpkgs/nixpkgs-unstable";
+
+    nixpkgs22-11.url = "github:nixos/nixpkgs/nixos-22.11";
+
+    nixpkgs21-11.url = "github:nixos/nixpkgs/nixos-21.11";
+
     poetry2nix = {
       url = "github:nix-community/poetry2nix";
       inputs = {
@@ -133,11 +139,13 @@
               inherit
                 (prev)
                 flake-registry-file
+                fonts
                 js
                 nixtools
                 profile
                 profile-root
                 pythontools
+                cxxtools
                 ;
             };
             pkgs-other = {
@@ -147,7 +155,6 @@
                 test
                 test2
                 ;
-              homeConfigurations."alan" = prev.home;
             };
             pkgs = (builtins.mapAttrs (name: pkg: appendversion pkg) pkgs-versioned) // pkgs-other;
           in
@@ -158,12 +165,12 @@
       export = rec {
         packages = default.pkgs;
 
-        # homeConfigurations."alan" = default.home;
-
         # devShells.rust = default.rust-devshell;
         # devShells.cargo = default.test-cargo;
 
         legacyPackages = {
+          homeConfigurations."alan" = default.home;
+
           inputs = inputs;
 
           p = default.legacypkgs;

@@ -123,6 +123,7 @@
   (add-to-list 'theme-short-list 'ef-day)
   (add-to-list 'theme-short-list 'ef-night)
   (add-to-list 'theme-short-list 'ef-winter)
+  (add-to-list 'theme-short-list 'ef-frost)
 
   (startup-switch-theme 'ef-winter))
 
@@ -134,6 +135,7 @@
         `(mode-line-buffer-id ((,c :foreground ,keyword)))
         `(ansi-color-green ((,c :background ,bg-green-subtle :foreground ,fg-term-green-bright)))
         `(ansi-color-yellow ((,c :background ,bg-yellow-subtle :foreground ,fg-term-yellow-bright)))
+        `(ansi-color-blue ((,c :background ,bg-blue-subtle :foreground ,fg-term-blue-bright)))
         `(markdown-code-face ((,c :inherit ef-themes-fixed-pitch :extend t)))))
 
 (eval-after-load! ef-themes

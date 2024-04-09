@@ -104,7 +104,8 @@
 
 (defalias 'try #'elpaca-try)
 
-(eval-after-load! elpaca-log
+(defvar elpaca-log-command-queries)
+(with-eval-after-load 'elpaca-log
   (setf (alist-get 'try elpaca-log-command-queries) "#latest #linked-errors"))
 
 

@@ -9,6 +9,7 @@
   nix-filter,
   nixd,
   nixpkgs-flakes,
+  nixpkgs-unstable,
   poetry2nix,
   rust-overlay,
   system,
@@ -25,6 +26,8 @@
       rust-overlay
     ];
   };
+
+  export.pkgs-unstable = nixpkgs-unstable.legacyPackages."${system}";
 
   export.lib = self.legacypkgs.lib;
 
@@ -91,23 +94,6 @@
       which
       ;
 
-    home-manager-bin = pkgs.home-manager;
-
-    coreutils = pkgs.coreutils-full;
-    emacs = pkgs.emacs29-pgtk;
-    gcc = pkgs.gcc_latest;
-    llvm = pkgs.llvmPackages_16;
-    nodejs = pkgs.nodejs_latest;
-
-    nix_2_16 = pkgs.nixVersions.nix_2_16;
-    nix-stable = pkgs.nix-stable_;
-
-    python = pkgs.python312.override {
-      # enableOptimizations = true;
-      # reproducibleBuild = false;
-      self = self.python;
-    };
-
     # flakes
     inherit
       crane
@@ -120,7 +106,29 @@
       poetry2nix
       ;
 
-    # rust
+    home-manager-bin = pkgs.home-manager;
+    coreutils = pkgs.coreutils-full;
+    emacs = pkgs.emacs29-pgtk;
+
+    gcc = pkgs.gcc_latest;
+
+    llvmpkgs = pkgs.llvmPackages_17;
+    clangtools = (pkgs.clang-tools).override {
+      llvmPackages = self.deps.llvmpkgs;
+      enableLibcxx = true;
+    };
+
+    nodejs = pkgs.nodejs_latest;
+
+    nix_2_16 = pkgs.nixVersions.nix_2_16;
+    nix-stable = pkgs.nix-stable_;
+
+    python = pkgs.python312.override {
+      # enableOptimizations = true;
+      # reproducibleBuild = false;
+      self = self.deps.python;
+    };
+
     rust = pkgs.rust-bin.nightly."2023-10-31".default.override {
       extensions = [
         "clippy"

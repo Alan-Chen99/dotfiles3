@@ -75,6 +75,7 @@
 
 ;; so that we do gc even if we leave emacs alone
 (defun alan-do-gc-long ()
+  ;; (span-msg "alan-do-gc-long")
   (unless alan--did-gc
     (span :gc-long
       (span-flush)
@@ -84,7 +85,7 @@
 (unless alan-gc-timer
   (setq alan-gc-timer t)
   (run-with-idle-timer 1 t #'alan-do-gc)
-  (run-with-timer 60 t #'alan-do-gc-long))
+  (run-at-time nil 60 #'alan-do-gc-long))
 
 ;; so that we can load the entire init file after startup and still work
 (defvar alan-end-of-init-hook nil)
@@ -103,22 +104,6 @@
     (apply orig-fun args)))
 (defun alan-set-ignore-debug-on-error (fn)
   (advice-add fn :around #'alan-set-ignore-debug-on-error-advice))
-
-(defun alan-eval-after-load (file form)
-  (declare (indent 1))
-  (eval-after-load file
-    (lambda ()
-      (with-current-buffer (get-buffer-create " *eval-after-load*" t)
-        (funcall form)))))
-
-(defmacro eval-after-load! (feature &rest body)
-  ;; with-eval-after-load but requires feature when byte compiling to silent errors.
-  ;; warning: the byte compiler sees feature being loaded even afte this macro
-  ;; TODO: maybe its possible to fix above?
-  (declare (indent 1) (debug (form def-body)))
-  (when (bound-and-true-p byte-compile-current-file)
-    (require feature))
-  `(alan-eval-after-load ',feature (lambda () ,@body)))
 
 (defun alan-run-per-frame (fn)
   (dolist (f (frame-list))

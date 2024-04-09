@@ -144,9 +144,10 @@
          (lambda ()
            (when (buffer-live-p buf)
              (with-current-buffer buf
-               (lsp-deferred-lazy)
-               (when callback
-                 (funcall callback))))))))))
+               (when (< (buffer-size) 100000)
+                 (lsp-deferred-lazy)
+                 (when callback
+                   (funcall callback)))))))))))
 
 (defmacro alan-lsp-deferred (client &rest body)
   (declare (indent 1))
@@ -161,6 +162,11 @@
 
 
 (make-lazy rainbow-mode-lazy 'rainbow-mode 'rainbow-mode)
+
+
+(defun evil-collection-require-lazy (sym)
+  (eval-after-load! evil-collection
+    (evil-collection-require sym)))
 
 
 (provide 'alan-core)

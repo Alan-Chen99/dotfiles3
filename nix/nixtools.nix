@@ -9,6 +9,7 @@
   nixd,
   python,
   std,
+  nixconf-file,
 }: rec {
   # https://discourse.nixos.org/t/nix-flamegraph-or-profiling-tool/33333
   nix-instantiate-flamegraph = std.writeShellScriptBin "nix-instantiate-flamegraph" ''
@@ -25,7 +26,8 @@
     } ''
       mkdir $out
       makeWrapper ${nix-tree}/bin/nix-tree $out/bin/nix-tree \
-        --set PATH ${nix-stable}/bin:${git}/bin
+        --set PATH ${nix-stable}/bin:${git}/bin \
+        --set NIX_USER_CONF_FILES ${nixconf-file}
     '';
 
   export.nixtools = std.buildEnv {

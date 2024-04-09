@@ -16,10 +16,11 @@
     :around #'vertico--update
     (span :vertico--update
       ;; vertico will force non-interruptible for tramp
-      (if interruptible
-          (while-no-input
-            (funcall fn interruptible))
-        (funcall fn))))
+      (let ((non-essential t))
+        (if interruptible
+            (while-no-input
+              (funcall fn interruptible))
+          (funcall fn)))))
 
   ;; (span-wrap vertico--update (&rest args)
   ;;   (_ (:seq args))

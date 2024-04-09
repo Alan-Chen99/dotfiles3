@@ -13,7 +13,8 @@
    consult-async-min-input 2
    consult-async-refresh-delay  0.15
    consult-async-input-throttle 0.2
-   consult-async-input-debounce 0.1)
+   ;; TODO: maybe 0.2 for tramp and 0.1 local?
+   consult-async-input-debounce 0.5)
 
   (general-def
     [remap switch-to-buffer] #'consult-buffer

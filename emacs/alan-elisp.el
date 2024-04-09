@@ -4,7 +4,8 @@
 (require 'alan-flycheck)
 (require 'evil)
 
-(setq print-circle t)
+;; (setq print-circle t)
+(setq print-circle nil)
 ;; (setq print-level 10)
 (setq print-level nil)
 (setq print-length nil)

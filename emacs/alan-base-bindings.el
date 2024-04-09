@@ -40,10 +40,10 @@
       "C-x" nil)
 
     (general-def input-decode-map
-      ";" "<leader>"
-      ":" "<leader>"
-      "C-;" "<leader>"
-      "C-:" "<leader>"
+      ";" "<.>"
+      ":" "S-<.>"
+      "C-;" "C-<.>"
+      "C-:" "C-S-<.>"
       ;; (kbd "M-;") [134217787]
       ;; (read-kbd-macro "M-;") [134217787]
       ;; (key-description [134217787])
@@ -130,7 +130,7 @@
   "W" "<w>"
   "E" "{"
   "R" "}"
-  "T" "<t>"
+  "T" "<T>"
   "Y" "<y>"
   "U" "("
   "I" ")"
@@ -174,6 +174,6 @@
   "C-/" "C-h"
   "<f1>" "C-h"
 
-  "<leader>" translation-leader-map)
+  "<.>" translation-leader-map)
 
 (provide 'alan-base-bindings)

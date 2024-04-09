@@ -88,7 +88,7 @@
     ;; "<left>" (lambda () (interactive) (company-abort) (left-char))
     "<down>" #'company-select-next
     "<up>" #'company-select-previous
-    "<leader> j" 'alan-company-complete-common-or-select
+    "<.> j" 'alan-company-complete-common-or-select
     ;; recursion caused by <escape> after company-complete in normal state
     ;; TODO: why?
     "<escape>"
@@ -102,7 +102,7 @@
                 (company-abort)
                 (execute-kbd-macro (kbd "<escape>")))
             (setq company-abort-recursion-guard nil)))))
-    "<leader> <up>" #'company-show-doc-buffer)
+    "<.> <up>" #'company-show-doc-buffer)
 
   (eval-after-load! eldoc
     (eldoc-add-command #'company-abort)

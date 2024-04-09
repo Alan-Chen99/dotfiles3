@@ -21,3 +21,4 @@ cchardet = "^2.1.7"
 # build deps
 setuptools = "^69.2.0"
 pytest-mock = "^3.14.0"
+pybind11 = "^2.12.0"

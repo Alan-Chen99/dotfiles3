@@ -22,19 +22,20 @@
       inherit system nixpkgs-flakes;
       crane = flakes.crane;
       crate2nix = flakes.crate2nix;
+      dream2nix = flakes.dream2nix;
       gitignore-lib = flakes.gitignore.lib;
+      home-manager = flakes.home-manager;
       nix = flakes.nix.packages.${system}.default;
       nix-filter = flakes.nix-filter;
       nixd = flakes.nixd.packages.${system}.default;
-      rust-overlay = flakes.rust-overlay.overlays.default;
+      nixpkgs-unstable = flakes.nixpkgs-unstable;
       poetry2nix = flakes.poetry2nix;
-      dream2nix = flakes.dream2nix;
-      home-manager = flakes.home-manager;
+      rust-overlay = flakes.rust-overlay.overlays.default;
     } (final: prev: {
       lib-orig = prev.lib;
       lib = final.lib-orig.extend mod.printing-overlay.lib-overlay;
     }) (reexport (prev: {
-      inherit (prev) legacypkgs lib lib-orig std deps;
+      inherit (prev) legacypkgs lib lib-orig std deps pkgs-unstable;
     }));
 
   callpackage = let
@@ -52,12 +53,16 @@
           cleansrc
           dbg
           deps
+          fonts
           home-manager-bin-wrapped
           legacypkgs
           lib
+          nixconf-file
           nixmeta
           nixrepl-wrapper
           nixwrapper
+          pdf-tools-epdfinfo
+          pkgs-unstable
           profile
           run-cmd
           source-ver
@@ -69,11 +74,31 @@
   in
     mod.package.call-package-with aliases;
 
+  mod.cxx = callpackage ./cxx.nix {} (reexport (prev: {
+    inherit (prev) cxxtools;
+  }));
+
   mod.debug = callpackage ./debug.nix {};
   pub.dbg = mod.debug;
 
+  mod.emacs = callpackage ../emacs {} (reexport (prev: {
+    inherit (prev) pdf-tools-epdfinfo;
+  }));
+
   mod.env = callpackage ./env.nix {} (reexport (prev: {
-    inherit (prev) nixwrapper flake-registry-file;
+    inherit (prev) nixwrapper flake-registry-file nixconf-file;
+  }));
+
+  mod.fonts = callpackage ./fonts.nix {} (reexport (prev: {
+    inherit (prev) fonts;
+  }));
+
+  mod.home = callpackage ./home.nix {} (reexport (prev: {
+    inherit (prev) home home-manager-bin-wrapped;
+  }));
+
+  mod.js = callpackage ../js {} (reexport (prev: {
+    inherit (prev) js;
   }));
 
   mod.nixtools = callpackage ./nixtools.nix {} (reexport (prev: {
@@ -81,10 +106,6 @@
   }));
 
   mod.printing-overlay = callpackage ./printing-overlay.nix {};
-
-  mod.home = callpackage ./home.nix {} (reexport (prev: {
-    inherit (prev) home home-manager-bin-wrapped;
-  }));
 
   mod.profile = callpackage ./profile.nix {} (reexport (prev: {
     inherit (prev) profile;
@@ -98,12 +119,12 @@
     inherit (prev) pythontools;
   }));
 
-  mod.js = callpackage ../js {} (reexport (prev: {
-    inherit (prev) js;
-  }));
-
   mod.repl = callpackage ./repl.nix {} (reexport (prev: {
     inherit (prev) nixrepl-wrapper;
+  }));
+
+  mod.runcmd = callpackage ./command.nix {} (reexport (prev: {
+    inherit (prev) run-cmd;
   }));
 
   mod.rust = callpackage ../rust {} (reexport (prev: {
@@ -114,16 +135,12 @@
     inherit (prev) cleansrc src;
   }));
 
-  mod.version = callpackage ./version.nix {} (reexport (prev: {
-    inherit (prev) source-ver version nixmeta;
-  }));
-
   mod.test = callpackage ./test.nix {} (reexport (prev: {
     inherit (prev) test test2;
   }));
 
-  mod.runcmd = callpackage ./command.nix {} (reexport (prev: {
-    inherit (prev) run-cmd;
+  mod.version = callpackage ./version.nix {} (reexport (prev: {
+    inherit (prev) source-ver version nixmeta;
   }));
 
   pub.nixd-eval = builtins.foldl' builtins.seq true (builtins.map (pkg: pkg.nixd-eval or null) (builtins.attrValues mod) ++ [true]);

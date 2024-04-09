@@ -39,15 +39,19 @@
     (lambda (x)
       (list x (symbol-name x) (format "tree_sitter_%s" (symbol-name x))))
     '(
-      python
-      typescript
-      lilypond
+      bash
+      cmake
+      cpp
+      dockerfile
       json
+      lilypond
+      make
+      nix
+      python
+      toml
+      typescript
       yaml
-      )))
-
-
-  )
+      ))))
 
 (eval-after-load! evil-textobj-tree-sitter
   (defadvice! alan-evil-textobj-tree-sitter--range (&rest _)

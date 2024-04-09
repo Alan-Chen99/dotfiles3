@@ -2,7 +2,8 @@
 
 (require 'alan-core)
 
-(pkg! 'nix-mode)
+(pkg! 'nix-ts-mode
+  (add-to-list 'auto-mode-alist '("\\.nix\\'" . nix-ts-mode)))
 
 (defun alan-add-to-directory-abbrev-alist (x)
   ;; TODO: this can be faster
@@ -26,9 +27,10 @@
    (message "error adding nix repos to directory-abbrev-alist: %S" err)
    nil))
 
-(eval-after-load! nix-mode
-  (modify-syntax-entry (string-to-char "-") "w" nix-mode-syntax-table)
-  (modify-syntax-entry (string-to-char "_") "w" nix-mode-syntax-table)
+(eval-after-load! nix-ts-mode
+
+  (modify-syntax-entry (string-to-char "-") "w" nix-ts-mode--syntax-table)
+  (modify-syntax-entry (string-to-char "_") "w" nix-ts-mode--syntax-table)
 
   (eval-after-load! lsp-mode
     ;; TODO: where did i get this?
@@ -37,15 +39,15 @@
     (lsp-register-client
      (make-lsp-client
       :new-connection (lsp-stdio-connection (lambda () "nixd"))
-      :major-modes '(nix-mode)
+      :major-modes '(nix-ts-mode)
       :initialized-fn (lambda (workspace)
                         (with-lsp-workspace workspace
-                                            (lsp--set-configuration
-                                             (lsp-configuration-section "nixd"))))
+                          (lsp--set-configuration
+                           (lsp-configuration-section "nixd"))))
       :synchronize-sections '("nixd")
       :server-id 'nix-nixd)))
 
-  (add-hook! 'nix-mode-hook
+  (add-hook! 'nix-ts-mode-hook
     (defun nix-mode-setup ()
 	  (setq-local format-all-formatters '(("Nix" alejandra)))
       (alan-lsp-deferred 'lsp-mode))))

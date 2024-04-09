@@ -13,12 +13,12 @@
 	    :pre-build
 	    (let ((target-file (if (eq system-type 'windows-nt) "hotfuzz-rs-module.dll" "hotfuzz-rs-module.so"))
               (cargo-res (if (eq system-type 'windows-nt) "./target/release/hotfuzz_rs_module.dll" "./target/release/libhotfuzz_rs_module.so")))
-	      (cl-assert (zerop (shell-command "cargo build --release")))
+	      (elpaca-process-poll "cargo" "clean")
+	      (elpaca-process-poll "cargo" "build" "--release")
 	      (delete-file target-file)
           (rename-file cargo-res target-file))
 	    :files (:defaults "hotfuzz-rs-module.so" "hotfuzz-rs-module.dll"))
   (startup-queue-package 'hotfuzz-rs 76))
-
 
 
 (defvar alan-completion-styles)

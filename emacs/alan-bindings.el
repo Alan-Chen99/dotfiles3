@@ -24,9 +24,9 @@
   ;; "<q>" #'evil-delete-line
 
   "<S-return>" #'newline
-  "<leader> <up>" #'newline
+  "<.> <up>" #'newline
   "M-1" nil
-  "<leader> 1" #'toggle-input-method
+  "<.> 1" #'toggle-input-method
 
   ;; "TAB" #'self-insert-command
 
@@ -53,6 +53,7 @@
   "c" #'describe-char
 
   "x" #'alan-describe-ex-command
+  "t" #'alan-describe-font-at-point
   "=" #'customize-face
   "p" #'alan-show-text-properties
   "0" #'debug
@@ -90,15 +91,14 @@
   "w" 'evil-window-map
   "N" #'help-command
 
-  "<w> <t>" #'consult-theme
-  "w <t>" #'alan-switch-theme
+  "<w> <T>" #'consult-theme
+  "w <T>" #'alan-switch-theme
   "g h" #'consult-history
   "g l" #'consult-line
   "g <right>" #'consult-line-multi
   "g m" #'consult-mark
   "g SPC" #'consult-ripgrep
-
-  "g r " #'recenter-top-bottom
+  "g r" (lambda () (interactive) (consult-ripgrep default-directory))
 
   "s" #'execute-extended-command
 
@@ -159,17 +159,17 @@
   ;; leader
 
   ;; TODO: wtf is this?
-  ;; "<leader> m" #'evil-lookup
+  ;; "<.> m" #'evil-lookup
 
-  "<leader> n" #'evil-ex-nohighlight
+  "<.> n" #'evil-ex-nohighlight
   "$" #'evil-visual-restore
   "\"" #'evil-jump-item ;; go to other parenthesis
 
-  "<leader> j" #'evil-goto-definition
+  "<.> j" #'evil-goto-definition
 
   "0" #'display-local-help
 
-  "<leader> }" #'revert-buffer
+  "<.> }" #'revert-buffer
 
   ;; not needed or now have different key, can be bound to something else
   ;; "M" 'ignore ;;evil-window-middle
@@ -195,9 +195,11 @@
 
   "z j" #'magit-status
   "z l" #'magit-log
+  "z <right>" #'magit-log-all
   "z b" #'magit-branch
   "z f" #'magit-find-file-other-window
   "z c" #'magit-checkout
+  "z r" #'magit-remote
   )
 
 
@@ -351,8 +353,7 @@
   "m" #'alan-minibuffer-resize-count
   ;; "n" #'evil-buffer
 
-  ;; TODO: why does w C-h go to this?
-  ;; "<t>" #'load-theme
+  ;; "<T>" #'load-theme
 
   "(" #'alan-find-url
 
@@ -365,8 +366,8 @@
 (general-def
   :states 'insert
   ;; "TAB" 'self-insert-command
-  "TAB" (lambda () (interactive) (insert-tab))
-  "<leader> <down>" #'alan-completion-at-point)
+  ;; "TAB" (lambda () (interactive) (insert-tab))
+  "<.> <down>" #'alan-completion-at-point)
 
 ;; makes number keys replace in replace mode
 (general-def evil-read-key-map
@@ -410,12 +411,12 @@
 (general-def minibuffer-local-map
   :states 'insert
   "RET" #'exit-minibuffer
-  "<leader> <right>" #'evil-force-normal-state)
+  "<.> <right>" #'evil-force-normal-state)
 
 (general-def minibuffer-local-completion-map
   :states 'insert
   "TAB" #'minibuffer-complete
-  "<leader> j" #'minibuffer-complete
+  "<.> j" #'minibuffer-complete
   "RET" #'minibuffer-complete-and-exit
 
   "<right>"

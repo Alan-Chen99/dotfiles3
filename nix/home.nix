@@ -1,13 +1,12 @@
 {
   self,
-  dejavu_fonts,
   git,
   gnugrep,
   home-manager,
   home-manager-bin,
   legacypkgs,
   lib,
-  nerdfonts,
+  fonts,
   nix-stable,
   nixpkgs-flakes,
   profile,
@@ -62,17 +61,7 @@
           # The home.packages option allows you to install Nix packages into your
           # environment.
           home.packages = [
-            dejavu_fonts
-            (nerdfonts.override {
-              fonts = [
-                "FiraCode"
-                "DroidSansMono"
-                "Iosevka"
-                "Hack"
-                "Inconsolata"
-                "DejaVuSansMono"
-              ];
-            })
+            fonts
           ];
 
           home.file = {

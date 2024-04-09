@@ -23,6 +23,7 @@
 
 (eval-after-load! gptel
   (setq gptel-api-key gpt-api-key)
+  (setq gptel-model "gpt-4")
   (general-def gptel-mode-map
     :states 'motion
     ;; "SPC h" #'gptel-system-prompt
@@ -32,11 +33,23 @@
       (save-excursion
         (goto-char (point-max))
         (gptel-send)))
+
+    ;; "SPC m" #'gptel-model
+
+
+
     "SPC g" #'gptel-menu)
   (defalias 'gpt #'gptel)
   ;; (require 'gptel-transient)
   (add-hook! 'gptel-mode-hook #'evil-normalize-keymaps)
 
+  ;; (span-quickwrap gptel-file-handler)
+  )
+
+(eval-after-load! gptel-file
+  ;; (span-instrument gptel-file-handler)
+  ;; (span-instrument gptel-write-region-encoded)
+  ;; (span-instrument gptel-write-region-encoded)
   )
 
 (provide 'alan-gpt)

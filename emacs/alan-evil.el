@@ -5,6 +5,9 @@
 (require 'evil)
 (require 'general)
 
+(pkg! 'evil-collection
+  (startup-queue-package 'evil-collection 80))
+
 (setq
  evil-move-cursor-back nil
  evil-move-beyond-eol t
@@ -12,14 +15,16 @@
  ;; this is extremely slow
  evil-indent-convert-tabs nil)
 
+(defvar alan--inhibit-motion-state-on-ro nil)
 (add-hook! 'read-only-mode-hook
   (defun read-only-toggle-evil-state ()
     ;; (span-notef "read-only-mode-hook: %S" buffer-read-only)
-    (if buffer-read-only
-        (unless (or (eq evil-state 'emacs) (eq evil-state 'motion))
-          (evil-motion-state))
-      (when (eq evil-state 'motion)
-        (evil-initialize-state)))))
+    (unless alan--inhibit-motion-state-on-ro
+      (if buffer-read-only
+          (unless (or (eq evil-state 'emacs) (eq evil-state 'motion))
+            (evil-motion-state))
+        (when (eq evil-state 'motion)
+          (evil-initialize-state))))))
 
 (defadvice! evil-initial-state-for-buffer-adv (orig-fn &optional buffer)
   :around #'evil-initial-state-for-buffer
@@ -27,6 +32,7 @@
     ;; (span-flush)
     (let ((res (funcall orig-fn buffer)))
       (when (and
+             (not alan--inhibit-motion-state-on-ro)
              (not (eq res 'emacs))
              (buffer-local-value 'buffer-read-only (or buffer (current-buffer))))
         (setq res 'motion))
@@ -129,5 +135,8 @@
 
 (alan-set-ignore-debug-on-quit #'evil-operator-range)
 (alan-set-ignore-debug-on-quit #'evil-ex-start-search)
+
+(eval-after-load! evil-collection
+  (setq evil-collection-key-blacklist '("s")))
 
 (provide 'alan-evil)

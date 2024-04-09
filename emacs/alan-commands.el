@@ -187,12 +187,12 @@
 
 
 ;; replaced with format-all
-;; (evil-define-operator evil-indent-all (beg end)
-;;   :move-point nil
-;;   :type line
-;;   :motion evil-entire-entire-buffer
-;;   (save-excursion
-;;     (evil-indent beg end)))
+(evil-define-operator evil-indent-all (beg end)
+  :move-point nil
+  :type line
+  :motion evil-entire-entire-buffer
+  (save-excursion
+    (evil-indent beg end)))
 ;; (general-def [remap evil-indent] #'evil-indent-all)
 
 (defun evil-with-restored-visual-impl (fn)
@@ -281,6 +281,12 @@
   (setq current-prefix-arg '(1))
   (call-interactively 'shell))
 
+(defun alan-describe-font-at-point ()
+  (interactive)
+  (let ((font (font-xlfd-name (font-at (point)) t))
+        (sz (window-text-pixel-size
+             nil (point) (1+ (point)))))
+    (message "size: %S\n%s" sz font)))
 
 
 ;; TODO: maybe make resizing commands
