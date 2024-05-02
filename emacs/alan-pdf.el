@@ -24,6 +24,9 @@
 (autoload 'pdf-view-mode "pdf-tools")
 (autoload 'pdf-history-before-change-page-hook "pdf-history")
 
+(eval-when-compile
+  (defvar revert-buffer-preserve-modes))
+
 (eval-after-load! pdf-tools
 
   (general-def pdf-view-mode-map
@@ -42,18 +45,40 @@
     "r" #'pdf-view-rotate
     )
 
+  (defun alan-pdf-view-revert-buffer (&rest _)
+    ;; (fundamental-mode)
+    ;; (pdf-view-mode)
+    (let ((revert-buffer-preserve-modes nil))
+      (pdf-info-close)
+      (revert-buffer--default t t)
+      (pdf-view-mode)
+      ;; (pdf-info-open)
+      ))
+
+  ;; (defadvice! pdf-view-revert-buffer-adv (&rest _)
+  ;;   :after #'pdf-view-revert-buffer
+  ;;   (pdf-view-roll-minor-mode -1)
+  ;;   (pdf-view-roll-minor-mode +1)
+  ;;   )
+
   (add-hook! 'pdf-view-mode-hook
     (defun alan-pdf-view-mode-setup ()
+      (setq-local revert-buffer-function 'alan-pdf-view-revert-buffer)
       (setq-local cursor-in-non-selected-windows nil)
       (setq-local alan-enable-cursor nil)
-      (pdf-view-roll-minor-mode)))
+      (pdf-view-roll-minor-mode)
+      (setq-local mwheel-scroll-up-function #'pdf-view-next-line-or-next-page)
+      (setq-local mwheel-scroll-down-function #'pdf-view-previous-line-or-previous-page)))
 
   (alan-set-ignore-debug-on-error #'pdf-view-goto-page)
+  ;; (alan-set-ignore-debug-on-error #'image-roll-goto-page)
+  ;; pdf-view-scroll-down-or-previous-page
 
   (span-wrap pdf-info-query (&rest args)
     (:pdf-info-query (:seq args))
     ;; (error "no")
-    (span-flush))
+    ;; (span-flush)
+    )
 
 
   )

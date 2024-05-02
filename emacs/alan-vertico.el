@@ -41,8 +41,9 @@
         (catch 'input
           (let
               ((throw-on-input 'input))
-            (setq ans (funcall fn cands))
-            (setq suc t)))
+            (ignore-errors
+              (setq ans (funcall fn cands))
+              (setq suc t))))
         (if suc
             ans
           (cl-loop for cand in cands collect (list cand "" ""))))))

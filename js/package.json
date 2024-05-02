@@ -6,6 +6,7 @@
   "devDependencies": {
     "@fsouza/prettierd": "^0.25.2",
     "typescript": "^5.4.3",
-    "typescript-language-server": "^4.3.3"
+    "typescript-language-server": "^4.3.3",
+    "scmindent": "^1.0.4"
   }
 }

@@ -4,7 +4,7 @@
 (pkg! 'transient)
 
 (defun alan-normalize-key (key)
-  (key-description (key-parse key)))
+  (concat " " (key-description (key-parse key)) " "))
 
 (defun alan-transient-tranlate-key (key)
   (setq key (vconcat key [dummy dummy]))
@@ -34,44 +34,65 @@
 ;; (my-transient-substitude2 "RET")
 
 (defun my-transient-substitude2 (key)
+  ;; TODO: transient seem to assume subsitude fixes its ret
+  ;; is this a bug?
   (if (get-text-property 0 'alan-transient-did-sub key)
       key
     (let ((ans (my-transient-substitude2-impl key)))
       (propertize ans 'alan-transient-did-sub t))))
 
+
+(eval-when-compile
+  (defun alan-make-key-desc-rx (keys)
+    `(seq
+      " "
+      ,@(-interleave keys (-cycle '(" ")))))
+
+  (rx-define alan-keys (&rest keys) (eval (alan-make-key-desc-rx '(keys)))))
+
+(defun alan-keys (&rest keys)
+  (apply #'concat " "
+         (-interleave keys (-cycle '(" ")))))
+
+(defmacro alan-key-rep (rx val)
+  (declare (indent 1))
+  `(while (string-match (rx (alan-keys ,@rx)) key)
+     (setq key (replace-match (alan-keys ,@val) t t key))))
+
 (defun my-transient-substitude2-impl (key)
+  (span-dbgf key)
+  (setq key (alan-normalize-key key))
   (let ((case-fold-search))
-    (span-dbgf key)
-    (setq key (alan-normalize-key key))
 
-    ;; (when (string-match-p (rx bow "S-SPC" eow) key)
-    ;;   (debug)
-    ;;   ;; (span--backtrace)
-    ;;   )
+    (when (string-match-p (rx bos (alan-keys "SPC") eos) key)
+      (setq key (alan-keys "S-SPC S-SPC")))
 
-    (while (string-match (rx "- " (group (any "a-z"))) key)
-      (setq key (replace-match (concat "<.> " (match-string 1 key)) t t key)))
+    (alan-key-rep ("-" (group (any "a-z")))
+      ("<.>" (match-string 1 key)))
 
-    (while (string-match (rx "- " (group (any "A-Z"))) key)
-      (setq key (replace-match (concat "SPC " (downcase (match-string 1 key))) t t key)))
+    (alan-key-rep ("-" (group (any "A-Z")))
+      ("SPC" (downcase (match-string 1 key))))
 
-    (while (string-match (rx "= " (group (any "a-z"))) key)
-      (setq key (replace-match (concat "<.> " (upcase (match-string 1 key))) t t key)))
+    (alan-key-rep ("=" (group (any "a-z")))
+      ("<.>" (upcase (match-string 1 key))))
 
-    (while (string-match (rx "= " (group (any "A-Z"))) key)
-      (setq key (replace-match (concat "SPC " (match-string 1 key)) t t key)))
+    (alan-key-rep ("=" (group (any "A-Z")))
+      ("SPC" (match-string 1 key)))
 
-    (setq key (replace-regexp-in-string (rx bow "-" eow) "<.>" key t t))
-    (setq key (replace-regexp-in-string (rx bow "=" eow) "SPC" key t t))
-    (setq key (replace-regexp-in-string (rx bow "RET" eow) "<return>" key t t))
+    (alan-key-rep ("-") ("<.>"))
+    (alan-key-rep ("=") ("SPC"))
+    (alan-key-rep ("RET") ("<return>"))
 
-    (setq key (key-description
-               (alan-transient-tranlate-key (key-parse key))))
+    (setq key
+          (concat " "
+                  (key-description
+                   (alan-transient-tranlate-key (key-parse key)))
+                  " "))
 
-    (when (string-match-p (rx bow (or "<up>" "<down>" "J" "K") eow) key)
-      (setq key (concat "S-SPC " key)))
-    (span-msg "ans: %S" key)
-    key))
+    (when (string-match-p (rx (alan-keys (or "<up>" "<down>" "J" "K"))) key)
+      (setq key (concat " S-SPC" key)))
+
+    (key-description (key-parse key))))
 
 (defvar transient-values nil)
 

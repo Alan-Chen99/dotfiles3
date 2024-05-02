@@ -78,7 +78,7 @@
   ;; (span-msg "alan-do-gc-long")
   (unless alan--did-gc
     (span :gc-long
-      (span-flush)
+      ;; (span-flush)
       (alan-do-gc)))
   (setq alan--did-gc nil))
 

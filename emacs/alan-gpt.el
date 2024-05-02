@@ -17,7 +17,7 @@
 (autoload 'gptel-menu "gptel-transient")
 
 (defvar gpt-api-key)
-(setq-default gpt-api-key "***************************************************")
+(setq-default gpt-api-key "********************************************************")
 
 (startup-queue-package 'gptel-transient 50)
 

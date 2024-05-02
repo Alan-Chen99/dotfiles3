@@ -27,6 +27,15 @@
          ans
        (prin1-to-string ans)))))
 
+(defun copy-pp-eval-expression (expression)
+  (interactive
+   (list (read--expression "Eval: ")))
+  (message "Evaluating...")
+  (let ((result (pp-to-string (eval expression lexical-binding))))
+    (message "%s" result)
+    (kill-new result)))
+
+
 (general-def lisp-mode-shared-map
   :states 'motion
   "SPC e" #'pp-eval-last-sexp

@@ -26,6 +26,22 @@
   `(lambda () (interactive) (vterm-send ,expr)))
 
 (eval-after-load! vterm
+  (defadvice! alan-vterm--get-shell ()
+    :override #'vterm--get-shell
+    (let ((f (expand-file-name "etc/emacs-vterm-bash.sh"
+                               (file-name-directory (find-library-name "vterm")))))
+      (format
+       "%s --init-file <(echo %s)"
+       vterm-shell
+       (shell-quote-argument
+        (concat
+         ". \"$HOME/.bashrc\"\n"
+         (with-temp-buffer
+           (insert-file-contents f)
+           (buffer-string)))
+        t))))
+
+
   (defadvice! alan-vterm--get-directory (path)
     :override #'vterm--get-directory
     (span (:vterm--get-directory path)
@@ -51,8 +67,6 @@
   ;; (setq vterm-buffer-name-string "*vterm %s*")
 
   (evil-set-initial-state 'vterm-mode 'insert)
-
-  (advice-add #'vterm--get-shell :override (lambda () vterm-shell))
 
   (general-def vterm-mode-map
     [remap backward-paragraph] #'vterm-previous-prompt

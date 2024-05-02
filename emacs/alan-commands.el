@@ -275,7 +275,18 @@
     (message "%s" v)
     (kill-new v)))
 
-(defalias 'sh 'shell)
+
+;; (defalias 'sh 'shell)
+(cl-defun sh ()
+  (interactive)
+  (let ((remote (file-remote-p default-directory)))
+    (dolist (b (append (bound-and-true-p my-iflipb-buffer-list) (buffer-list)))
+      (when (and (eq (buffer-local-value 'major-mode b) 'shell-mode)
+                 (equal (file-remote-p (buffer-local-value 'default-directory b)) remote))
+        (shell b)
+        (cl-return-from sh))))
+  (shell (generate-new-buffer-name "*shell*")))
+
 (defun shn ()
   (interactive)
   (setq current-prefix-arg '(1))

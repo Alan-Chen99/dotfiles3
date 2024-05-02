@@ -85,6 +85,7 @@
 (require-noerr 'alan-shell)
 (require-noerr 'alan-cxx)
 (pkg! 'dockerfile-mode)
+(require-noerr 'alan-scheme)
 
 (add-to-list 'auto-mode-alist '("\\.ya?ml\\'" . yaml-ts-mode))
 (add-hook! 'yaml-ts-mode-hook
@@ -437,7 +438,7 @@
   ;; https://stackoverflow.com/questions/26630640/tramp-ignores-tramp-remote-path
   (add-to-list 'tramp-remote-path 'tramp-own-remote-path)
   (add-to-list 'tramp-connection-properties
-               (list (regexp-quote "/ssh:host@192.168.0.236:")
+               (list (regexp-quote "/ssh:host@192.168.0.238:")
                      "login-args"
                      '(("-A") ("-l" "%u") ("-p" "%p") ("%c")
                        ("-e" "none") ("%h"))
@@ -499,6 +500,7 @@
 (defvar alan-shown-time nil)
 (defun alan-update-time (&optional donot-redisp)
   ;; (span-msg "alan-update-time")
+  ;; (span--backtrace)
   (let ((new (format-time-string "%F %r")))
     (unless (string= alan-shown-time new)
       (setq alan-shown-time new)
@@ -598,3 +600,27 @@
 ;; (span-wrap lock-file (file)
 ;;   (_ "%S" file)
 ;;   (span--backtrace))
+;; (span-instrument revert-buffer)
+(span-wrap revert-buffer (&rest args)
+  (_)
+  (span-flush)
+  ;; (span--backtrace)
+  )
+
+;; (span-instrument call-process)
+;; (span-instrument insert-directory)
+;; (span-instrument tramp-sh-handle-insert-directory)
+;; (span-instrument tramp-sh-file-name-handler)
+
+;; ;; (span-instrument tramp-gvfs-monitor-process-filter)
+;; (span-instrument tramp-sh-gio-monitor-process-filter)
+;; (span-instrument tramp-sh-inotifywait-process-filter)
+;; (span-instrument tramp-gvfs-monitor-process-filter)
+;; (span-instrument tramp-process-sentinel)
+;; (span-instrument tramp-call-process)
+;; (span-instrument tramp-get-ls-command)
+
+;; (span-instrument force-mode-line-update)
+
+(eval-after-load! midnight
+  (setq clean-buffer-list-delay-general 1.5))

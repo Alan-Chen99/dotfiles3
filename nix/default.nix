@@ -31,6 +31,13 @@
       nixpkgs-unstable = flakes.nixpkgs-unstable;
       poetry2nix = flakes.poetry2nix;
       rust-overlay = flakes.rust-overlay.overlays.default;
+      racket2nix = import flakes.racket2nix {
+        inherit system;
+        pkgs = import "${flakes.racket2nix}/pkgs" {
+          inherit system;
+          pkgs = self.legacypkgs;
+        };
+      };
     } (final: prev: {
       lib-orig = prev.lib;
       lib = final.lib-orig.extend mod.printing-overlay.lib-overlay;
@@ -98,7 +105,7 @@
   }));
 
   mod.js = callpackage ../js {} (reexport (prev: {
-    inherit (prev) js;
+    inherit (prev) js scmindent;
   }));
 
   mod.nixtools = callpackage ./nixtools.nix {} (reexport (prev: {
@@ -128,7 +135,7 @@
   }));
 
   mod.rust = callpackage ../rust {} (reexport (prev: {
-    inherit (prev) rust-src-hack;
+    inherit (prev) rust-src-hack craneLib;
   }));
 
   mod.source = callpackage ./source.nix {} (reexport (prev: {

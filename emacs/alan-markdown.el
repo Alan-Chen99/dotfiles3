@@ -15,7 +15,11 @@
   (face-spec-set 'markdown-header-face-3 '((t :inherit markdown-header-face)) 'face-defface-spec)
   (face-spec-set 'markdown-header-face-4 '((t :inherit markdown-header-face)) 'face-defface-spec)
   (face-spec-set 'markdown-header-face-5 '((t :inherit markdown-header-face)) 'face-defface-spec)
-  (face-spec-set 'markdown-header-face-6 '((t :inherit markdown-header-face)) 'face-defface-spec))
+  (face-spec-set 'markdown-header-face-6 '((t :inherit markdown-header-face)) 'face-defface-spec)
+
+  (add-hook! 'markdown-mode-hook
+    (defun alan-setup-markdown ()
+      (setq-local format-all-formatters '(("Markdown" prettierd))))))
 
 
 (provide 'alan-markdown)

@@ -53,7 +53,11 @@
    ;;TODO: make them show correctly
    lsp-signature-render-documentation nil
    ;; lsp-signature-render-documentation t
-   ))
+   )
+
+  (alan-set-ignore-debug-on-error #'lsp--server-binary-present?)
+
+  )
 
 (eval-after-load! lsp-modeline
   (setq

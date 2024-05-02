@@ -410,6 +410,7 @@ designed to be created at compile time and used as constant"
 (defvar span--is-flushing nil)
 
 (setq-default debugger #'span--debug)
+(setq-default non-essential nil)
 
 (defmacro span--context (context &rest body)
   (declare (indent 1))
@@ -421,6 +422,7 @@ designed to be created at compile time and used as constant"
     `(let* ((span--cur-context ,context)
 
             (debugger ,(if is-redisp '#'span--debug '#'debug))
+            (non-essential ,is-redisp)
             ,@(when is-redisp '((signal-hook-function nil)))
             ;; (inhibit-debugger nil)
             (debug-on-error t)
@@ -555,6 +557,7 @@ designed to be created at compile time and used as constant"
        ,@(nreverse keywords)
        (let (inhibit-quit)
          (span--context :redisplay
+           ;; (span-dbgf "context: redisplay")
            ,@rest)))))
 
 (defun span--wrap-recursive-edit (orig-fun)
@@ -636,13 +639,13 @@ designed to be created at compile time and used as constant"
 (defun span--wrap-accept-process-output (orig-fn &optional process seconds millisec just-this-one)
   (let ((inhibit-quit-old inhibit-quit))
     (span--unchecked (:accept-process-output (:unsafe process))
-      :blocking inhibit-quit-old
+      :blocking (or inhibit-quit-old (not non-essential))
 
       (span-note
         "seconds:%S millisec:%S just-this-one:%S"
         seconds millisec just-this-one)
 
-      (when (and (not inhibit-quit-old) (input-pending-p))
+      (when (and (not inhibit-quit-old) non-essential (input-pending-p))
         (span-flush)
         ;; (span--backtrace)
         (if throw-on-input
@@ -723,7 +726,9 @@ designed to be created at compile time and used as constant"
   (span (:tramp-file-name-handler "%S %S" (buffer-name (current-buffer)) (:seq args))
     (span-dbg
      inhibit-quit
-     throw-on-input)
+     throw-on-input
+     non-essential
+     )
     ;; (span-with-no-minibuffer-message
     (apply orig-fn args)))
 

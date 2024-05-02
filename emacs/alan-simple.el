@@ -58,6 +58,9 @@
 
 (setq-default backward-delete-char-untabify-method "all")
 
+(modify-syntax-entry (string-to-char "-") "w" (standard-syntax-table))
+(modify-syntax-entry (string-to-char "_") "w" (standard-syntax-table))
+
 ;; those do not account for minibuffer-history-variable being t
 ;; todo: upstream?
 (alan-set-ignore-debug-on-error #'previous-matching-history-element)
@@ -188,11 +191,10 @@
   (startup-queue-package 'page-break-lines 50))
 (eval-after-load! page-break-lines
   (global-page-break-lines-mode)
-  ;; TODO: the following activates in temp buffers,
-  ;; causing excessive calls to `force-mode-line-update'
-  ;; (define-advice page-break-lines-mode-maybe
-  ;;     (:override () redefine)
-  ;;   (page-break-lines-mode 1))
+  ;; TODO: the following activates in temp buffers
+  (define-advice page-break-lines-mode-maybe
+      (:override () redefine)
+    (page-break-lines-mode 1))
   )
 
 (pkg! 'evil-anzu

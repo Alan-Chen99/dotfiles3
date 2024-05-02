@@ -424,6 +424,38 @@
         "type": "github"
       }
     },
+    "racket-fmt": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1708319244,
+        "narHash": "sha256-7pPS+vjEd0kUhcAkiX4QDWmCvpyVoe2vdk1RzUZq/eg=",
+        "owner": "sorawee",
+        "repo": "fmt",
+        "rev": "7d0a3dfff3a6cacfb59972a56d476556f89a0b1b",
+        "type": "github"
+      },
+      "original": {
+        "owner": "sorawee",
+        "repo": "fmt",
+        "type": "github"
+      }
+    },
+    "racket2nix": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1617810191,
+        "narHash": "sha256-bV7Ei+pYqiiPTnJdvGt0GV8yS3nyXfSLn2NZQ2jv5nA=",
+        "owner": "fractalide",
+        "repo": "racket2nix",
+        "rev": "3c3c217cced27788fb342ffcc82c87714b5a8082",
+        "type": "github"
+      },
+      "original": {
+        "owner": "fractalide",
+        "repo": "racket2nix",
+        "type": "github"
+      }
+    },
     "root": {
       "inputs": {
         "crane": "crane",
@@ -445,7 +477,10 @@
         "nixpkgs21-11": "nixpkgs21-11",
         "nixpkgs22-11": "nixpkgs22-11",
         "poetry2nix": "poetry2nix",
+        "racket-fmt": "racket-fmt",
+        "racket2nix": "racket2nix",
         "rust-overlay": "rust-overlay",
+        "schemat": "schemat",
         "systems": [
           "flake-utils",
           "systems"
@@ -472,6 +507,22 @@
       "original": {
         "owner": "oxalica",
         "repo": "rust-overlay",
+        "type": "github"
+      }
+    },
+    "schemat": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1712618570,
+        "narHash": "sha256-WhB22el66b4DQbD6GhfZkXVbzl7M+mizEGmq3L7M6fA=",
+        "owner": "raviqqe",
+        "repo": "schemat",
+        "rev": "9438f339bfc1512454f6423fb7ef63d8ffe43fde",
+        "type": "github"
+      },
+      "original": {
+        "owner": "raviqqe",
+        "repo": "schemat",
         "type": "github"
       }
     },

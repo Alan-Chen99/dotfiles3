@@ -27,6 +27,13 @@
    (message "error adding nix repos to directory-abbrev-alist: %S" err)
    nil))
 
+(condition-case err
+    (let (file-name-handler-alist)
+      (alan-add-to-directory-abbrev-alist-rec "~/.guix-profile/"))
+  (error
+   (message "error adding guix to directory-abbrev-alist: %S" err)
+   nil))
+
 (eval-after-load! nix-ts-mode
 
   (modify-syntax-entry (string-to-char "-") "w" nix-ts-mode--syntax-table)

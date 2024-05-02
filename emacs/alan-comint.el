@@ -161,15 +161,15 @@
   (modify-syntax-entry (string-to-char "_") "w" comint-mode-syntax-table)
   (modify-syntax-entry (string-to-char "-") "w" comint-mode-syntax-table)
   (add-hook! 'comint-mode-hook
-    (defun my-comint-setup ()
+    (defun alan-comint-setup ()
       ;; (setq-local company-minimum-prefix-length 1)
       (ansi-color-for-comint-mode-on)
 
       (setq-local completion-at-point-functions '(comint-completion-at-point))
       (setq-local company-backends '(company-capf))
-      ;; FIXME: race + does not work when u exit shell and then sh back
+      ;; FIXME: race
       (when (fboundp 'company-mode)
-        (company-mode))
+        (company-mode +1))
       (setq-local company-idle-delay nil)
       ;; (when (file-remote-p default-directory)
       ;;   ;; (setq-local modeline-filename
@@ -177,7 +177,7 @@
       ;;   ;;               (:propertize (:eval (file-remote-p default-directory)) face modeline-file-path)
       ;;   ;;               (:propertize (:eval (buffer-name)) face modeline-file-or-buffer-name)))
       ;;   ;; (setq-local shell-dirtrackp nil)
-      ;;   ;; (setq-local company-idle-delay nil)
+      ;;   (setq-local company-idle-delay nil)
       ;;   )
       ))
   )
@@ -187,9 +187,10 @@
   (setq explicit-shell-file-name "/bin/bash")
 
   (setq-default shell-font-lock-keywords nil)
-  (setq-default company-global-modes '(not shell-mode))
+  ;; (setq-default company-global-modes '(not shell-mode))
 
-  (setq-default shell-fontify-input-enable t)
+  ;; (setq-default shell-fontify-input-enable t)
+  (setq-default shell-fontify-input-enable nil)
 
   ;; (add-hook! 'shell-mode-hook
   ;;   (setq-local font-lock-fontify-syntactically-function nil))

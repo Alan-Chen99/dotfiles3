@@ -25,6 +25,19 @@
     (:features)
     (:format (format-all--buffer-easy executable "reformat")))
 
+  (define-format-all-formatter schemat
+    (:executable "schemat")
+    (:install)
+    (:languages "Scheme")
+    (:features)
+    (:format (format-all--buffer-easy executable)))
+
+  (define-format-all-formatter scmindent
+    (:executable "scmindent")
+    (:install)
+    (:languages "Scheme")
+    (:features)
+    (:format (format-all--buffer-easy executable)))
   )
 
 

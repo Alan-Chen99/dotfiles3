@@ -22,7 +22,7 @@
     (when company-mode
       (company-manual-begin)
       t))
-  
+
   (setq company-backends
         '(
           company-capf
@@ -38,7 +38,7 @@
   (let (company-backends)
     (global-company-mode t))
 
-  (setq
+  (setq-default
    company-idle-delay 0.05
    company-require-match nil
    company-minimum-prefix-length 0
@@ -108,7 +108,14 @@
     (eldoc-add-command #'company-abort)
     (eldoc-add-command #'company-select-next)
     (eldoc-add-command #'company-select-previous)
-    (eldoc-add-command #'company-complete)))
+    (eldoc-add-command #'company-complete))
+  )
+
+(eval-after-load! company-capf
+  (defadvice! company-capf--nonessential (fn &rest args)
+    :around #'company-capf
+    (let ((non-essential t))
+      (apply fn args))))
 
 (eval-after-load! company-dabbrev
   (setq company-dabbrev-ignore-case t)

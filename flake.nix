@@ -3,6 +3,16 @@
   # nix --experimental-features "nix-command flakes" --allow-import-from-derivation build .#profile -v --print-build-logs
 
   inputs = {
+    racket-fmt = {
+      url = "github:sorawee/fmt";
+      flake = false;
+    };
+
+    racket2nix = {
+      url = "github:fractalide/racket2nix";
+      flake = false;
+    };
+
     crane = {
       url = "github:ipetkov/crane";
       inputs.nixpkgs.follows = "empty";
@@ -84,9 +94,9 @@
 
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixpkgs-unstable";
 
-    nixpkgs22-11.url = "github:nixos/nixpkgs/nixos-22.11";
-
     nixpkgs21-11.url = "github:nixos/nixpkgs/nixos-21.11";
+
+    nixpkgs22-11.url = "github:nixos/nixpkgs/nixos-22.11";
 
     poetry2nix = {
       url = "github:nix-community/poetry2nix";
@@ -105,6 +115,11 @@
         nixpkgs.follows = "nixpkgs";
         flake-utils.follows = "flake-utils";
       };
+    };
+
+    schemat = {
+      url = "github:raviqqe/schemat";
+      flake = false;
     };
 
     systems.follows = "flake-utils/systems";
@@ -152,15 +167,21 @@
               inherit
                 (prev)
                 rust-src-hack
+                scmindent
                 test
                 test2
                 ;
+
+              schemat = final.craneLib.buildPackage {
+                src = inputs.schemat;
+              };
+
+              # racket-fmt = final.deps.racket2nix.buildRacketPackage inputs.racket-fmt;
             };
             pkgs = (builtins.mapAttrs (name: pkg: appendversion pkg) pkgs-versioned) // pkgs-other;
           in
             pkgs // {pkgs = pkgs;}
         );
-      # nix-profile-names = deps.writeShellScriptBin "nix-profile-names" "exec -a $0 ${nix-profile-names.packages.${system}.default}/bin/nix profile $@";
 
       export = rec {
         packages = default.pkgs;

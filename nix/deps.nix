@@ -11,6 +11,7 @@
   nixpkgs-flakes,
   nixpkgs-unstable,
   poetry2nix,
+  racket2nix,
   rust-overlay,
   system,
 }: {
@@ -104,6 +105,7 @@
       nix-filter
       nixd
       poetry2nix
+      racket2nix
       ;
 
     home-manager-bin = pkgs.home-manager;
@@ -115,7 +117,7 @@
     llvmpkgs = pkgs.llvmPackages_17;
     clangtools = (pkgs.clang-tools).override {
       llvmPackages = self.deps.llvmpkgs;
-      enableLibcxx = true;
+      # enableLibcxx = true;
     };
 
     nodejs = pkgs.nodejs_latest;

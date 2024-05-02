@@ -18,6 +18,12 @@
 
   (general-def
     [remap switch-to-buffer] #'consult-buffer
-    [remap switch-to-buffer-other-window] #'consult-buffer-other-window))
+    [remap switch-to-buffer-other-window] #'consult-buffer-other-window)
+
+  (setq completion-in-region-function #'consult-completion-in-region)
+  (defun alan-consult-complete ()
+    (interactive)
+    (let ((completion-in-region-function #'consult-completion-in-region))
+      (completion-at-point))))
 
 (provide 'alan-consult)

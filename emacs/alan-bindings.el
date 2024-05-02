@@ -10,7 +10,10 @@
  alan-theme
  alan-minibuffer
  alan-font
- alan-commands)
+ alan-commands
+ alan-consult
+
+ alan-elisp)
 
 (general-def
   "C-," #'help-command
@@ -135,6 +138,7 @@
   "\\" #'evil-visual-line
 
   "%" #'pp-eval-expression
+  "<.> {" #'copy-pp-eval-expression
 
   ;; essential
   "y" #'evil-yank
@@ -367,7 +371,8 @@
   :states 'insert
   ;; "TAB" 'self-insert-command
   ;; "TAB" (lambda () (interactive) (insert-tab))
-  "<.> <down>" #'alan-completion-at-point)
+  "<.> <down>" #'alan-completion-at-point
+  "C-<.> J" #'alan-consult-complete)
 
 ;; makes number keys replace in replace mode
 (general-def evil-read-key-map

@@ -21,11 +21,16 @@
 (eval-after-load! lilypond-mode
   ;; (require 'alan-lilypond-ts)
   (setq LilyPond-fancy-comments nil)
+  (advice-add #'LilyPond-mode-context-set-syntax-table :override #'ignore)
+  (advice-add #'LilyPond-mode-set-syntax-table :override #'ignore)
+  ;; (setq LilyPond-mode-syntax-table scheme-mode-syntax-table)
 
-  (modify-syntax-entry (string-to-char "-") "w" LilyPond-mode-syntax-table)
+  ;; (modify-syntax-entry (string-to-char "-") "w" LilyPond-mode-syntax-table)
+  ;; (modify-syntax-entry (string-to-char "_") "w" LilyPond-mode-syntax-table)
 
   (add-hook! 'LilyPond-mode-hook
     (defun alan-LilyPond-mode-setup ()
+
       ;; (setq-local font-lock-defaults nil)
       ;; (setq-local syntax-propertize-function nil)
       ;; (setq-local alan-font-lock-force-specified t)
