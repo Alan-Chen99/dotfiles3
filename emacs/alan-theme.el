@@ -132,6 +132,19 @@
       '(
         ;; `(modeline-file-or-buffer-name ((,c :weight semibold)))
         ;; `(modeline-file-or-buffer-name ((,c)))
+
+        ;; make `ef-themes-headings' take effect immediately
+        `(ef-themes-heading-0 ((,c ,@(ef-themes--heading 0) :foreground ,rainbow-0)))
+        `(ef-themes-heading-1 ((,c ,@(ef-themes--heading 1) :foreground ,rainbow-1)))
+        `(ef-themes-heading-2 ((,c ,@(ef-themes--heading 2) :foreground ,rainbow-2)))
+        `(ef-themes-heading-3 ((,c ,@(ef-themes--heading 3) :foreground ,rainbow-3)))
+        `(ef-themes-heading-4 ((,c ,@(ef-themes--heading 4) :foreground ,rainbow-4)))
+        `(ef-themes-heading-5 ((,c ,@(ef-themes--heading 5) :foreground ,rainbow-5)))
+        `(ef-themes-heading-6 ((,c ,@(ef-themes--heading 6) :foreground ,rainbow-6)))
+        `(ef-themes-heading-7 ((,c ,@(ef-themes--heading 7) :foreground ,rainbow-7)))
+        `(ef-themes-heading-8 ((,c ,@(ef-themes--heading 8) :foreground ,rainbow-8)))
+
+
         `(mode-line-buffer-id ((,c :foreground ,keyword)))
         `(ansi-color-green ((,c :background ,bg-green-subtle :foreground ,fg-term-green-bright)))
         `(ansi-color-yellow ((,c :background ,bg-yellow-subtle :foreground ,fg-term-yellow-bright)))
@@ -139,6 +152,18 @@
         `(markdown-code-face ((,c :inherit ef-themes-fixed-pitch :extend t)))))
 
 (eval-after-load! ef-themes
+
+  (setq ef-themes-headings
+        '((0 1.5)
+          (1 1.3)
+          (2 1.1)
+          ;; (3 1)
+          ;; (agenda-date 1.3)
+          ;; (agenda-structure variable-pitch light 1.8)
+          ;; (t variable-pitch)
+          ))
+
+
   (defvar ef-themes-all)
   (setq ef-themes-all (append ef-themes-light-themes ef-themes-dark-themes))
   (defun ef-themes-do-override-one (theme)

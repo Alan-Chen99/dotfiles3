@@ -63,6 +63,7 @@
   export.nix-path = {
     n = "${nixpkgs-flakes}";
     nixpkgs = "${nixpkgs-flakes}";
+    df = "${source-ver}/nix/local.nix";
     prelude = "${source-ver}/nix/prelude.nix";
   };
 

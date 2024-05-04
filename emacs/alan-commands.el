@@ -261,9 +261,10 @@
 
 (defun copy-cur-filename ()
   (interactive)
-  (let ((v (if buffer-file-name
-               buffer-file-name
-             default-directory)))
+  (let ((v (abbreviate-file-name
+            (if buffer-file-name
+                buffer-file-name
+              default-directory))))
     (message "%s" v)
     (kill-new v)))
 
@@ -272,6 +273,7 @@
   (let ((v (if buffer-file-name
                (file-name-nondirectory buffer-file-name)
              (file-name-nondirectory (directory-file-name default-directory)))))
+    ;; (message "%s\n%s" (buffer-name) v)
     (message "%s" v)
     (kill-new v)))
 

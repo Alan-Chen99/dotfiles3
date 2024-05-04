@@ -5,6 +5,7 @@
 
 (require-if-is-bytecompile
  consult
+ vertico
  magit
 
  alan-theme
@@ -313,7 +314,6 @@
   ;; "g u" #'undo
   )
 
-;; evil-buffer
 (general-def evil-window-map
   "k" #'evil-window-up
   "j" #'evil-window-down
@@ -322,6 +322,7 @@
 
   "u" #'previous-buffer
   "i" #'next-buffer
+  "y" #'alan-iflipb-pop
 
   "o" #'delete-other-windows
   "a" #'quit-window
@@ -433,6 +434,9 @@
 
   "<up>" #'minibuffer-previous-completion
   "<down>" #'minibuffer-next-completion
+
+  "C-k" #'vertico-previous-group
+  "C-j" #'vertico-next-group
 
   ;; minibuffer-complete-word ?
   )

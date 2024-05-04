@@ -1,36 +1,65 @@
 ;; -*- lexical-binding: t -*-
 
 (require 'cl-lib)
-(require 'span)
-
 ;; (require 'span)
 
-(eval-when-compile
-  (defun unsafe-bind (val)
-    (error "unsafe-bind %s" val))
-  (setf (get 'unsafe-bind 'byte-compile) #'unsafe-bind--byte-compile)
-  (defun unsafe-bind--byte-compile (form)
-    (byte-compile-push-binding-init `(placehold-1 ,(nth 1 form)))
-    (byte-compile-out 'byte-unbind 0)
-    nil))
+(eval-and-compile
 
-(defvar some-var1)
-(defvar some-var2)
-(defvar some-var3)
-(defvar some-var4)
+  (defun span--special-maybe-bind (cd var value cb)
+    (ignore cd var value cb)
+    (error "span--special-maybe-bind should never be called directly"))
 
-;; (symbol-function 'testf1)
-;; (symbol-plist 'let)
+  (defun span--compile-special-maybe-bind (form)
+    (cl-destructuring-bind (_ cd-form var value-form body-form) form
+      (cl-assert (symbolp var))
 
-(defvar placehold-1)
-(defun testf1 ()
-  (let* ((some-var1 1))
-    (unsafe-bind (atewwtg)))
-  ;; (let* ((some-var1 1)
-  ;;        (some-var2 2)
-  ;;        (some-var3 3))
-  ;;   (funcall x))
-  )
+      (let ((depth byte-compile-depth))
+        ;; stores the result
+        (byte-compile-push-constant nil)
+
+        (byte-compile-form cd-form)
+
+        (cl-assert (= (+ depth 2) byte-compile-depth))
+
+        (let ((body-start-tag (byte-compile-make-tag)))
+          (byte-compile-goto-if nil nil body-start-tag)
+          (byte-compile-form value-form)
+          (byte-compile-dynamic-variable-bind var)
+          (byte-compile-push-constant t)
+          (byte-compile-out-tag body-start-tag))
+
+        (cl-assert (= (+ depth 2) byte-compile-depth))
+
+        (byte-compile-form body-form)
+        (byte-compile-stack-set depth)
+
+        (cl-assert (= (+ depth 2) byte-compile-depth))
+
+        (let ((done-tag (byte-compile-make-tag)))
+          (byte-compile-goto-if nil 'discard done-tag)
+          (byte-compile-out 'byte-unbind 1)
+          (byte-compile-out-tag done-tag))
+
+        (cl-assert (= (+ depth 1) byte-compile-depth))
+
+        nil)))
+
+  (setf (get #'span--special-maybe-bind 'byte-compile) #'span--compile-special-maybe-bind))
+
+(defvar test-glob-var 0)
+
+(defun testf1 (v)
+  (span--special-maybe-bind
+   v test-glob-var 1
+   (progn
+     (debug)
+     (message "test-glob-var: %s" test-glob-var)
+     (cons 'af test-glob-var))))
+
+;; (defun testf2 (fn x)
+;;   (funcall fn x x))
+
+;; (debug)
 
 
 (provide 'testabc)

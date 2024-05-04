@@ -29,7 +29,13 @@
                  ((alan-font-exist "Courier New"))
                  (t nil))))
       (when font
-        (set-face-attribute 'default frame :font (font-spec :family font :size alan-default-font-height))))))
+        (set-face-attribute 'default frame :font (font-spec :family font :size alan-default-font-height))
+
+        ;; seems to work even though doc of tooltip-frame-parameters claims otherwise
+        ;; the "inherit" dont take effect since we only set font size for one frame
+        ;; TODO: ig frame specific tooltip size is impossible?
+        (setf (alist-get 'font tooltip-frame-parameters) (face-attribute 'default :font))))))
+
 (alan-run-per-frame #'alan-init-font-in-frame)
 
 
@@ -52,9 +58,8 @@
 (defun alan-set-font-size (newsz &optional silent)
   (when (display-graphic-p)
     (set-face-attribute 'default (selected-frame) :font (font-spec :size newsz))
-    ;; seems to work even though doc of tooltip-frame-parameters claims otherwise
-    ;; the "inherit" dont take effect since we only set font size for one frame
-    ;; TODO: ig frame specific tooltip size is impossible?
+
+    ;; so that resizing also changes tooltip size
     (setf (alist-get 'font tooltip-frame-parameters) (face-attribute 'default :font))
 
     (unless silent

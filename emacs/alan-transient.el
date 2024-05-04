@@ -33,12 +33,17 @@
 ;; (my-transient-substitude2 "C-x s")
 ;; (my-transient-substitude2 "RET")
 
+;; (my-transient-substitude2 "-w")
+;; (my-transient-substitude2 "C-h")
+;; (my-transient-substitude2 "?")
+
 (defun my-transient-substitude2 (key)
   ;; TODO: transient seem to assume subsitude fixes its ret
   ;; is this a bug?
   (if (get-text-property 0 'alan-transient-did-sub key)
       key
     (let ((ans (my-transient-substitude2-impl key)))
+      (span-dbgf ans)
       (propertize ans 'alan-transient-did-sub t))))
 
 
@@ -118,6 +123,7 @@
     "K" #'transient-scroll-down
     "J" #'transient-scroll-up
 
+    "?" nil
     )
 
   (general-def transient-predicate-map

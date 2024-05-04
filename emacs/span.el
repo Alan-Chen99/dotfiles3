@@ -1,7 +1,7 @@
 ;; -*- lexical-binding: t -*-
 
 (require 'span-fmt)
-(cl-declaim (optimize (safety 0) (speed 3)))
+;; (cl-declaim (optimize (safety 0) (speed 3)))
 
 (defmacro span-fmt (&rest body)
   (cl-destructuring-bind (fn . val) (span-fmt-parse body)
@@ -26,8 +26,11 @@
 designed to be created at compile time and used as constant"
     tag
     fmt-fn
-    fmt-static
-    (file (bound-and-true-p byte-compile-current-file))))
+    ;; fmt-static
+    (file (or (bound-and-true-p byte-compile-current-file) buffer-file-name))
+    (line (or (when (fboundp 'byte-compile--warning-source-offset)
+                (byte-compile--warning-source-offset))
+              (when buffer-file-name (point))))))
 
 (eval-and-compile
   (defun span--parse-fmt-spec (args tag)
@@ -433,6 +436,10 @@ designed to be created at compile time and used as constant"
             (message-log-max 1000)
             (set-message-function #'set-message-functions)
             (clear-message-function #'clear-minibuffer-message)
+
+            (delay-mode-hooks nil)
+            ;; (delayed-mode-hooks nil)
+
             (span--context-locals nil)
             (span--handles-message t))
        ,@body)))
@@ -695,16 +702,18 @@ designed to be created at compile time and used as constant"
 
 (defvar span--is-in-backtrace nil)
 (defun span--backtrace (&optional base)
-  (span :span--backtrace
-    (span-flush)
-    (unless span--is-in-backtrace
-      (let ((span--is-in-backtrace t)
-            (inhibit-quit nil))
-        (cl-incf span--n-backtrace-made-this-cycle)
-        (when (< span--n-backtrace-made-this-cycle 10)
-          (span-notef
-            "backtrace:\n%s"
-            (backtrace-to-string (cdr (backtrace-get-frames base)))))))))
+  (span--context :span--internal
+    (span :span--backtrace
+      (span-flush)
+      (unless span--is-in-backtrace
+        (let ((span--is-in-backtrace t)
+              (inhibit-quit nil))
+          (cl-incf span--n-backtrace-made-this-cycle)
+          (when (< span--n-backtrace-made-this-cycle 10)
+            (span-notef
+              "backtrace:\n%s"
+              `(backtrace-to-string
+                ,(:unsafe (cdr (backtrace-get-frames base)))))))))))
 
 (defun span--debug (type &rest args)
   (if (eq type 'error)

@@ -15,7 +15,11 @@
   (or (not (symbolp command))
       (not
        (or
-        (memq command '(consult-buffer switch-to-buffer))
+        (memq command
+              '(consult-buffer
+                switch-to-buffer
+                alan-iflipb-kill-current-buffer
+                alan-iflipb-pop))
         (string-match-p "^iflipb-" (symbol-name command))))))
 (add-hook! 'pre-command-hook
   (defun pre-command-handle-iflipb ()
@@ -52,6 +56,13 @@
       (if (< iflipb-current-buffer-index (length (iflipb-interesting-buffers)))
           (iflipb-select-buffer iflipb-current-buffer-index)
         (iflipb-select-buffer (1- iflipb-current-buffer-index)))))
+
+  (defun alan-iflipb-pop ()
+    (interactive)
+    (setq my-iflipb-buffer-list (delq (current-buffer) my-iflipb-buffer-list))
+    (if (< iflipb-current-buffer-index (length (iflipb-interesting-buffers)))
+        (iflipb-select-buffer iflipb-current-buffer-index)
+      (iflipb-select-buffer (1- iflipb-current-buffer-index))))
 
   (general-def
     [remap previous-buffer] #'iflipb-previous-buffer

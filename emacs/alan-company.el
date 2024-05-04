@@ -38,7 +38,8 @@
   (let (company-backends)
     (global-company-mode t))
 
-  (setq-default
+  (span-dbgf 'initializing: company-idle-delay (current-buffer))
+  (setq
    company-idle-delay 0.05
    company-require-match nil
    company-minimum-prefix-length 0
@@ -50,6 +51,7 @@
    company-tooltip-margin 0
    ;; company-tooltip-align-annotations t ;; what does this do?
    )
+  (span-dbgf 'initialized: company-idle-delay (current-buffer))
 
   (setq company-frontends
         '(

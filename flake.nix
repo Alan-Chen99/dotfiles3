@@ -3,16 +3,6 @@
   # nix --experimental-features "nix-command flakes" --allow-import-from-derivation build .#profile -v --print-build-logs
 
   inputs = {
-    racket-fmt = {
-      url = "github:sorawee/fmt";
-      flake = false;
-    };
-
-    racket2nix = {
-      url = "github:fractalide/racket2nix";
-      flake = false;
-    };
-
     crane = {
       url = "github:ipetkov/crane";
       inputs.nixpkgs.follows = "empty";
@@ -30,6 +20,13 @@
         purescript-overlay.follows = "empty";
         pyproject-nix.follows = "empty";
       };
+    };
+
+    emacs-overlay = {
+      url = "github:nix-community/emacs-overlay";
+      inputs.flake-utils.follows = "flake-utils";
+      inputs.nixpkgs.follows = "empty";
+      inputs.nixpkgs-stable.follows = "empty";
     };
 
     empty = {
@@ -60,6 +57,13 @@
     home-manager = {
       url = "github:nix-community/home-manager";
       # inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    mini-compile-commands = {
+      # nix flake update mini-compile-commands
+      # url = "github:danielbarter/mini_compile_commands";
+      url = "github:Alan-Chen99/mini_compile_commands";
+      flake = false;
     };
 
     nix = {
@@ -109,6 +113,18 @@
       };
     };
 
+    racket-fmt = {
+      url = "github:sorawee/fmt";
+      flake = false;
+    };
+
+    racket2nix = {
+      # url = "github:fractalide/racket2nix";
+      # url = "github:corpix/racket2nix";
+      url = "github:dwarfmaster/racket2nix";
+      flake = false;
+    };
+
     rust-overlay = {
       url = "github:oxalica/rust-overlay";
       inputs = {
@@ -153,34 +169,47 @@
             pkgs-versioned = {
               inherit
                 (prev)
+                cxxtools
                 flake-registry-file
                 fonts
                 js
                 nixtools
                 profile
                 profile-root
+                pythonlibs
                 pythontools
-                cxxtools
                 ;
             };
             pkgs-other = {
               inherit
                 (prev)
+                emacs
+                emacs-test
+                python-all
                 rust-src-hack
                 scmindent
                 test
                 test2
+                youtube-dl
                 ;
+
+              python = prev.poetrypython.python;
+
+              # inherit
+              #   (final.python.pkgs)
+              #   youtube-dl
+              #   ;
 
               schemat = final.craneLib.buildPackage {
                 src = inputs.schemat;
               };
 
+              rackt-test = final.deps.racket2nix;
               # racket-fmt = final.deps.racket2nix.buildRacketPackage inputs.racket-fmt;
             };
             pkgs = (builtins.mapAttrs (name: pkg: appendversion pkg) pkgs-versioned) // pkgs-other;
           in
-            pkgs // {pkgs = pkgs;}
+            pkgs // {pkgs = builtins.mapAttrs (name: _: final."${name}") pkgs;}
         );
 
       export = rec {
@@ -196,6 +225,8 @@
 
           p = default.legacypkgs;
           d = default.deps;
+
+          pypkgs = packages.python.pkgs;
 
           _self = outputs-system;
           _mods = outputs-system.default.__mods;

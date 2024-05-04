@@ -128,6 +128,12 @@
 (evil-set-command-property 'evil-forward-paragraph :jump nil)
 (evil-set-command-property 'evil-backward-paragraph :jump nil)
 
+
+(evil-set-command-property 'evil-insert :jump t)
+(evil-set-command-property 'evil-append :jump t)
+(evil-set-command-property 'evil-append-line :jump t)
+
+
 (alan-set-ignore-debug-on-error #'evil-window-delete)
 
 ;; TODO: needed since this "rethrows" errors, but maybe not the best idea

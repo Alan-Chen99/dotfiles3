@@ -6,6 +6,7 @@
 
 (add-to-list 'auto-mode-alist (cons (rx "/.env" eos) #'bash-ts-mode))
 (add-to-list 'auto-mode-alist (cons (rx "/.envrc" eos) #'bash-ts-mode))
+(add-to-list 'auto-mode-alist (cons (rx "-hook" eos) #'bash-ts-mode))
 
 (eval-after-load! sh-script
   (add-hook! 'bash-ts-mode-hook

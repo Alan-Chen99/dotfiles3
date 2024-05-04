@@ -66,6 +66,32 @@
         "type": "github"
       }
     },
+    "emacs-overlay": {
+      "inputs": {
+        "flake-utils": [
+          "flake-utils"
+        ],
+        "nixpkgs": [
+          "empty"
+        ],
+        "nixpkgs-stable": [
+          "empty"
+        ]
+      },
+      "locked": {
+        "lastModified": 1715188006,
+        "narHash": "sha256-29BwNbk5R3CUPKY3NOY+uVYsuyViVsbvH8xdF812gh4=",
+        "owner": "nix-community",
+        "repo": "emacs-overlay",
+        "rev": "b2b29771bfc8b8ce80839915c0d6828ed5ade2fa",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-community",
+        "repo": "emacs-overlay",
+        "type": "github"
+      }
+    },
     "empty": {
       "flake": false,
       "locked": {
@@ -203,6 +229,22 @@
       "original": {
         "owner": "kristapsdz",
         "repo": "lowdown",
+        "type": "github"
+      }
+    },
+    "mini-compile-commands": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1715367358,
+        "narHash": "sha256-edCwdbrdSL3YDm7Ar0TPGI6K4GLjnFi9vbIICM5hHGA=",
+        "owner": "Alan-Chen99",
+        "repo": "mini_compile_commands",
+        "rev": "edb63db16488aa249f1321c4ef64643c1f9e7143",
+        "type": "github"
+      },
+      "original": {
+        "owner": "Alan-Chen99",
+        "repo": "mini_compile_commands",
         "type": "github"
       }
     },
@@ -443,15 +485,15 @@
     "racket2nix": {
       "flake": false,
       "locked": {
-        "lastModified": 1617810191,
-        "narHash": "sha256-bV7Ei+pYqiiPTnJdvGt0GV8yS3nyXfSLn2NZQ2jv5nA=",
-        "owner": "fractalide",
+        "lastModified": 1691691602,
+        "narHash": "sha256-8mR8AhrT01cNI4yWrTamDlFkJ1LdyU1HKGgJ890VsvQ=",
+        "owner": "dwarfmaster",
         "repo": "racket2nix",
-        "rev": "3c3c217cced27788fb342ffcc82c87714b5a8082",
+        "rev": "d97245f996a55262c4999fe7b8797a1c26565248",
         "type": "github"
       },
       "original": {
-        "owner": "fractalide",
+        "owner": "dwarfmaster",
         "repo": "racket2nix",
         "type": "github"
       }
@@ -461,12 +503,14 @@
         "crane": "crane",
         "crate2nix": "crate2nix",
         "dream2nix": "dream2nix",
+        "emacs-overlay": "emacs-overlay",
         "empty": "empty",
         "flake-compat": "flake-compat",
         "flake-parts": "flake-parts",
         "flake-utils": "flake-utils",
         "gitignore": "gitignore",
         "home-manager": "home-manager",
+        "mini-compile-commands": "mini-compile-commands",
         "nix": "nix",
         "nix-filter": "nix-filter",
         "nix-index-database": "nix-index-database",

@@ -5,7 +5,6 @@
   diffstat,
   diffutils,
   direnv,
-  emacs,
   fd,
   file,
   findutils,
@@ -90,7 +89,6 @@
       diffstat
       diffutils
       direnv
-      emacs
       fd
       file
       findutils
@@ -129,6 +127,7 @@
       echo ${lib.strings.escapeShellArg profile-text} >> $out/env/.env
       ln -s ${source-ver} $out/src
       ln -s $out $out/profile
+      mkdir -p $out/repos
       cd $out/repos
       ${cmd-body}
     '';

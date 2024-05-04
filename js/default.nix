@@ -34,6 +34,7 @@
 
     publishBinsFor = [
       "@fsouza/prettierd"
+      "prettier"
       "typescript"
       "typescript-language-server"
     ];

@@ -1,10 +1,39 @@
 {
   self,
-  emacs,
+  emacs-base,
   legacypkgs,
+  mcc-env,
+  mcc-hook,
+  tree,
   std,
+  dbg,
 }: rec {
-  pdf-tools = (legacypkgs.emacsPackagesFor emacs).pdf-tools;
+  # export.emacs = emacs-base;
+  export.emacs =
+    (emacs-base.override (prev: {
+      withCsrc = false;
+      stdenv = mcc-env;
+    }))
+    .overrideAttrs (final: prev: {
+      MCC_BUILD_DIR = "$out/${final.pname}-${final.version}-src";
+
+      MCC_KEEP_REGEXP = ''
+        \.c$|
+        \.h$|
+        \.m$|
+        ^TAGS$
+      '';
+    });
+
+  export.emacs-test =
+    (legacypkgs.hello.override (prev: {
+      stdenv = mcc-env;
+    }))
+    .overrideAttrs (final: prev: {
+      MCC_BUILD_DIR = "$out/${final.pname}-${final.version}-src";
+    });
+
+  pdf-tools = (legacypkgs.emacsPackagesFor emacs-base).pdf-tools;
 
   export.pdf-tools-epdfinfo =
     std.runCommandLocal "pdf-tools-epdfinfo" {}

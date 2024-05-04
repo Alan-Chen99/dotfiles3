@@ -3,8 +3,10 @@
   crane,
   crate2nix,
   dream2nix,
+  emacs-overlay,
   gitignore-lib,
   home-manager,
+  mini-compile-commands,
   nix,
   nix-filter,
   nixd,
@@ -25,6 +27,7 @@
         nix = nix;
       })
       rust-overlay
+      # emacs-overlay.overlays.emacs
     ];
   };
 
@@ -108,9 +111,12 @@
       racket2nix
       ;
 
+    mcc-env = (pkgs.callPackage mini-compile-commands {}).wrap self.std.stdenv;
+    mcc-hook = (pkgs.callPackage mini-compile-commands {}).hook;
+
     home-manager-bin = pkgs.home-manager;
     coreutils = pkgs.coreutils-full;
-    emacs = pkgs.emacs29-pgtk;
+    emacs-base = pkgs.emacs29-pgtk;
 
     gcc = pkgs.gcc_latest;
 

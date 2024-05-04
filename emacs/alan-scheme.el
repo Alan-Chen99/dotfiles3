@@ -5,7 +5,7 @@
 (pkg! 'lsp-scheme)
 
 (eval-after-load! scheme
-  (seq-doseq (p "_-:#><?")
+  (seq-doseq (p "_-:#><?!%*")
     (modify-syntax-entry p "w" scheme-mode-syntax-table))
 
   (add-hook! 'scheme-mode-hook

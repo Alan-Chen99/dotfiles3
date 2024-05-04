@@ -81,7 +81,8 @@
 
      lsp-enable-indentation nil
      indent-tabs-mode nil
-     tab-always-indent nil
+     ;; tab-always-indent nil
+     tab-always-indent 'complete
 
      electric-indent-inhibit t
      ;; python-indent-trigger-commands nil

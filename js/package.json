@@ -3,10 +3,11 @@
   "version": "1.0.0",
   "main": "index.js",
   "license": "MIT",
-  "devDependencies": {
+  "dependencies": {
+    "prettier": "^3.2.5",
     "@fsouza/prettierd": "^0.25.2",
+    "scmindent": "^1.0.4",
     "typescript": "^5.4.3",
-    "typescript-language-server": "^4.3.3",
-    "scmindent": "^1.0.4"
+    "typescript-language-server": "^4.3.3"
   }
 }

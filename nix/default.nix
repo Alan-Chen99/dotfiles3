@@ -23,8 +23,10 @@
       crane = flakes.crane;
       crate2nix = flakes.crate2nix;
       dream2nix = flakes.dream2nix;
+      emacs-overlay = flakes.emacs-overlay;
       gitignore-lib = flakes.gitignore.lib;
       home-manager = flakes.home-manager;
+      mini-compile-commands = flakes.mini-compile-commands;
       nix = flakes.nix.packages.${system}.default;
       nix-filter = flakes.nix-filter;
       nixd = flakes.nixd.packages.${system}.default;
@@ -35,7 +37,15 @@
         inherit system;
         pkgs = import "${flakes.racket2nix}/pkgs" {
           inherit system;
-          pkgs = self.legacypkgs;
+          # pkgs = flakes.nixpkgs22-11.legacyPackages."${system}";
+          pkgs =
+            import (builtins.fetchTarball (
+              builtins.removeAttrs
+              (builtins.fromJSON (builtins.readFile "${flakes.racket2nix}/nixpkgs/default.json"))
+              ["unpack"]
+            )) {
+              inherit system;
+            };
         };
       };
     } (final: prev: {
@@ -60,6 +70,7 @@
           cleansrc
           dbg
           deps
+          emacs
           fonts
           home-manager-bin-wrapped
           legacypkgs
@@ -89,7 +100,7 @@
   pub.dbg = mod.debug;
 
   mod.emacs = callpackage ../emacs {} (reexport (prev: {
-    inherit (prev) pdf-tools-epdfinfo;
+    inherit (prev) pdf-tools-epdfinfo emacs emacs-test;
   }));
 
   mod.env = callpackage ./env.nix {} (reexport (prev: {
@@ -123,7 +134,7 @@
   }));
 
   mod.python = callpackage ../python {} (reexport (prev: {
-    inherit (prev) pythontools;
+    inherit (prev) pythontools poetrypython pythonlibs youtube-dl python-all;
   }));
 
   mod.repl = callpackage ./repl.nix {} (reexport (prev: {

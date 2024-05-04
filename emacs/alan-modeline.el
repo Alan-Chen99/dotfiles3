@@ -212,10 +212,18 @@
 
       (push (abbreviate-file-name dirname-local) ans))
 
-    (when remote
-      (push remote ans))
+    (setq ans (apply #'concat ans))
 
-    (apply #'concat ans)))
+    (if remote
+        (propertize
+         (concat
+          (file-remote-p dirname 'method)
+          ":"
+          ans)
+         'help-echo
+         (concat remote ans))
+
+      ans)))
 
 
 
@@ -240,8 +248,10 @@
 
 (defvar-local alan-modeline-filename nil)
 (defvar-local alan-modeline-buffername nil)
-(put 'alan-modeline-filename 'risky-local-variable t)
-(put 'alan-modeline-buffername 'risky-local-variable t)
+(defvar-local alan-modeline-file-and-buffername nil)
+;; (put 'alan-modeline-filename 'risky-local-variable t)
+;; (put 'alan-modeline-buffername 'risky-local-variable t)
+(put 'alan-modeline-file-and-buffername 'risky-local-variable t)
 
 (defvar-local alan-update-modeline-filepath-timer nil)
 
@@ -290,6 +300,19 @@
       (setq-local alan-modeline-buffername nil)
     (setq-local alan-modeline-buffername
                 (propertize (buffer-name) 'face 'modeline-file-or-buffer-name)))
+
+  (let* ((fname (or alan-modeline-filename ""))
+         (bname (or alan-modeline-buffername ""))
+         (ans (concat fname bname)))
+    (setq-local
+     alan-modeline-file-and-buffername
+     (propertize
+      ans
+      'mouse-face 'mode-line-highlight
+      'help-echo
+      (concat
+       (or (get-text-property 0 'help-echo fname) fname)
+       (or (get-text-property 0 'help-echo bname) bname)))))
 
   nil)
 
@@ -379,8 +402,7 @@
         " "
         (:eval (modeline-calc-modified))
         (:eval (alan-modeline-handle-filename))
-        alan-modeline-filename
-        alan-modeline-buffername
+        alan-modeline-file-and-buffername
         (:eval (doom-modeline-selection-info))
         (:eval (anzu--update-mode-line-only-if-loaded))
         flycheck-mode-line
@@ -399,5 +421,59 @@
         " "))
 
 ;; (substring-no-properties (format-mode-line 'mode-line-modes))
+
+
+(defvar alan-shown-time nil)
+(defun alan-update-time (&optional donot-redisp)
+  (let ((new (format-time-string "%F %r")))
+    (unless (string= alan-shown-time new)
+      (setq alan-shown-time new)
+      (unless donot-redisp
+        (force-mode-line-update t)))
+    new))
+(defvar alan-update-time-timer nil)
+(ignore-errors
+  (cancel-timer alan-update-time-timer))
+(progn
+  (setq alan-update-time-timer (run-at-time t 1 #'ignore))
+  (timer-set-function alan-update-time-timer #'alan-update-time))
+(clear-and-backup-keymap tab-bar-map)
+(defvar alan-tabbar-count 0)
+(defun alan-do-format-tab-bar ()
+  (span :alan-do-format-tab-bar
+    (let* ((lhs
+            (concat
+             (let* ((text " %"))
+               (put-text-property 0 1 'display '(space :align-to (+ left left-fringe left-margin)) text)
+               (put-text-property 1 2 'face 'font-lock-warning-face text)
+               ;; (put-text-property 1 2 'help-echo "hello" text)
+               text)
+             (format-message "%s" (cl-incf alan-tabbar-count))))
+
+           (rhs (alan-update-time t))
+           (rhs-width (1+ (string-width rhs))))
+
+      (concat
+       lhs
+       (propertize
+        " "
+        'display
+        `(space
+          :align-to
+          (- (+ right right-fringe right-margin scroll-bar)
+             ,rhs-width)))
+       rhs))))
+
+;; See (info "(elisp) Defining Menus")
+(global-set-key [tab-bar]
+                '(keymap "tab-bar-this-str-should-do-nothing"
+                         (any-sym menu-item (alan-do-format-tab-bar) nil :help "..")))
+
+(setq tooltip-delay 0.1)
+(setq tooltip-short-delay 0.1)
+;; (setq use-system-tooltips nil)
+
+(tab-bar-mode)
+
 
 (provide 'alan-modeline)

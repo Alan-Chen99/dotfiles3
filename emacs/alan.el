@@ -40,14 +40,7 @@
 (require-noerr 'alan-persistent-undo)
 (require-noerr 'alan-simple)
 (require-noerr 'alan-evil-surround)
-
-(pkg! 'better-jumper
-  (startup-queue-package 'better-jumper 70))
-(eval-after-load! better-jumper
-  (better-jumper-mode +1)
-  (general-def
-    [remap evil-jump-forward] #'better-jumper-jump-forward
-    [remap evil-jump-backward] #'better-jumper-jump-backward))
+(require-noerr 'alan-jump)
 
 
 ;; completion ui
@@ -86,6 +79,7 @@
 (require-noerr 'alan-cxx)
 (pkg! 'dockerfile-mode)
 (require-noerr 'alan-scheme)
+(pkg! 'lua-mode)
 
 (add-to-list 'auto-mode-alist '("\\.ya?ml\\'" . yaml-ts-mode))
 (add-hook! 'yaml-ts-mode-hook
@@ -138,7 +132,16 @@
 
 
 
+;; (span-dbgf elpaca-build-steps)
 
+;; (pkg! '(python-coverage :alan-extra-deps ((xml+ "0"))))
+
+
+;; (span-wrap elpaca--continue-build (f &rest args)
+;;   (_)
+;;   (span-dbgf elpaca-build-steps))
+
+;; (span-dbgf elpaca-build-steps)
 
 
 (span-notef "[end-of-init-hook]")
@@ -497,51 +500,6 @@
 ;; (setq lsp-clients-clangd-library-directories '("/home/alan/.nix-profile/share/emacs/29.2/src/"))
 
 
-(defvar alan-shown-time nil)
-(defun alan-update-time (&optional donot-redisp)
-  ;; (span-msg "alan-update-time")
-  ;; (span--backtrace)
-  (let ((new (format-time-string "%F %r")))
-    (unless (string= alan-shown-time new)
-      (setq alan-shown-time new)
-      (unless donot-redisp
-        (force-mode-line-update t)))
-    new))
-(defvar alan-update-time-timer nil)
-(ignore-errors
-  (cancel-timer alan-update-time-timer))
-(progn
-  (setq alan-update-time-timer (run-at-time t 1 #'ignore))
-  (timer-set-function alan-update-time-timer #'alan-update-time))
-
-(clear-and-backup-keymap tab-bar-map)
-(defvar alan-tabbar-count 0)
-(defun alan-do-format-tab-bar ()
-  (span :alan-do-format-tab-bar
-    ;; (span--backtrace)
-    (concat
-     (let* ((text " %"))
-       (put-text-property 0 1 'display '(space :align-to (+ left left-fringe left-margin)) text)
-       (put-text-property 1 2 'face 'font-lock-warning-face text)
-       ;; (put-text-property 1 2 'help-echo "hello" text)
-       text)
-     (format-message "%s" (cl-incf alan-tabbar-count))
-     "   "
-     (alan-update-time t)
-     ;; (format-time-string "%F %r")
-     )))
-
-;; See (info "(elisp) Defining Menus")
-(global-set-key [tab-bar]
-                '(keymap "tab-bar-this-str-should-do-nothing"
-                         (any-sym menu-item (alan-do-format-tab-bar) nil :help "..")))
-
-(setq tooltip-delay 0.1)
-(setq tooltip-short-delay 0.1)
-;; (setq use-system-tooltips nil)
-
-(tab-bar-mode)
-
 ;; (span-wrap tooltip-show (&rest args)
 ;;   (:tooltip-show (:seq args))
 ;;   (span-flush))
@@ -624,3 +582,26 @@
 
 (eval-after-load! midnight
   (setq clean-buffer-list-delay-general 1.5))
+
+(setq-default tab-always-indent 'complete)
+
+
+(let ((dir (expand-file-name "src" source-directory)))
+  (if (file-accessible-directory-p dir)
+      (setq find-function-C-source-directory dir)))
+
+;; (substring x 95 100)
+
+;; (setq test-ps
+;;       (propertize
+;;        "---"
+;;        'display "\n"
+;;        ;; 'font-lock-multiline t
+;;        'face
+;;        '(:inherit markdown-hr-face :underline t :extend t)
+;;        ;; markdown-hr
+;;        ;; (113 116 113 116 #<killed buffer>)
+;;        ))
+
+;; symlinks
+(setq find-file-visit-truename t)
