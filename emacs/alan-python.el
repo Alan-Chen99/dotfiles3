@@ -104,6 +104,33 @@
     ;; (tree-sitter-hl-mode-lazy)
     ))
 
+(setq python-shell-completion-native-output-timeout 0.1)
+
+(defun alan-python-shell-completion-at-point ()
+  (let* ((line-start (line-beginning-position))
+         (start (save-excursion
+                  (if (not (re-search-backward
+                            (python-rx
+                             (or whitespace open-paren close-paren
+                                 string-delimiter simple-operator))
+                            line-start
+                            t 1))
+                      line-start
+                    (forward-char (length (match-string-no-properties 0)))
+                    (point))))
+         (end (point))
+         (process (python-shell-get-process)))
+    (when process
+      (list
+       start end
+       (python-shell-completion-native-get-completions
+        process
+        (buffer-substring-no-properties start end))))))
+
+(add-hook! 'inferior-python-mode-hook
+  (defun alan-setup-inferior-python ()
+    (add-hook 'completion-at-point-functions
+              #'alan-python-shell-completion-at-point nil 'local)))
 
 
 (provide 'alan-python)

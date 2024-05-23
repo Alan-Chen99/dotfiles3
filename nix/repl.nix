@@ -18,7 +18,7 @@
   export.nixrepl-wrapper = std.writeScriptBin "nix-repl" ''
     #! ${std.stdenv.shell}
     export NIX_USER_CONF_FILES=${env.nixconf-file}
-    # exec ${nix}/bin/nix repl "$@" "<prelude>"
-    exec ${nix}/bin/nix repl --print-build-logs "$@"
+    exec ${nix}/bin/nix repl --print-build-logs "$@" --expr "import <prelude>"
+    # exec ${nix}/bin/nix repl --print-build-logs "$@"
   '';
 }

@@ -194,6 +194,7 @@
   "g j" (lambda () (interactive) (evil-next-visual-line (- (window-height) 5)))
 
   "g c" #'copy-cur-filename
+  "g C" #'copy-wsl-windows-filename
   "g x" #'copy-cur-filename-last
 
   "z s" #'shell

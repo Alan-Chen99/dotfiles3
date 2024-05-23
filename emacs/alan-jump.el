@@ -10,6 +10,7 @@
 
 (eval-after-load! better-jumper
   (setq better-jumper-context 'buffer)
+
   (better-jumper-mode +1)
 
   (add-hook! 'find-file-hook

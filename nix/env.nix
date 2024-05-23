@@ -60,12 +60,14 @@
       registry remove --registry $out/registry.json dummy-nonexistent
   '';
 
-  export.nix-path = {
-    n = "${nixpkgs-flakes}";
-    nixpkgs = "${nixpkgs-flakes}";
-    df = "${source-ver}/nix/local.nix";
-    prelude = "${source-ver}/nix/prelude.nix";
-  };
+  export.nix-path =
+    (removeAttrs flakes ["self"])
+    // {
+      n = "${nixpkgs-flakes}";
+      nixpkgs = "${nixpkgs-flakes}";
+      df = "${source-ver}/nix/local.nix";
+      prelude = "${source-ver}/nix/prelude.nix";
+    };
 
   export.nixconf = {
     nix-path =

@@ -2,6 +2,8 @@
   description = "configs";
   # nix --experimental-features "nix-command flakes" --allow-import-from-derivation build .#profile -v --print-build-logs
 
+  # cachix use cuda-maintainers
+
   inputs = {
     crane = {
       url = "github:ipetkov/crane";
@@ -204,7 +206,7 @@
                 src = inputs.schemat;
               };
 
-              rackt-test = final.deps.racket2nix;
+              # rackt-test = final.deps.racket2nix;
               # racket-fmt = final.deps.racket2nix.buildRacketPackage inputs.racket-fmt;
             };
             pkgs = (builtins.mapAttrs (name: pkg: appendversion pkg) pkgs-versioned) // pkgs-other;

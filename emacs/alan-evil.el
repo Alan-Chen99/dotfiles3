@@ -124,6 +124,7 @@
        ;; evil-goto-definition-search
        ))
 
+(setq evil-jumps-max-length 1000)
 (evil-set-command-property 'evil-jump-item :jump nil)
 (evil-set-command-property 'evil-forward-paragraph :jump nil)
 (evil-set-command-property 'evil-backward-paragraph :jump nil)

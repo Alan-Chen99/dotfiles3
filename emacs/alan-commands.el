@@ -268,6 +268,18 @@
     (message "%s" v)
     (kill-new v)))
 
+
+(defun copy-wsl-windows-filename ()
+  (interactive)
+  (let ((v (process-lines
+            "wslpath" "-w"
+            (file-truename
+             (or buffer-file-name default-directory)))))
+    (cl-assert (length= v 1))
+    (setq v (nth 0 v))
+    (message "%s" v)
+    (kill-new v)))
+
 (defun copy-cur-filename-last ()
   (interactive)
   (let ((v (if buffer-file-name
