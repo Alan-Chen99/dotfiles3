@@ -604,4 +604,5 @@
 ;;        ))
 
 ;; symlinks
+;; (setq find-file-visit-truename nil)
 (setq find-file-visit-truename t)

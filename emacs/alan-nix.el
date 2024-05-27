@@ -7,8 +7,16 @@
 
 (defun alan-add-to-directory-abbrev-alist (x)
   ;; TODO: this can be faster
+  ;; (setq x (file-name-as-directory (expand-file-name x "/")))
+  (setq x (expand-file-name x "/"))
   (add-to-list 'directory-abbrev-alist
-               (cons (rx-to-string `(seq bos ,(file-truename x)) t) (expand-file-name x))))
+               (cons (rx-to-string `(seq bos ,(file-truename x)) t) x))
+
+  ;; (unless (string= (file-chase-links x) (file-truename x))
+  ;;   (span-dbgf "not equal!" x (file-chase-links x) (file-truename x)))
+  ;; (add-to-list 'directory-abbrev-alist
+  ;;              (cons (rx-to-string `(seq bos ,(file-chase-links x)) t) x))
+  )
 
 (defun alan-add-to-directory-abbrev-alist-rec (path)
   (dolist (x (directory-files-recursively path "" t))
@@ -22,7 +30,8 @@
       (dolist (x (directory-files "~/.nix-profile/repos/" t (rx bos (not "."))))
         (alan-add-to-directory-abbrev-alist x))
       (alan-add-to-directory-abbrev-alist-rec "~/.nix-profile")
-      (alan-add-to-directory-abbrev-alist-rec "~/aliases/music/"))
+      (alan-add-to-directory-abbrev-alist-rec "~/aliases/music/")
+      (alan-add-to-directory-abbrev-alist-rec "~/aliases/physics/"))
   (error
    (message "error adding nix repos to directory-abbrev-alist: %S" err)
    nil))
