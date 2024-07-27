@@ -108,6 +108,10 @@
     (let ((buffer-undo-list t))
       (comint-clear-buffer)))
 
+  (defadvice! comint-add-to-input-history-no-props (fn cmd)
+    :around #'comint-add-to-input-history
+    (funcall fn (substring-no-properties cmd)))
+
   ;; make shell not print control c on kill
   (advice-add #'comint-skip-input :override #'ignore)
 

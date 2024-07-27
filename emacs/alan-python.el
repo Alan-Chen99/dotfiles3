@@ -133,4 +133,6 @@
               #'alan-python-shell-completion-at-point nil 'local)))
 
 
+(alan-set-ignore-debug-on-error #'python-indent-line)
+
 (provide 'alan-python)

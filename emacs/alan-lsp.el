@@ -86,4 +86,23 @@
 
    ))
 
+(eval-after-load! lsp-diagnostics
+  (defadvice! alan-lsp-diagnostics--flycheck-calculate-level (severity _tags)
+    :override #'lsp-diagnostics--flycheck-calculate-level
+    (pcase severity
+      (1 'error)
+      (2 'warning)
+      (3 'info)
+      (4 'supress)
+      (_ 'error)))
+  (eval-after-load! flycheck
+    (flycheck-define-error-level 'supress
+      :severity -100
+      ;; :compilation-level (get flycheck-level 'flycheck-compilation-level)
+      ;; :overlay-category category
+      ;; :fringe-bitmap bitmap
+      ;; :fringe-face (get flycheck-level 'flycheck-fringe-face)
+      ;; :error-list-face face
+      )))
+
 (provide 'alan-lsp)

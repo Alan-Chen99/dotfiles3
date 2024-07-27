@@ -23,7 +23,7 @@
 
 (eval-after-load! gptel
   (setq gptel-api-key gpt-api-key)
-  (setq gptel-model "gpt-4")
+  (setq gptel-model "gpt-4-turbo")
   (general-def gptel-mode-map
     :states 'motion
     ;; "SPC h" #'gptel-system-prompt

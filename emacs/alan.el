@@ -606,3 +606,10 @@
 ;; symlinks
 ;; (setq find-file-visit-truename nil)
 (setq find-file-visit-truename t)
+
+
+;; (setq flycheck-navigation-minimum-level 'warnings)
+;; (setq flycheck-error-list-minimum-level 'warnings)
+
+(eval-after-load! woman
+  (advice-add #'woman-dired-define-keys :around #'ignore))

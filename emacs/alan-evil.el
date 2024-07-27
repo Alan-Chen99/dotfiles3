@@ -115,10 +115,17 @@
       ;;  (browse-url url))
       )))
 
+(defun alan-evil-goto-definition-xref (string position)
+  (ignore-errors
+    (evil-goto-definition-xref string position)))
+
 (setq evil-goto-definition-functions
       (list
+       ;; first bc lsp mode
+       ;; TODO: allow goint to visit-url if xref fails
+       #'alan-evil-goto-definition-xref
        #'evil-goto-definition-visit-url
-       #'evil-goto-definition-xref
+
        ;; evil-goto-definition-imenu
        ;; evil-goto-definition-semantic
        ;; evil-goto-definition-search
@@ -141,7 +148,9 @@
 (alan-set-ignore-debug-on-error #'evil-motion-range)
 
 (alan-set-ignore-debug-on-quit #'evil-operator-range)
+
 (alan-set-ignore-debug-on-quit #'evil-ex-start-search)
+(alan-set-ignore-debug-on-error #'evil-ex-start-search)
 
 (eval-after-load! evil-collection
   (setq evil-collection-key-blacklist '("s")))

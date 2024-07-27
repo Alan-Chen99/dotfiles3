@@ -21,7 +21,8 @@
 
 (defun my-eldoc--echo-area-substring (available)
   (let ((ans (resolve-display-text-prop (buffer-string))))
-    (setq ans (string-join (string-split ans "\n" t) "\n"))
+    (setq ans (replace-regexp-in-string (rx "\n\n") "\n" ans))
+    ;; (setq ans (string-join (string-split ans "\n" t) "\n"))
     ans))
 
 
