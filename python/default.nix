@@ -22,12 +22,47 @@
     };
   };
 
-  export.poetrypython = poetry-lib.mkPoetryPackages {
+  poetryPackages-attrs = builtins.listToAttrs (
+    map (drv: {
+      name = drv.pname;
+      value = drv;
+    })
+    self.poetrypython.poetryPackages
+  );
+
+  export.poetrypython = let
+    injectwith = injected: (
+      builtins.mapAttrs
+      (name: val: (
+        let
+          new = injected ++ [name];
+        in
+          (
+            poetrypython.withPackages (ps: map (x: ps."${x}") new)
+          )
+          // {inject = injectwith new;}
+      ))
+      poetryPackages-attrs
+    );
+  in
+    _poetrypython
+    // {
+      python =
+        _poetrypython.python
+        // {
+          inject = injectwith [];
+        };
+    };
+
+  _poetrypython = poetry-lib.mkPoetryPackages {
     python = python-patched;
     projectDir = ./.;
     preferWheels = true;
     overrides = [
       (final: prev: rec {
+        # typing is builtin since python 3.6, ignore a dependency on typing module in pypi
+        typing = null;
+
         cchardet = prev.cchardet.override {preferWheel = false;};
 
         # final.pkgs.meson (meson with poetrypython) fails check so disable checks for now
