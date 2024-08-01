@@ -30,6 +30,7 @@
     self.poetrypython.poetryPackages
   );
 
+  # ex: nix shell ..#python.inject.pip.ipython
   export.poetrypython = let
     injectwith = injected: (
       builtins.mapAttrs
@@ -37,10 +38,7 @@
         let
           new = injected ++ [name];
         in
-          (
-            poetrypython.withPackages (ps: map (x: ps."${x}") new)
-          )
-          // {inject = injectwith new;}
+          (poetrypython.withPackages (ps: map (x: ps."${x}") new)) // (injectwith new)
       ))
       poetryPackages-attrs
     );
