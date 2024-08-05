@@ -149,7 +149,7 @@
    "SPC z" #'comint-stop-subjob
    "SPC q" #'comint-quit-subjob
    "SPC l" 'comint-clear-buffer-no-undo
-   "SPC t" #'comint-continue-subjob
+   "SPC t" #'toggle-truncate-lines
    "SPC <up>" #'comint-kill-subjob
    )
 
