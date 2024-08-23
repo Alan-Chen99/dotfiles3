@@ -82,6 +82,10 @@
           propagatedBuildInputs = (old.propagatedBuildInputs or []) ++ [final.pythonix final.ninja];
         });
 
+        regexfactory = prev.regexfactory.overridePythonAttrs (old: {
+          nativeBuildInputs = (old.nativeBuildInputs or []) ++ [final.setuptools];
+        });
+
         # this is bc defaultPoetryOverrides says poetry = poetry_core
         _poetry = prev.poetry;
       })

@@ -5,12 +5,12 @@
 (pkg! 'nix-ts-mode
   (add-to-list 'auto-mode-alist '("\\.nix\\'" . nix-ts-mode)))
 
-(defun alan-add-to-directory-abbrev-alist (x)
+(defun alan-add-to-directory-abbrev-alist (x x-truename)
   ;; TODO: this can be faster
   ;; (setq x (file-name-as-directory (expand-file-name x "/")))
   (setq x (expand-file-name x "/"))
   (add-to-list 'directory-abbrev-alist
-               (cons (rx-to-string `(seq bos ,(file-truename x)) t) x))
+               (cons (rx-to-string `(seq bos ,x-truename) t) x))
 
   ;; (unless (string= (file-chase-links x) (file-truename x))
   ;;   (span-dbgf "not equal!" x (file-chase-links x) (file-truename x)))
@@ -18,20 +18,39 @@
   ;;              (cons (rx-to-string `(seq bos ,(file-chase-links x)) t) x))
   )
 
+(defvar nix-directory-cache-old
+  (force-noerr
+   (alan-read-elisp-data-file nix-directory-cache-file)))
+(defvar nix-directory-cache nil)
+
+(defun nix-list-directory-rec (path)
+  (setq path (file-truename path))
+  (cl-assert (or (string-prefix-p "/nix/" path) (string-prefix-p "/gnu/" path)))
+  (let ((ans (alist-get path nix-directory-cache-old nil nil #'string=)))
+    (unless ans
+      (dolist (x (directory-files-recursively path "" t))
+        (when (file-directory-p x)
+          (push (cons (file-relative-name x path) (file-truename x)) ans))))
+    (setf (alist-get path nix-directory-cache) ans)
+    ans))
+
+
 (defun alan-add-to-directory-abbrev-alist-rec (path)
-  (dolist (x (directory-files-recursively path "" t))
-    (when (file-directory-p x)
-      (alan-add-to-directory-abbrev-alist x)))  )
+  (alan-add-to-directory-abbrev-alist path (file-truename path))
+  (dolist (x (nix-list-directory-rec path))
+    (alan-add-to-directory-abbrev-alist (expand-file-name (car x) path) (cdr x)))
+  )
 
 ;; so that when visiting the source of say nixpkgs,
 ;; it automatically changes to ~/.nix-profile/repos/nixpkgs/ if possible
 (condition-case err
     (let (file-name-handler-alist)
-      (dolist (x (directory-files "~/.nix-profile/repos/" t (rx bos (not "."))))
-        (alan-add-to-directory-abbrev-alist x))
+      ;; (dolist (x (directory-files "~/.nix-profile/repos/" t (rx bos (not "."))))
+      ;;   (alan-add-to-directory-abbrev-alist x))
+      (alan-add-to-directory-abbrev-alist-rec "~/.nix-profile/repos")
       (alan-add-to-directory-abbrev-alist-rec "~/.nix-profile")
-      (alan-add-to-directory-abbrev-alist-rec "~/aliases/music/")
-      (alan-add-to-directory-abbrev-alist-rec "~/aliases/physics/"))
+      (alan-add-to-directory-abbrev-alist-rec "~/aliases/music")
+      (alan-add-to-directory-abbrev-alist-rec "~/aliases/physics"))
   (error
    (message "error adding nix repos to directory-abbrev-alist: %S" err)
    nil))
@@ -42,6 +61,14 @@
   (error
    (message "error adding guix to directory-abbrev-alist: %S" err)
    nil))
+
+(alan-startup-schedual-fn
+ -1000
+ (lambda ()
+   (unless (equal nix-directory-cache-old nix-directory-cache)
+     (span :update-nix-directory-cache
+       (span-notef "update-nix-directory-cache")
+       (alan-write-elisp-data-file nix-directory-cache-file nix-directory-cache)))))
 
 (eval-after-load! nix-ts-mode
 

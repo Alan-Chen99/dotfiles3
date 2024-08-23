@@ -9,11 +9,8 @@
 
 (add-hook! 'c++-ts-mode-hook
   (defun alan-setup-cxx ()
-    (setq evil-goto-definition-functions
-          (list
-           #'evil-goto-definition-xref
-           #'evil-goto-definition-visit-url))
 
+    (setq-local format-all-formatters '(("C++" clang-format)))
     (alan-lsp-deferred 'lsp-clangd
       ;; (lsp-completion-mode)
       ;; (setq-local completion-at-point-functions (list #'lsp-completion-at-point))

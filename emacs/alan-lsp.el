@@ -61,7 +61,7 @@
    lsp-completion-show-kind nil
    lsp-completion-show-label-description nil
    lsp-completion-enable-additional-text-edit nil
-   lsp-completion-filter-on-incomplete nil
+   ;; lsp-completion-filter-on-incomplete nil
    lsp-completion-use-last-result nil
    lsp-completion-no-cache t
 
@@ -94,6 +94,7 @@
       (2 'warning)
       (3 'info)
       (4 'supress)
+      ;; (4 'info)
       (_ 'error)))
   (eval-after-load! flycheck
     (flycheck-define-error-level 'supress

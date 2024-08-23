@@ -42,20 +42,12 @@
 
 (force-noerr
  (setq alan-dependency-alist
-       (when (file-exists-p alan-dependency-cache-file)
-         (with-temp-buffer
-           (insert-file-contents alan-dependency-cache-file)
-           (goto-char (point-min))
-           (read (current-buffer))))))
+       (alan-read-elisp-data-file alan-dependency-cache-file)))
 
 (defun alan-write-dependency-alist ()
   (span :alan-write-dependency-alist
     (span-notef "writing deps to: %s" alan-dependency-cache-file)
-    (with-local-quit
-      (with-temp-file alan-dependency-cache-file
-        (require 'pp)
-        (let (pp-use-max-width print-circle print-level print-length)
-          (pp alan-dependency-alist (current-buffer))))))
+    (alan-write-elisp-data-file alan-dependency-cache-file alan-dependency-alist))
   (setq alan-write-deps-schedualed nil))
 
 (defun alan-record-dep (feature deps)

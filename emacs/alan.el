@@ -613,3 +613,13 @@
 
 (eval-after-load! woman
   (advice-add #'woman-dired-define-keys :around #'ignore))
+
+(defun qemu-stop ()
+  (interactive)
+  (process-send-string nil "\C-ax"))
+
+;; (span-instrument company-capf)
+;; (setq lsp-completion-sort-initial-results nil)
+;; (setq lsp-completion-filter-on-incomplete t)
+
+;; (setq lsp-completion--no-reordering t)

@@ -53,7 +53,8 @@
    ;; lsp-rust-analyzer-cargo-watch-args ["--" "-W" "clippy::pedantic"]
    lsp-rust-clippy-preference "on"
 
-   lsp-rust-all-features nil)
+   lsp-rust-all-targets nil
+   lsp-rust-all-features t)
 
   (seq-doseq (p "_")
     (modify-syntax-entry p "w" rust-mode-syntax-table))

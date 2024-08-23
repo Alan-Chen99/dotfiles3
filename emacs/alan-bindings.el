@@ -197,6 +197,8 @@
   "g C" #'copy-wsl-windows-filename
   "g x" #'copy-cur-filename-last
 
+  "g f" #'flycheck-list-errors
+
   "z s" #'shell
 
   "z j" #'magit-status

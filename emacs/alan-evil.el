@@ -119,6 +119,7 @@
   (ignore-errors
     (evil-goto-definition-xref string position)))
 
+;; (setf (symbol-plist 'evil-goto-definition-functions) nil)
 (setq evil-goto-definition-functions
       (list
        ;; first bc lsp mode

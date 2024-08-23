@@ -110,4 +110,18 @@
     (funcall fn f))
   (add-hook 'after-make-frame-functions fn))
 
+(defun alan-read-elisp-data-file (file)
+  (when (file-exists-p file)
+    (with-temp-buffer
+      (insert-file-contents file)
+      (goto-char (point-min))
+      (read (current-buffer)))))
+
+(defvar pp-use-max-width)
+(defun alan-write-elisp-data-file (file data)
+  (with-temp-file file
+    (require 'pp)
+    (let (pp-use-max-width print-circle print-level print-length)
+      (pp data (current-buffer)))))
+
 (provide 'alan-utils)

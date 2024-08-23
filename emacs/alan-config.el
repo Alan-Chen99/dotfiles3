@@ -10,6 +10,7 @@
 (defvar elpaca-repos-directory (expand-file-name "repos/" elpaca-directory))
 
 (defvar alan-dependency-cache-file (expand-file-name "dependencies-cached.el" elpaca-builds-directory))
+(defvar nix-directory-cache-file (expand-file-name "nix-directory-cache.el" user-emacs-directory))
 
 ;; https://stackoverflow.com/questions/25063073/file-watch-no-such-file-or-directory-for-emacs-autosave-file
 (setq-default

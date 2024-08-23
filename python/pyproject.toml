@@ -39,3 +39,5 @@ nixpkgs = "^0.2.4"
 
 youtube_dl = "^2021.12.17"
 factorio-draftsman = "^1.1.1"
+
+RegexFactory = { git = 'git@github.com:Alan-Chen99/RegexFactory.git' }
