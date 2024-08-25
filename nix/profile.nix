@@ -106,7 +106,7 @@
       nixrepl-wrapper
       nixwrapper
       patch
-      pdf-tools-epdfinfo
+      # pdf-tools-epdfinfo
       ripgrep
       taplo
       tree

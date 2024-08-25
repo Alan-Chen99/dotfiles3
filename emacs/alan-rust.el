@@ -54,7 +54,9 @@
    lsp-rust-clippy-preference "on"
 
    lsp-rust-all-targets nil
-   lsp-rust-all-features t)
+   ;; lsp-rust-all-features t
+   lsp-rust-all-features nil
+   )
 
   (seq-doseq (p "_")
     (modify-syntax-entry p "w" rust-mode-syntax-table))
