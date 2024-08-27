@@ -69,9 +69,12 @@
     };
 
     nix = {
-      url = "github:edolstra/nix/19ec1c9fd4d4bf6e941b046b8549ba2a1a690937";
+      # https://github.com/NixOS/nix/pull/6530
+      # https://github.com/edolstra/nix/tree/lazy-trees
+      url = "github:edolstra/nix/cfe3ee3de84458a8962a6c714e602e6791666101";
       inputs = {
         nixpkgs.follows = "nixpkgs";
+        nixpkgs-23-11.follows = "empty";
         nixpkgs-regression.follows = "empty";
         flake-compat.follows = "flake-compat";
       };
@@ -91,9 +94,9 @@
     };
 
     nixpkgs = {
-      # nix flake lock --update-input nixpkgs
-      # url = "github:nixos/nixpkgs/nixos-23.11";
-      url = "github:nixos/nixpkgs/c8e74c2f83fe12b4e5a8bd1abbc090575b0f7611";
+      # nix flake update nixpkgs
+      # url = "github:nixos/nixpkgs/nixos-24.05";
+      url = "github:nixos/nixpkgs/797f7dc49e0bc7fab4b57c021cdf68f595e47841";
     };
 
     nixpkgs-lib.url = "github:nixos/nixpkgs/c8e74c2f83fe12b4e5a8bd1abbc090575b0f7611?dir=lib";
@@ -187,6 +190,8 @@
                 (prev)
                 emacs
                 emacs-test
+                nix
+                nixwrapper
                 python-all
                 rust-src-hack
                 scmindent
@@ -196,11 +201,6 @@
                 ;
 
               python = prev.poetrypython.python;
-
-              # inherit
-              #   (final.python.pkgs)
-              #   youtube-dl
-              #   ;
 
               schemat = final.craneLib.buildPackage {
                 src = inputs.schemat;

@@ -101,7 +101,8 @@
       gnused
       home-manager-bin-wrapped
       keychain
-      nix.doc
+      # TODO: doesnt build
+      # nix.doc
       nixmeta
       nixrepl-wrapper
       nixwrapper

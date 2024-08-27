@@ -10,7 +10,8 @@
     nixconf =
       prev.nixconf
       // {
-        plugin-files = "${nix-doc}/lib/libnix_doc_plugin.so";
+        # TODO: nix-doc doesnt build
+        # plugin-files = "${nix-doc}/lib/libnix_doc_plugin.so";
         allow-unsafe-native-code-during-evaluation = true;
       };
   });
