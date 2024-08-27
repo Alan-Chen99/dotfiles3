@@ -50,7 +50,8 @@
       (alan-add-to-directory-abbrev-alist-rec "~/.nix-profile/repos")
       (alan-add-to-directory-abbrev-alist-rec "~/.nix-profile")
       (alan-add-to-directory-abbrev-alist-rec "~/aliases/music")
-      (alan-add-to-directory-abbrev-alist-rec "~/aliases/physics"))
+      (alan-add-to-directory-abbrev-alist-rec "~/aliases/physics")
+      (alan-add-to-directory-abbrev-alist-rec "~/aliases/qiskit"))
   (error
    (message "error adding nix repos to directory-abbrev-alist: %S" err)
    nil))
@@ -85,8 +86,8 @@
       :major-modes '(nix-ts-mode)
       :initialized-fn (lambda (workspace)
                         (with-lsp-workspace workspace
-                                            (lsp--set-configuration
-                                             (lsp-configuration-section "nixd"))))
+                          (lsp--set-configuration
+                           (lsp-configuration-section "nixd"))))
       :synchronize-sections '("nixd")
       :server-id 'nix-nixd)))
 
