@@ -245,7 +245,7 @@
             deps =
               prev.deps
               // {
-                emacs = prev.legacypkgs.emacs29-gtk3;
+                emacs-base = prev.legacypkgs.emacs29-gtk3;
               };
           });
         };
