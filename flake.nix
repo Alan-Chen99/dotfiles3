@@ -190,8 +190,8 @@
                 (prev)
                 emacs
                 emacs-test
-                nix
                 nixwrapper
+                pdf-tools-epdfinfo
                 python-all
                 rust-src-hack
                 scmindent

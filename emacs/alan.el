@@ -80,6 +80,7 @@
 (pkg! 'dockerfile-mode)
 (require-noerr 'alan-scheme)
 (pkg! 'lua-mode)
+(pkg! 'php-mode)
 
 (add-to-list 'auto-mode-alist '("\\.ya?ml\\'" . yaml-ts-mode))
 (add-hook! 'yaml-ts-mode-hook

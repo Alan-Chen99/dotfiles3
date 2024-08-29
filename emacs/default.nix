@@ -33,7 +33,7 @@
       MCC_BUILD_DIR = "$out/${final.pname}-${final.version}-src";
     });
 
-  pdf-tools = (legacypkgs.emacsPackagesFor emacs-base).pdf-tools;
+  pdf-tools = (legacypkgs.emacsPackagesFor self.emacs).pdf-tools;
 
   export.pdf-tools-epdfinfo =
     std.runCommandLocal "pdf-tools-epdfinfo" {}
