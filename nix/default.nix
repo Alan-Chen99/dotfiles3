@@ -134,7 +134,7 @@
   }));
 
   mod.python = callpackage ../python {} (reexport (prev: {
-    inherit (prev) pythontools poetrypython pythonlibs youtube-dl python-all;
+    inherit (prev) pythontools poetrypython pythonlibs python-all pypkgs-bins;
   }));
 
   mod.repl = callpackage ./repl.nix {} (reexport (prev: {

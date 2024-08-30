@@ -197,7 +197,6 @@
                 scmindent
                 test
                 test2
-                youtube-dl
                 ;
 
               python = prev.poetrypython.python;
@@ -211,7 +210,7 @@
             };
             pkgs = (builtins.mapAttrs (name: pkg: appendversion pkg) pkgs-versioned) // pkgs-other;
           in
-            pkgs // {pkgs = builtins.mapAttrs (name: _: final."${name}") pkgs;}
+            pkgs // {pkgs = final.pypkgs-bins // (builtins.mapAttrs (name: _: final."${name}") pkgs);}
         );
 
       export = rec {

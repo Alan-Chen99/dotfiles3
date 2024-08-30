@@ -137,9 +137,15 @@
     '';
   };
 
-  export.youtube-dl = std.buildEnv {
-    name = "youtube-dl";
-    paths = [poetrypython.pkgs.youtube-dl];
-    pathsToLink = ["/bin" "/etc" "/share"];
+  pypkgs-bins_ = {
+    inherit (poetrypython.pkgs) youtube-dl vcstool2;
   };
+
+  export.pypkgs-bins = builtins.mapAttrs (n: e:
+    std.buildEnv {
+      name = n;
+      paths = [e];
+      pathsToLink = ["/bin" "/etc" "/share"];
+    })
+  pypkgs-bins_;
 }
