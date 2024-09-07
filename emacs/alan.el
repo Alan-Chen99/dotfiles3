@@ -77,8 +77,9 @@
 (require-noerr 'alan-lilypond)
 (require-noerr 'alan-shell)
 (require-noerr 'alan-cxx)
-(pkg! 'dockerfile-mode)
 (require-noerr 'alan-scheme)
+(require-noerr 'alan-latex)
+(pkg! 'dockerfile-mode)
 (pkg! 'lua-mode)
 (pkg! 'php-mode)
 
@@ -624,3 +625,5 @@
 ;; (setq lsp-completion-filter-on-incomplete t)
 
 ;; (setq lsp-completion--no-reordering t)
+
+;; (span-instrument pgtk-get-selection-internal)

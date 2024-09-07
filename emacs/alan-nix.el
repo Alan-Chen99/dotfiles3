@@ -36,10 +36,10 @@
 
 
 (defun alan-add-to-directory-abbrev-alist-rec (path)
-  (alan-add-to-directory-abbrev-alist path (file-truename path))
-  (dolist (x (nix-list-directory-rec path))
-    (alan-add-to-directory-abbrev-alist (expand-file-name (car x) path) (cdr x)))
-  )
+  (when (file-exists-p path)
+    (alan-add-to-directory-abbrev-alist path (file-truename path))
+    (dolist (x (nix-list-directory-rec path))
+      (alan-add-to-directory-abbrev-alist (expand-file-name (car x) path) (cdr x)))))
 
 ;; so that when visiting the source of say nixpkgs,
 ;; it automatically changes to ~/.nix-profile/repos/nixpkgs/ if possible

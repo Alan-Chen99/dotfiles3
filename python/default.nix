@@ -127,7 +127,7 @@
     paths =
       (builtins.attrValues defaultdeps)
       ++ [
-        poetrypython
+        # poetrypython
         pyright
       ];
     pathsToLink = ["/bin"];
