@@ -87,6 +87,12 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    nix-ros-overlay = {
+      url = "github:lopsided98/nix-ros-overlay/master";
+      inputs.nixpkgs.follows = "empty";
+      inputs.flake-utils.follows = "flake-utils";
+    };
+
     nixd = {
       url = "github:nix-community/nixd/release/1.2";
       inputs.nixpkgs.follows = "nixpkgs";

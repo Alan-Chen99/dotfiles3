@@ -9,6 +9,7 @@
   mini-compile-commands,
   nix,
   nix-filter,
+  nix-ros-overlay,
   nixd,
   nixpkgs-flakes,
   nixpkgs-unstable,
@@ -27,6 +28,7 @@
         nix = nix;
       })
       rust-overlay
+      nix-ros-overlay
       # emacs-overlay.overlays.emacs
     ];
   };

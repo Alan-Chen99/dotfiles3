@@ -29,6 +29,7 @@
       mini-compile-commands = flakes.mini-compile-commands;
       nix = flakes.nix.packages.${system}.default;
       nix-filter = flakes.nix-filter;
+      nix-ros-overlay = flakes.nix-ros-overlay.overlays.default;
       nixd = flakes.nixd.packages.${system}.default;
       nixpkgs-unstable = flakes.nixpkgs-unstable;
       poetry2nix = flakes.poetry2nix;

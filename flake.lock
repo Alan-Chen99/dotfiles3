@@ -336,6 +336,30 @@
         "type": "github"
       }
     },
+    "nix-ros-overlay": {
+      "inputs": {
+        "flake-utils": [
+          "flake-utils"
+        ],
+        "nixpkgs": [
+          "empty"
+        ]
+      },
+      "locked": {
+        "lastModified": 1712797796,
+        "narHash": "sha256-SkCWsnJ6H+LbXt7PLroXCPlb0k52+EG7WKEXtWjuNbI=",
+        "owner": "lopsided98",
+        "repo": "nix-ros-overlay",
+        "rev": "e239e71fd2ce40ce1f7499328a4c92e9473fec88",
+        "type": "github"
+      },
+      "original": {
+        "owner": "lopsided98",
+        "ref": "master",
+        "repo": "nix-ros-overlay",
+        "type": "github"
+      }
+    },
     "nixd": {
       "inputs": {
         "flake-parts": [
@@ -570,6 +594,7 @@
         "nix": "nix",
         "nix-filter": "nix-filter",
         "nix-index-database": "nix-index-database",
+        "nix-ros-overlay": "nix-ros-overlay",
         "nixd": "nixd",
         "nixpkgs": "nixpkgs_2",
         "nixpkgs-lib": "nixpkgs-lib",
