@@ -44,6 +44,7 @@
       cpp
       dockerfile
       json
+      latex
       lilypond
       make
       nix

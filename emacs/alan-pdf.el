@@ -45,19 +45,33 @@
     "r" #'pdf-view-rotate
     )
 
-  (defun alan-pdf-view-revert-buffer (&rest _)
-    ;; (fundamental-mode)
-    ;; (pdf-view-mode)
+  (defvar userlock--ask-user-about-supersession-threat-do-supress nil)
+  (defadvice! userlock--ask-user-about-supersession-threat-maybe-supress (func filename)
+    :around #'userlock--ask-user-about-supersession-threat
+    (unless userlock--ask-user-about-supersession-threat-do-supress
+      (funcall func filename)))
+
+  (defun alan-pdf-view-revert-buffer (_ignore-auto _noconfirm)
+    (cl-assert (not (buffer-modified-p)))
+    (span-notef 'alan-pdf-view-revert-buffer)
+    (pdf-info-close)
+    ;; FIXME: this inserts the content of the file literally which isnt needed
     (let ((revert-buffer-preserve-modes nil))
-      (pdf-info-close)
-      (revert-buffer--default t t)
-      (pdf-view-mode)
-      ;; (pdf-info-open)
-      ))
+      (revert-buffer--default t t))
+    (let ((userlock--ask-user-about-supersession-threat-do-supress t))
+      ;; this calls (erase-buffer) which checks if the buffer has been changed
+      ;; by comparing it with the current content of the file
+      ;; if say pdflatex is writing to the file it will race and fail
+      ;; so we supress the check
+      (pdf-view-mode)))
+
+  (advice-add #'image-roll-redisplay :around #'alan-ignore-error-advice)
+
+  ;; (span-instrument alan-pdf-view-revert-buffer)
 
   ;; (defadvice! pdf-view-revert-buffer-adv (&rest _)
   ;;   :after #'pdf-view-revert-buffer
-  ;;   (pdf-view-roll-minor-mode -1)
+  ;;   (pdf-view--roll-minor-mode -1)
   ;;   (pdf-view-roll-minor-mode +1)
   ;;   )
 

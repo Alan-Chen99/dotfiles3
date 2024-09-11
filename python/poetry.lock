@@ -2702,15 +2702,19 @@ cffi = ">=1.16.0"
 test = ["pytest"]
 
 [[package]]
-name = "youtube-dl"
+name = "youtube_dl"
 version = "2021.12.17"
 description = "YouTube video downloader"
 optional = false
 python-versions = "*"
-files = [
-    {file = "youtube_dl-2021.12.17-py2.py3-none-any.whl", hash = "sha256:f1336d5de68647e0364a47b3c0712578e59ec76f02048ff5c50ef1c69d79cd55"},
-    {file = "youtube_dl-2021.12.17.tar.gz", hash = "sha256:bc59e86c5d15d887ac590454511f08ce2c47698d5a82c27bfe27b5d814bbaed2"},
-]
+files = []
+develop = false
+
+[package.source]
+type = "git"
+url = "https://github.com/ytdl-org/youtube-dl.git"
+reference = "HEAD"
+resolved_reference = "c5098961b04ce83f4615f2a846c84f803b072639"
 
 [[package]]
 name = "zipp"
@@ -2730,4 +2734,4 @@ test = ["big-O", "importlib-resources", "jaraco.functools", "jaraco.itertools", 
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.13"
-content-hash = "5b66fedfd8dc6dc8c7372e4fae5bdc2681b4040d7ce9263b77a16fa1013581e8"
+content-hash = "51598089c89b57b4f4979498ff7720d179b9cf4e0fe33a2f58b33d2412ef38a8"

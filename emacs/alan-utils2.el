@@ -108,5 +108,8 @@
   (force-noerr
    (require package)))
 
+(defun alan-ignore-error-advice (func &rest args)
+  (ignore-errors
+    (apply func args)))
 
 (provide 'alan-utils2)
