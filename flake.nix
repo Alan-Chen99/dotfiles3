@@ -7,12 +7,15 @@
   inputs = {
     crane = {
       url = "github:ipetkov/crane";
-      inputs.nixpkgs.follows = "empty";
     };
 
     crate2nix = {
       url = "github:nix-community/crate2nix";
-      inputs.flake-utils.follows = "flake-utils";
+      inputs.cachix.follows = "empty";
+      inputs.crate2nix_stable.follows = "empty";
+      inputs.flake-compat.follows = "flake-compat";
+      inputs.flake-parts.follows = "flake-parts";
+      inputs.nix-test-runner.follows = "empty";
     };
 
     dream2nix = {
@@ -77,6 +80,7 @@
         nixpkgs-23-11.follows = "empty";
         nixpkgs-regression.follows = "empty";
         flake-compat.follows = "flake-compat";
+        pre-commit-hooks.follows = "empty";
       };
     };
 
@@ -105,7 +109,7 @@
       url = "github:nixos/nixpkgs/797f7dc49e0bc7fab4b57c021cdf68f595e47841";
     };
 
-    nixpkgs-lib.url = "github:nixos/nixpkgs/c8e74c2f83fe12b4e5a8bd1abbc090575b0f7611?dir=lib";
+    nixpkgs-lib.url = "github:nixos/nixpkgs/797f7dc49e0bc7fab4b57c021cdf68f595e47841?dir=lib";
 
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixpkgs-unstable";
 
@@ -140,7 +144,7 @@
       url = "github:oxalica/rust-overlay";
       inputs = {
         nixpkgs.follows = "nixpkgs";
-        flake-utils.follows = "flake-utils";
+        # flake-utils.follows = "flake-utils";
       };
     };
 
@@ -155,11 +159,6 @@
   outputs = inputs @ {
     self,
     flake-utils,
-    nixpkgs,
-    nix-index-database,
-    nixd,
-    # nix-profile-names,
-    crate2nix,
     ...
   }: let
     forsystem-impl = system: outputs-system: rec {
@@ -194,6 +193,7 @@
             pkgs-other = {
               inherit
                 (prev)
+                basedpyright
                 emacs
                 emacs-test
                 nixwrapper

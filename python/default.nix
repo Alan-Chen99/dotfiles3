@@ -1,8 +1,9 @@
 {
   self,
+  legacypkgs,
   lib,
   nixpkgs-flakes,
-  legacypkgs,
+  pkgs-unstable,
   poetry2nix,
   pyright,
   python,
@@ -122,13 +123,22 @@
       ;
   };
 
+  export.basedpyright =
+    std.runCommandLocal "basedpyright" {}
+    ''
+      mkdir -p $out/bin
+      ln -s ${pkgs-unstable.basedpyright}/bin/basedpyright $out/bin/pyright
+      ln -s ${pkgs-unstable.basedpyright}/bin/basedpyright-langserver $out/bin/pyright-langserver
+    '';
+
   export.pythontools = std.buildEnv {
     name = "python tools";
     paths =
       (builtins.attrValues defaultdeps)
       ++ [
         # poetrypython
-        pyright
+        # pyright
+        self.basedpyright
       ];
     pathsToLink = ["/bin"];
     postBuild = ''
