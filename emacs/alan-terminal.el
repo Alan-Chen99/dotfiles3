@@ -26,7 +26,7 @@
 
     ;; TODO: maybe i should do this after each evil cursor change?
     (add-hook! 'after-load-theme-hook
-      (etcc--evil-set-cursor-color (frame-parameter nil 'cursor-color)))
+      (etcc--evil-set-cursor-color (face-attribute 'cursor :background)))
 
     ;; TODO: to reset cursor after exit emacs,
     ;; maybe i should add a cursor setting to prompt as someone said here
