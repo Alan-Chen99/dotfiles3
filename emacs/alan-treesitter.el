@@ -51,6 +51,7 @@
       python
       toml
       typescript
+      tsx
       yaml
       ))))
 

@@ -208,6 +208,7 @@
   "z f" #'magit-find-file-other-window
   "z c" #'magit-checkout
   "z r" #'magit-remote
+  "z =" #'magit-fetch
   )
 
 

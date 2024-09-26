@@ -65,6 +65,7 @@
 (require-noerr 'alan-magit)
 (require-noerr 'alan-gpt)
 (require-noerr 'alan-term)
+(require-noerr 'alan-codeium)
 
 ;; langs
 (require-noerr 'alan-elisp)
@@ -442,16 +443,18 @@
 (eval-after-load! tramp
   ;; https://stackoverflow.com/questions/26630640/tramp-ignores-tramp-remote-path
   (add-to-list 'tramp-remote-path 'tramp-own-remote-path)
-  (add-to-list 'tramp-connection-properties
-               (list (regexp-quote "/ssh:host@192.168.0.238:")
-                     "login-args"
-                     '(("-A") ("-l" "%u") ("-p" "%p") ("%c")
-                       ("-e" "none") ("%h"))
+  ;; (add-to-list 'tramp-connection-properties
+  ;;              (list (regexp-quote "/ssh:host@192.168.0.238:")
+  ;;                    "login-args"
+  ;;                    '(("-A") ("-l" "%u") ("-p" "%p") ("%c")
+  ;;                      ("-e" "none") ("%h"))
 
-                     ;; "remote-shell" "/usr/bin/bash"
+  ;;                    ;; "remote-shell" "/usr/bin/bash"
 
-                     ;; "direct-async-process" t
-                     ))
+  ;;                    ;; "direct-async-process" t
+  ;;                    ))
+
+  (setq tramp-connection-timeout 5)
   ;; TODO: this sends a "kill" but that seems to never work?
   (advice-add #'tramp-interrupt-process :override #'ignore)
 
