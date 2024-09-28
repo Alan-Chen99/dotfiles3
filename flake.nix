@@ -255,6 +255,15 @@
                 emacs-base = prev.legacypkgs.emacs29-gtk3;
               };
           });
+
+          small = default (final: prev: {
+            deps =
+              prev.deps
+              // {
+                emacs-base = prev.legacypkgs.emacs29-gtk3;
+                nix = prev.legacypkgs.nix-stable_;
+              };
+          });
         };
       };
     };
