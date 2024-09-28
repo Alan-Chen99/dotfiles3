@@ -99,7 +99,7 @@
 
     nixd = {
       url = "github:nix-community/nixd/release/1.2";
-      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.nixpkgs.follows = "nixpkgs23-11";
       inputs.flake-parts.follows = "flake-parts";
     };
 
@@ -116,6 +116,8 @@
     nixpkgs21-11.url = "github:nixos/nixpkgs/nixos-21.11";
 
     nixpkgs22-11.url = "github:nixos/nixpkgs/nixos-22.11";
+
+    nixpkgs23-11.url = "github:nixos/nixpkgs/nixos-23.11";
 
     poetry2nix = {
       url = "github:nix-community/poetry2nix";

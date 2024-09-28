@@ -9,7 +9,6 @@
   coreutils,
   nix,
   llvmpkgs,
-  nix_2_16,
 }: {
   export.test = derivation {
     name = "test-drv";

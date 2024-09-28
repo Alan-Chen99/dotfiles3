@@ -130,7 +130,6 @@
 
     nodejs = pkgs.nodejs_latest;
 
-    nix_2_16 = pkgs.nixVersions.nix_2_16;
     nix-stable = pkgs.nix-stable_;
 
     python = pkgs.python312.override {
