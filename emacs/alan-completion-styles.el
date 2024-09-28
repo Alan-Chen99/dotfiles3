@@ -38,15 +38,15 @@
 
 
 (setq completion-category-defaults nil)
-(setq
- ;; goes before the defualt completion-styles
- completion-category-overrides
- '(
-   (file (styles partial-completion))
-   ;; (command (styles initials basic))
-   ;; (command (styles basic))
-   )
- )
+;; (setq
+;;  ;; goes before the defualt completion-styles
+;;  completion-category-overrides
+;;  '(
+;;    (file (styles partial-completion))
+;;    ;; (command (styles initials basic))
+;;    ;; (command (styles basic))
+;;    )
+;;  )
 
 (eval-after-load! orderless
   ;; Configure a custom style dispatcher (see the Consult wiki)
