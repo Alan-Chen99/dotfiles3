@@ -12,22 +12,28 @@
 (put 'alan-modeline-lhs 'risky-local-variable t)
 (put 'alan-modeline-rhs 'risky-local-variable t)
 
+(defun alan-right-align-space (rhs-width)
+  (propertize
+   " "
+   'display
+   ;; Backport from `mode-line-right-align-edge' in 30
+   `(space :align-to (,(- (window-pixel-width)
+                          (window-scroll-bar-width)
+                          (window-right-divider-width)
+                          (* (or (cdr (window-margins)) 1)
+                             (frame-char-width))
+                          rhs-width)))))
+
 (defun alan-format-modeline ()
   (span :alan-format-modeline
     ;; (span-msg "%s" (current-buffer))
     ;; (span--backtrace)
     (let* ((lhs (format-mode-line alan-modeline-lhs))
            (rhs (format-mode-line alan-modeline-rhs))
-           (rhs-width (string-width rhs)))
+           (rhs-width (string-pixel-width rhs)))
       (concat
        lhs
-       (propertize
-        " "
-        'display
-        `(space
-          :align-to
-          (- (+ right right-fringe right-margin scroll-bar)
-             ,rhs-width)))
+       (alan-right-align-space rhs-width)
        rhs))))
 
 
