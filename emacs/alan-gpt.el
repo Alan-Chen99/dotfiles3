@@ -11,16 +11,18 @@
 
 (defun gpt (name)
   (interactive
-   (let* ((backend (default-value 'gptel-backend))
-          (backend-name
-           (format "*%s*" (gptel-backend-name backend))))
-     (list (if current-prefix-arg
-               (read-buffer "Create or choose gptel buffer: "
-                            (generate-new-buffer-name backend-name) nil
-                            (lambda (b)
-                              (buffer-local-value 'gptel-mode
-                                                  (get-buffer (or (car-safe b) b)))))
-             backend-name))))
+   (progn
+     (require 'gptel)
+     (let* ((backend (default-value 'gptel-backend))
+            (backend-name
+             (format "*%s*" (gptel-backend-name backend))))
+       (list (if current-prefix-arg
+                 (read-buffer "Create or choose gptel buffer: "
+                              (generate-new-buffer-name backend-name) nil
+                              (lambda (b)
+                                (buffer-local-value 'gptel-mode
+                                                    (get-buffer (or (car-safe b) b)))))
+               backend-name)))))
   (gptel name nil nil t))
 
 (defun gptn ()
