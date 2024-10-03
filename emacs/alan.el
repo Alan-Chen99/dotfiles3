@@ -29,7 +29,7 @@
 (require-noerr 'alan-font)
 (require-noerr 'alan-hl-line)
 (require-noerr 'alan-terminal)
-(pkg! 'rainbow-mode
+(pkg! '(rainbow-mode :inherit nil :host github :repo "emacsmirror/rainbow-mode")
   (startup-queue-package 'rainbow-mode -10))
 
 ;; global stuff

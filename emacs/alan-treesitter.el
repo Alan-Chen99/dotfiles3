@@ -5,6 +5,7 @@
 (pkg! '(tsc :files ("core/*.el" "core/Cargo.toml" "core/Cargo.lock" "core/src" "core/tsc-dyn.so")))
 (pkg! 'tree-sitter)
 (pkg! '(tree-sitter-langs
+        :depth nil
         :remotes ("alan" :repo "Alan-Chen99/tree-sitter-langs" :branch "master"))
   (startup-queue-package 'tree-sitter-langs 0))
 
