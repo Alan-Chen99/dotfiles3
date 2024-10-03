@@ -3,8 +3,7 @@
 (require 'alan-core)
 (require 'evil)
 
-(pkg! '(gptel :host github :repo "karthink/gptel" :protocol ssh
-              :remotes ("alan" :repo "Alan-Chen99/gptel" :branch "master")))
+(pkg! '(gptel :host github :repo "karthink/gptel"))
 
 (autoload 'gptel "gptel")
 (autoload 'gptel-menu "gptel-transient")
