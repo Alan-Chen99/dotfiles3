@@ -9,18 +9,19 @@
 (startup-queue-package 'codeium 0)
 
 (defvar company-mode)
+(defvar company--capf-cache)
 
 (eval-after-load! codeium
   (general-def insert
     "<.> 0"
     (lambda ()
       (interactive)
-      (let ((completion-at-point-functions '(codeium-completion-at-point)))
-        ;; (when (featurep 'company)
-        ;;   (when company-mode
-        ;;     (company-abort)
-        ;;     (setq company--cache (make-hash-table :test #'equal :size 10))))
-        (completion-at-point))))
+      (let ((completion-at-point-functions '(codeium-completion-at-point))
+            (company--capf-cache nil))
+        (when (featurep 'company)
+          (when company-mode
+            (company-abort)))
+        (alan-completion-at-point))))
 
   ;; if you dont want to use customize to save the api-key
   ;; (setq codeium/metadata/api_key "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx")
