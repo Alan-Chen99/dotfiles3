@@ -5,6 +5,7 @@
 
 (require 'evil)
 
+(pkg! 'git-commit)
 (pkg! 'magit
   (startup-queue-package 'magit -50))
 
