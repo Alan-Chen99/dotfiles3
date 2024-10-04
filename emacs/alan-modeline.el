@@ -431,7 +431,7 @@
 
 (defvar alan-shown-time nil)
 (defun alan-update-time (&optional donot-redisp)
-  (let ((new (format-time-string "%F %r")))
+  (let ((new (format-time-string "%F %I:%M:%S %p")))
     (unless (string= alan-shown-time new)
       (setq alan-shown-time new)
       (unless donot-redisp
