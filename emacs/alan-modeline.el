@@ -456,18 +456,11 @@
                text)
              (format-message "%s" (cl-incf alan-tabbar-count))))
 
-           (rhs (alan-update-time t))
-           (rhs-width (1+ (string-width rhs))))
+           (rhs (concat (alan-update-time t) "")))
 
       (concat
        lhs
-       (propertize
-        " "
-        'display
-        `(space
-          :align-to
-          (- (+ right right-fringe right-margin scroll-bar)
-             ,rhs-width)))
+       (alan-right-align-space (string-pixel-width rhs))
        rhs))))
 
 ;; See (info "(elisp) Defining Menus")
