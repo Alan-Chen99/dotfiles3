@@ -171,6 +171,7 @@
   "\"" #'evil-jump-item ;; go to other parenthesis
 
   "<.> j" #'evil-goto-definition
+  "<.> m" #'lsp-goto-type-definition
 
   "0" #'display-local-help
 
