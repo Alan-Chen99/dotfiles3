@@ -18,28 +18,28 @@
 
 (eval-after-load! hl-line
 
-  ;; (span-instrument global-hl-line-highlight)
-  (defadvice! alan-global-hl-line-maybe-cancel-timer (&rest _)
-    :before #'global-hl-line-highlight
-    (when (timerp alan-hl-line-timer)
-      (let ((timer alan-hl-line-timer))
-        (setq alan-hl-line-timer nil)
-        (cancel-timer timer))))
+  ;; ;; (span-instrument global-hl-line-highlight)
+  ;; (defadvice! alan-global-hl-line-maybe-cancel-timer (&rest _)
+  ;;   :before #'global-hl-line-highlight
+  ;;   (when (timerp alan-hl-line-timer)
+  ;;     (let ((timer alan-hl-line-timer))
+  ;;       (setq alan-hl-line-timer nil)
+  ;;       (cancel-timer timer))))
 
-  (defun alan-hl-line-highlight-after-change (&rest _)
-    (unless alan-hl-line-timer
-      (setq alan-hl-line-timer
-            (run-with-timer
-             0 nil
-             (lambda ()
-               (setq alan-hl-line-timer nil)
-               (let ((alan-hl-line-timer t))
-                 (global-hl-line-highlight)))))))
+  ;; (defun alan-hl-line-highlight-after-change (&rest _)
+  ;;   (unless alan-hl-line-timer
+  ;;     (setq alan-hl-line-timer
+  ;;           (run-with-timer
+  ;;            0 nil
+  ;;            (lambda ()
+  ;;              (setq alan-hl-line-timer nil)
+  ;;              (let ((alan-hl-line-timer t))
+  ;;                (global-hl-line-highlight)))))))
 
-  (add-hook! 'global-hl-line-mode-hook
-    (if global-hl-line-mode
-        (add-hook 'after-change-functions 'alan-hl-line-highlight-after-change)
-      (remove-hook 'after-change-functions 'alan-hl-line-highlight-after-change)))
+  ;; (add-hook! 'global-hl-line-mode-hook
+  ;;   (if global-hl-line-mode
+  ;;       (add-hook 'after-change-functions 'alan-hl-line-highlight-after-change)
+  ;;     (remove-hook 'after-change-functions 'alan-hl-line-highlight-after-change)))
   (global-hl-line-mode))
 
 
