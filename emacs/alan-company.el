@@ -102,7 +102,7 @@
        company-selection-changed
        (eq company-common nil)
        (string= company-common "")
-       (string= (downcase company-prefix) (downcase company-common)))
+       (string-suffix-p (downcase company-common) (downcase company-prefix)))
       (call-interactively #'company-complete-selection)
     (call-interactively #'company-complete-common)))
 
