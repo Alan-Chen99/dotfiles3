@@ -23,7 +23,7 @@
 
   ;; TODO: end up using those rarely, should put something more useful here
   ;; "<w>" #'move-beginning-of-line
-  ;; "<z>" #'evil-undo
+  "<z>" #'undo-only
   ;; "<y>" #'evil-redo
   ;; "<q>" #'evil-delete-line
 
