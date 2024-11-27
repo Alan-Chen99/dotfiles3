@@ -6,6 +6,13 @@
 (pkg! 'auctex)
 
 (eval-after-load! format-all
+  (define-format-all-formatter latexindent
+    (:executable "latexindent.pl")
+    (:install)
+    (:languages "LaTeX")
+    (:features)
+    (:format (format-all--buffer-easy executable)))
+
   (define-format-all-formatter prettier-latex
     (:executable "prettier")
     (:install)
@@ -47,7 +54,7 @@
 (add-hook! 'TeX-mode-hook
   (defun alan-setup-tex ()
 
-    (setq-local format-all-formatters '(("LaTeX" prettier-latex)))
+    ;; (setq-local format-all-formatters '(("LaTeX" prettier-latex)))
 
     (alan-lsp-deferred 'lsp-tex)))
 

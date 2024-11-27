@@ -110,10 +110,14 @@
   ;; (setq transient-show-common-commands t)
   (setq transient-semantic-coloring t)
   (setq transient-save-history nil)
+  (setq transient--buffer-name "*transient*")
 
   (general-def transient-map
     ;; "s" #'execute-extended-command
     "M-x" #'execute-extended-command
+    ;; "w j" #'evil-window-down
+    ;; "w k" #'evil-window-up
+    ;; "%" #'pp-eval-expression
 
     ;; "w" evil-window-map
     "C-h" help-map
@@ -127,7 +131,11 @@
     )
 
   (general-def transient-predicate-map
-    [execute-extended-command] #'transient--do-stay)
+    [execute-extended-command] #'transient--do-stay
+    ;; [evil-window-down] #'transient--do-stay
+    ;; [evil-window-up] #'transient--do-stay
+    ;; [pp-eval-expression] #'transient--do-stay
+    )
 
   (setq transient-substitute-key-function
         (lambda (obj)
@@ -145,17 +153,22 @@
         '(display-buffer-in-side-window
           (side . bottom)
           (dedicated . t)
-          ;; (inhibit-same-window . t)
+          (inhibit-same-window . t)
           ;; (window-parameters (no-other-window . t))
           )
         )
   ;; (setq-default transient-mode-line-format 'line
   ;; (setq-default transient-enable-popup-navigation nil)
-  (defadvice! transient--show-inhibit-cursor (&rest _)
+  (defadvice! transient--show-after (&rest _)
     :after 'transient--show
+    (with-current-buffer transient--buffer
+      (setq window-size-fixed nil))
     (when (window-live-p transient--window)
       (with-selected-window transient--window
-        (setq-local cursor-in-non-selected-windows nil))))
+        ;; disable cursor in transient window
+        (setq-local cursor-in-non-selected-windows nil)
+        ;; allow windmove-up to move to the transient window
+        (set-window-parameter nil 'no-other-window nil))))
 
   )
 

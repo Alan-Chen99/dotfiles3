@@ -61,7 +61,9 @@
   "=" #'customize-face
   "p" #'alan-show-text-properties
   "0" #'debug
-  "l" #'find-library)
+  "l" #'find-library
+
+  "i" #'info-display-manual)
 
 (clear-and-backup-keymap evil-normal-state-map)
 (clear-and-backup-keymap evil-visual-state-map)
@@ -209,6 +211,7 @@
   "z c" #'magit-checkout
   "z r" #'magit-remote
   "z =" #'magit-fetch
+  "z m" #'magit-merge
   )
 
 

@@ -66,6 +66,7 @@
 (require-noerr 'alan-gpt)
 (require-noerr 'alan-term)
 (require-noerr 'alan-codeium)
+(require-noerr 'alan-info)
 
 ;; langs
 (require-noerr 'alan-elisp)
@@ -633,3 +634,6 @@
 (span-instrument TeX-revert-document-buffer)
 (span-instrument revert-buffer-insert-file-contents--default-function)
 ;; (setq file-notify-debug t)
+
+(span-instrument transient-init-value)
+(span-instrument transient-history-next)

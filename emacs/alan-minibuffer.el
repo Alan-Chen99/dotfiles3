@@ -11,6 +11,9 @@
 (setq read-file-name-completion-ignore-case t)
 (setq backward-delete-char-untabify-method "all")
 
+;; without this cursor is wrong
+;; TODO: why?
+(add-hook! 'minibuffer-setup-hook #'evil-insert-state)
 
 (add-hook! 'minibuffer-setup-hook :depth 100 #'evil-normalize-keymaps)
 ;; (add-hook! 'minibuffer-mode-hook #'evil-normalize-keymaps)
