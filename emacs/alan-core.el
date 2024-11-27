@@ -4,6 +4,8 @@
 
 (cl-assert (= (minibuffer-depth) 0))
 
+(defvar alan-dotemacs-dir nil)
+
 ;; simple async loop
 (defvar async-queue nil)
 (defvar process-queue-thread-exist nil)

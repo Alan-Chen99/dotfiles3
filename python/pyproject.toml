@@ -37,7 +37,9 @@ pyparsing = "^3.1.2"
 meson = "^1.4.0"
 nixpkgs = "^0.2.4"
 
-youtube_dl = { git = "https://github.com/ytdl-org/youtube-dl.git" }
+yt-dlp = "^2024.10.7"
+# youtube_dl = { git = "https://github.com/ytdl-org/youtube-dl.git" }
+
 factorio-draftsman = "^1.1.1"
 vcstool2 = "^0.4.5"
 

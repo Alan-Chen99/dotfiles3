@@ -64,25 +64,6 @@
   (clear-and-backup-keymap company-active-map)
 
   ;; (setq-default last-is-complete-common nil)
-  (defun alan-company-complete-common-or-select ()
-    (interactive)
-    (when (company-manual-begin)
-      (if
-          (or
-           company-selection-changed
-           (eq company-common nil)
-           (string= (downcase company-prefix) (downcase company-common))
-           ;; (and (eq real-last-command 'company-complete-common-or-select)
-           ;;   last-is-complete-common)
-           )
-          (progn
-            (call-interactively #'company-complete-selection)
-            ;; (setq-local last-is-complete-common nil)
-            )
-        (progn
-          (call-interactively #'company-complete-common)
-          ;; (setq-local last-is-complete-common t)
-          ))))
 
   (general-def company-active-map
     :state 'insert
@@ -90,7 +71,7 @@
     ;; "<left>" (lambda () (interactive) (company-abort) (left-char))
     "<down>" #'company-select-next
     "<up>" #'company-select-previous
-    "<.> j" 'alan-company-complete-common-or-select
+    "<.> j" #'alan-company-complete-common-or-select
     ;; recursion caused by <escape> after company-complete in normal state
     ;; TODO: why?
     "<escape>"
@@ -112,6 +93,18 @@
     (eldoc-add-command #'company-select-previous)
     (eldoc-add-command #'company-complete))
   )
+
+(defun alan-company-complete-common-or-select ()
+  (interactive)
+  ;; (when (company-manual-begin)
+  (if
+      (or
+       company-selection-changed
+       (eq company-common nil)
+       (string= company-common "")
+       (string-suffix-p (downcase company-common) (downcase company-prefix)))
+      (call-interactively #'company-complete-selection)
+    (call-interactively #'company-complete-common)))
 
 (eval-after-load! company-capf
   (defadvice! company-capf--nonessential (fn &rest args)
@@ -144,6 +137,5 @@
   (advice-add #'company-quickhelp--show :around 'suppress-quickhelp-minibuffer-messages)
 
   (company-quickhelp-mode))
-
 
 (provide 'alan-company)

@@ -27,6 +27,7 @@
     ;; :definer 'minor-mode
     ;; :keymaps 'my-lsp-keymap-mode
     "<.> <down>" #'lsp-find-references
+    "<.> m" #'lsp-goto-type-definition
     "<.> <up>" #'lsp-execute-code-action)
 
   (add-hook! 'lsp-mode-hook #'evil-normalize-keymaps)
@@ -56,6 +57,7 @@
    lsp-enable-snippet nil
    ;; TODO
    lsp-lens-enable nil
+   lsp-modeline-code-actions-enable nil
 
    lsp-completion-show-detail nil
    lsp-completion-show-kind nil

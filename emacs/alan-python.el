@@ -37,7 +37,7 @@
             "--InteractiveShell.display_page=True"
             "--profile-dir"
             ;; TODO
-            (expand-file-name "python/ipython_config" "/home/alan/dotfiles"))))))
+            (expand-file-name "../python/ipython_config" alan-dotemacs-dir))))))
 
 
 (make-lazy treesit-python-lazy 'python

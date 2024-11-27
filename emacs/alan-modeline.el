@@ -12,12 +12,12 @@
 (put 'alan-modeline-lhs 'risky-local-variable t)
 (put 'alan-modeline-rhs 'risky-local-variable t)
 
-(defun alan-right-align-space (rhs-width)
+(defun alan-right-align-space (rhs-width &optional frame)
   (propertize
    " "
    'display
    ;; Backport from `mode-line-right-align-edge' in 30
-   `(space :align-to (,(- (window-pixel-width)
+   `(space :align-to (,(- (if frame (frame-pixel-width) (window-pixel-width))
                           (window-scroll-bar-width)
                           (window-right-divider-width)
                           (* (or (cdr (window-margins)) 1)
@@ -460,8 +460,9 @@
 
       (concat
        lhs
-       (alan-right-align-space (string-pixel-width rhs))
-       rhs))))
+       (alan-right-align-space (string-pixel-width rhs) t)
+       rhs
+       ))))
 
 ;; See (info "(elisp) Defining Menus")
 (global-set-key [tab-bar]

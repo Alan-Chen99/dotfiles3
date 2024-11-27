@@ -62,7 +62,7 @@
 (setq elpaca-log-functions '())
 
 (defun alan-elpaca-log-if-building (e)
-  (let ((elpaca-log-functions '(elpaca-log-initial-queues elpaca-log-command-query)))
+  (let ((elpaca-log-functions (lambda () t)))
     (elpaca--maybe-log))
   (elpaca--continue-build e))
 

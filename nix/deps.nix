@@ -21,6 +21,10 @@
   # export.legacypkgs = nixpkgs-flakes.legacyPackages.${system};
   export.legacypkgs = import nixpkgs-flakes {
     inherit system;
+    config = {
+      allowUnfree = true;
+      cudaSupport = true;
+    };
     overlays = [
       (final: prev: {
         # nix = final.nixVersions.nix_2_18;
