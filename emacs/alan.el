@@ -49,6 +49,7 @@
 (require-noerr 'alan-completion-styles)
 (require-noerr 'alan-company)
 (require-noerr 'alan-marginalia)
+(pkg! 'popup)
 
 ;; tools
 (require-noerr 'alan-flycheck)
@@ -67,6 +68,7 @@
 (require-noerr 'alan-term)
 (require-noerr 'alan-codeium)
 (require-noerr 'alan-info)
+(require-noerr 'alan-flyspell)
 
 ;; langs
 (require-noerr 'alan-elisp)
@@ -635,5 +637,5 @@
 (span-instrument revert-buffer-insert-file-contents--default-function)
 ;; (setq file-notify-debug t)
 
-(span-instrument transient-init-value)
-(span-instrument transient-history-next)
+;; (span-instrument transient-init-value)
+;; (span-instrument transient-history-next)

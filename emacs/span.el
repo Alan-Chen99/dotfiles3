@@ -510,6 +510,7 @@ designed to be created at compile time and used as constant"
 (defun span--instrument-with (sym)
   (lambda (fn &rest args)
     (span (:: `(span--format-instrument ,sym ,(:seq args)))
+      ;; (span-msg "args: %s" args)
       (span-msg "buf: %s" (current-buffer))
       (apply fn args))))
 
