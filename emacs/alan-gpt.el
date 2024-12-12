@@ -8,6 +8,7 @@
 (autoload 'gptel "gptel")
 (autoload 'gptel-menu "gptel-transient")
 (autoload 'gptel-backend-name "gptel-openai")
+(autoload 'gptel-abort "gptel")
 
 (defun gpt (name)
   (interactive
@@ -51,21 +52,13 @@
         (gptel-send)))
 
     ;; "SPC m" #'gptel-model
-
-
-
+    "SPC a" #'gptel-abort
     "SPC g" #'gptel-menu)
 
   ;; (require 'gptel-transient)
   (add-hook! 'gptel-mode-hook #'evil-normalize-keymaps)
 
   ;; (span-quickwrap gptel-file-handler)
-  )
-
-(eval-after-load! gptel-file
-  ;; (span-instrument gptel-file-handler)
-  ;; (span-instrument gptel-write-region-encoded)
-  ;; (span-instrument gptel-write-region-encoded)
   )
 
 (provide 'alan-gpt)

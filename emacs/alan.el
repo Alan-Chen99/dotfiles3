@@ -49,7 +49,7 @@
 (require-noerr 'alan-completion-styles)
 (require-noerr 'alan-company)
 (require-noerr 'alan-marginalia)
-(pkg! 'popup)
+(require-noerr 'alan-popup)
 
 ;; tools
 (require-noerr 'alan-flycheck)

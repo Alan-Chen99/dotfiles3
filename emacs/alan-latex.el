@@ -55,6 +55,7 @@
   (defun alan-setup-tex ()
 
     ;; (setq-local format-all-formatters '(("LaTeX" prettier-latex)))
+    (setq-local format-all-formatters '(("LaTeX" latexindent)))
 
     (alan-lsp-deferred 'lsp-tex)))
 
