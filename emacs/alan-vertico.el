@@ -5,6 +5,8 @@
 (pkg! '(vertico :files (:defaults "extensions/*"))
   (startup-queue-package 'vertico 80))
 
+(require-if-is-bytecompile embark)
+
 (eval-after-load! vertico
   (span-wrap vertico--exhibit (&rest args)
     (_)
@@ -54,6 +56,9 @@
   ;;       (apply func args)
   ;;     ((debug error) (signal (car e) (cdr e)))))
 
+  (general-def vertico-map
+    :states 'insert
+    "S-SPC" #'embark-act)
 
   (general-def vertico-map
     [remap minibuffer-complete-and-exit] #'vertico-exit

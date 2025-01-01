@@ -41,6 +41,7 @@
 (require-noerr 'alan-simple)
 (require-noerr 'alan-evil-surround)
 (require-noerr 'alan-jump)
+(require-noerr 'alan-embark)
 
 
 ;; completion ui

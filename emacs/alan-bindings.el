@@ -7,6 +7,7 @@
  consult
  vertico
  magit
+ embark
 
  alan-theme
  alan-minibuffer
@@ -105,6 +106,7 @@
   "g m" #'consult-mark
   "g SPC" #'consult-ripgrep
   "g r" (lambda () (interactive) (consult-ripgrep default-directory))
+  "g f" (lambda () (interactive) (consult-fd default-directory))
 
   "s" #'execute-extended-command
 
@@ -199,9 +201,11 @@
   "g C" #'copy-wsl-windows-filename
   "g x" #'copy-cur-filename-last
 
-  "g f" #'flycheck-list-errors
+  "g e" #'flycheck-list-errors
 
   "z s" #'shell
+
+  "S-SPC" #'embark-act
 
   "z j" #'magit-status
   "z l" #'magit-log
