@@ -76,6 +76,7 @@
     flake-registry = "${self.flake-registry-file}/registry.json";
     allow-import-from-derivation = true;
     extra-experimental-features = "nix-command flakes recursive-nix";
+    cores = "2";
   };
 
   export.nixconf-file =

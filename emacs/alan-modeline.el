@@ -290,12 +290,14 @@
                 (callback-lambda ()
                   (unwind-protect
                       (progn
+                        (span-dbgf "alan-set-modeline-filepath" (current-buffer))
                         (alan-set-modeline-filepath t)
                         ;; only if visible
                         (when (or (buffer-modified-p) (get-buffer-window nil t))
                           (span :alan-set-modeline-filepath
                             (force-mode-line-update))))
-                    (setq-local alan-update-modeline-filepath-timer nil))))))))))))
+                    (setq-local alan-update-modeline-filepath-timer nil))))))
+            ))))))
 
 
 (defun alan-modeline-handle-filename ()

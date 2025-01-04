@@ -3,6 +3,8 @@
 (require 'alan-core)
 (require 'alan-evil)
 
+(pkg! '(cmake-mode :main "Auxiliary/cmake-mode.el"))
+
 (add-to-list 'major-mode-remap-alist (cons #'c-mode #'c++-ts-mode))
 (add-to-list 'major-mode-remap-alist (cons #'c++-mode #'c++-ts-mode))
 (add-to-list 'major-mode-remap-alist (cons #'c-or-c++-mode #'c++-ts-mode))

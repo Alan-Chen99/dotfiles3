@@ -640,3 +640,11 @@
 
 ;; (span-instrument transient-init-value)
 ;; (span-instrument transient-history-next)
+
+;; (defun lsp--calculate-root (session file-name)
+;;   (let ((debug-on-error t))
+;;     (debug)))
+(defadvice! lsp--calculate-root--bt (fn &rest args)
+  :around #'lsp--calculate-root
+  (span--backtrace)
+  (apply fn args))
