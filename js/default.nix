@@ -12,20 +12,24 @@
 
   corepack = pkgs.corepack.override {nodejs = nodejs;};
 
-  export.scmindent = std.buildEnv {
-    name = "scmindent";
-    paths = [
-      (pkgs.mkYarnPackage {
-        nodejs = nodejs;
-        src = cleansrc ./.;
-        publishBinsFor = [
-          "scmindent"
-        ];
-        doDist = false;
-      })
-    ];
-    pathsToLink = ["/bin"];
-  };
+  jspkg = name:
+    std.buildEnv {
+      name = name;
+      paths = [
+        (pkgs.mkYarnPackage {
+          nodejs = nodejs;
+          src = cleansrc ./.;
+          publishBinsFor = [
+            name
+          ];
+          doDist = false;
+        })
+      ];
+      pathsToLink = ["/bin"];
+    };
+
+  export.basedpyright = jspkg "basedpyright";
+  export.scmindent = jspkg "scmindent";
 
   deps = pkgs.mkYarnPackage {
     nodejs = nodejs;

@@ -68,6 +68,7 @@
           ;
         inherit
           (self)
+          basedpyright
           cleansrc
           dbg
           deps
@@ -117,7 +118,7 @@
   }));
 
   mod.js = callpackage ../js {} (reexport (prev: {
-    inherit (prev) js scmindent;
+    inherit (prev) js scmindent basedpyright;
   }));
 
   mod.nixtools = callpackage ./nixtools.nix {} (reexport (prev: {
@@ -135,7 +136,7 @@
   }));
 
   mod.python = callpackage ../python {} (reexport (prev: {
-    inherit (prev) pythontools poetrypython pythonlibs python-all pypkgs-bins basedpyright;
+    inherit (prev) pythontools poetrypython pythonlibs python-all pypkgs-bins basedpyright-wrapped;
   }));
 
   mod.repl = callpackage ./repl.nix {} (reexport (prev: {

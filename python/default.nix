@@ -8,6 +8,7 @@
   pyright,
   python,
   std,
+  basedpyright,
 }: rec {
   # pkgs = legacypkgs;
   # outputs.legacyPackages.x86_64-linux._self.default.__mods.python.__out
@@ -123,14 +124,6 @@
       ;
   };
 
-  export.basedpyright =
-    std.runCommandLocal "basedpyright" {}
-    ''
-      mkdir -p $out/bin
-      ln -s ${pkgs-unstable.basedpyright}/bin/basedpyright $out/bin/pyright
-      ln -s ${pkgs-unstable.basedpyright}/bin/basedpyright-langserver $out/bin/pyright-langserver
-    '';
-
   export.pythontools = std.buildEnv {
     name = "python tools";
     paths =
@@ -138,7 +131,7 @@
       ++ [
         # poetrypython
         # pyright
-        self.basedpyright
+        basedpyright
       ];
     pathsToLink = ["/bin"];
     postBuild = ''
