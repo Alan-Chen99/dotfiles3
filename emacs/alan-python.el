@@ -19,9 +19,20 @@
     (setq-local comment-start-skip "#+\\s-*"))
 
   (seq-doseq (p "_")
-    (modify-syntax-entry p "w" python-mode-syntax-table))
+    (modify-syntax-entry p "w" python-mode-syntax-table)))
 
-  )
+;; copied from python.el
+(defvar python--treesit-keywords
+  '("as" "assert" "async" "await" "break" "case" "class" "continue" "def"
+    "del" "elif" "else" "except" "exec" "finally" "for" "from"
+    "global" "if" "import" "lambda" "match" "nonlocal" "pass" "print"
+    "raise" "return" "try" "while" "with" "yield"
+    ;; These are technically operators, but we fontify them as
+    ;; keywords.
+    "and" "in" "is" "not" "or" "not in" "is not"))
+;; for type_alias_statement
+(cl-pushnew "type" python--treesit-keywords :test #'string=)
+
 (alan-redef-python-mode)
 (eval-after-load! python
   (alan-redef-python-mode)

@@ -648,3 +648,9 @@
   :around #'lsp--calculate-root
   (span--backtrace)
   (apply fn args))
+
+;; (disassemble #'read-extended-command-1)
+;; (symbol-function #'completing-read)
+
+
+;; (cl-pushnew "type" python--treesit-keywords :test #'string=)
