@@ -14,6 +14,7 @@
 (eval-after-load! lsp-mode
   (add-to-list 'lsp-file-watch-ignored-directories (rx string-start "/nix/store/"))
   (add-to-list 'lsp-file-watch-ignored-directories (rx "/aliases/"))
+  (add-to-list 'lsp-file-watch-ignored-directories (rx "/result"))
 
   (add-to-list 'lsp-file-watch-ignored-directories (rx ".hypothesis"))
   ;; (add-to-list 'lsp-file-watch-ignored (rx ".hypothesis"))

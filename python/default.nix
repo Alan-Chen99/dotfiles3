@@ -141,7 +141,8 @@
   };
 
   pypkgs-bins_ = {
-    inherit (poetrypython.pkgs) yt-dlp vcstool2;
+    inherit (poetrypython.pkgs) yt-dlp vcstool2 _poetry;
+    poetry = poetrypython.pkgs._poetry;
   };
 
   export.pypkgs-bins = builtins.mapAttrs (n: e:
