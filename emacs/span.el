@@ -504,22 +504,34 @@ designed to be created at compile time and used as constant"
   `(span-wrap ,sym (&rest args)
      (_ (:seq args))))
 
-(defun span--format-instrument (sym args)
-  (cl-prin1-to-string (cons sym args)))
+(eval-when-compile
+  (require 'backtrace))
+(autoload 'backtrace-print-to-string "backtrace")
 
 (defun span--instrument-with (sym)
   (lambda (fn &rest args)
-    (span (:: `(span--format-instrument ,sym ,(:seq args)))
-      ;; (span-msg "args: %s" args)
-      (span-msg "buf: %s" (current-buffer))
-      (apply fn args))))
+    (let* ((verbose (get sym 'span--instrument-verbose))
+           (msg
+            (if verbose
+                (backtrace-print-to-string (cons sym args) 100)
+              (span-fmt `(cl-prin1-to-string ,(:seq (cons sym args)))))))
+      (span (:: (:unsafe msg))
+        (span-flush)
+        ;; (span-msg "args: %s" args)
+        (span-msg "buf: %s" (current-buffer))
+        (let ((res (apply fn args)))
+          (if verbose
+              (span-msg "%s -> %s" sym (backtrace-print-to-string res) 100)
+            (span-notef "%s -> %S" sym res))
+          res)))))
 
-(defun span-add-instrument (sym)
+(defun span-add-instrument (sym &optional verbose)
+  (setf (get sym 'span--instrument-verbose) verbose)
   (advice-add sym :around (span--instrument-with sym)))
 
-(defmacro span-instrument (sym)
+(defmacro span-instrument (sym &optional verbose)
   (cl-assert (symbolp sym))
-  `(span-add-instrument #',sym))
+  `(span-add-instrument #',sym ,verbose))
 
 (advice-add #'message :around #'span--wrap-message)
 (defun span--wrap-message (orig-fun format-string &rest args)
@@ -741,6 +753,16 @@ designed to be created at compile time and used as constant"
      )
     ;; (span-with-no-minibuffer-message
     (apply orig-fn args)))
+
+
+(advice-add #'command-error-default-function :around #'span--wrap-command-error-default-function)
+(defun span--wrap-command-error-default-function (orig-fun data context caller)
+  ;; command-error-default-function writes directly to *Messages* through a c function
+  ;; see minibuffer-error-function
+  ;; (let ((string (error-message-string data)))
+  ;;   (span-msg "%s%s" (if caller (format "%s: " caller) "") string))
+  (span :command-error-default-function
+    (funcall orig-fun data context caller)))
 
 
 (provide 'span)
