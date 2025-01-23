@@ -133,4 +133,45 @@
       ${cmd-body}
     '';
   };
+
+  pkgs-small_ = {
+    inherit
+      (legacypkgs)
+      cachix
+      cmake
+      cmake-format
+      dockfmt
+      ffmpeg
+      git-lfs
+      graphviz
+      html-tidy
+      hyperfine
+      ispell
+      kavita
+      nixfmt-classic
+      nixpkgs-fmt
+      shfmt
+      stylua
+      unzip
+      zip
+      ;
+  };
+  export.pkgs-small = std.buildEnv {
+    name = "pkgs-small";
+    paths = builtins.attrValues pkgs-small_;
+  };
+
+  pkgs-big_ = {
+    inherit
+      (legacypkgs)
+      fontfinder
+      jre
+      libtool
+      racket
+      ;
+  };
+  export.pkgs-big = std.buildEnv {
+    name = "pkgs-big";
+    paths = builtins.attrValues pkgs-big_;
+  };
 }

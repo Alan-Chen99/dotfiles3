@@ -129,7 +129,7 @@
   mod.printing-overlay = callpackage ./printing-overlay.nix {};
 
   mod.profile = callpackage ./profile.nix {} (reexport (prev: {
-    inherit (prev) profile;
+    inherit (prev) profile pkgs-small pkgs-big;
   }));
 
   mod.profile-root = callpackage ./profile-root.nix {} (reexport (prev: {

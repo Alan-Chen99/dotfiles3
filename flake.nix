@@ -183,6 +183,8 @@
                 fonts
                 js
                 nixtools
+                pkgs-big
+                pkgs-small
                 profile
                 profile-root
                 pythonlibs
