@@ -2,6 +2,7 @@
   self,
   crane,
   crate2nix,
+  dbg,
   dream2nix,
   emacs-overlay,
   gitignore-lib,
@@ -17,7 +18,7 @@
   racket2nix,
   rust-overlay,
   system,
-}: {
+}: rec {
   # export.legacypkgs = nixpkgs-flakes.legacyPackages.${system};
   export.legacypkgs = import nixpkgs-flakes {
     inherit system;
@@ -41,7 +42,8 @@
 
   export.lib = self.legacypkgs.lib;
 
-  export.std = {
+  export.std = std_ // dbg.__clean;
+  std_ = {
     inherit
       (self.legacypkgs)
       breakpointHook
@@ -53,6 +55,7 @@
       runCommandLocal
       runCommandCC
       stdenv
+      dbg
       writeScriptBin
       writeShellScript
       writeShellScriptBin
@@ -132,7 +135,9 @@
       # enableLibcxx = true;
     };
 
-    nodejs = pkgs.nodejs_latest;
+    # TODO (1/22/2025): nodejs_latest is not in binary cache
+    # nodejs = pkgs.nodejs_latest;
+    nodejs = pkgs.nodejs_22;
 
     nix-stable = pkgs.nix-stable_;
 

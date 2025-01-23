@@ -22,6 +22,7 @@
       inherit system nixpkgs-flakes;
       crane = flakes.crane;
       crate2nix = flakes.crate2nix;
+      dbg = self.dbg;
       dream2nix = flakes.dream2nix;
       emacs-overlay = flakes.emacs-overlay;
       gitignore-lib = flakes.gitignore.lib;

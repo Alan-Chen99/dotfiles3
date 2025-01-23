@@ -25,7 +25,7 @@
         nativeBuildInputs = [tzdata];
       } ''
         export TZ='America/New_York'
-        date -d @${builtins.toString date} +%Y-%m-%d-%H-%M-%S >> $out
+        date -d @${builtins.toString date} +%Y-%m-%d--%H:%M:%S >> $out
       '';
   in
     lib.strings.removeSuffix "\n" (builtins.readFile drv);
@@ -34,19 +34,23 @@
     if sourceInfo ? lastModified
     then format-date sourceInfo.lastModified
     else null;
+  hash =
+    if sourceInfo ? shortRev
+    then sourceInfo.shortRev
+    else if sourceInfo ? dirtyShortRev
+    then sourceInfo.dirtyShortRev
+    # older nix versions copy flake source to store
+    else if sourceInfo ? narHash
+    then builtins.substring 7 7 sourceInfo.narHash
+    else null;
 
   export.version =
     if version-file != null
     then version-file
-    else if sourceInfo ? rev && sourceInfo ? lastModified
-    then lastmodified
-    else if sourceInfo ? narHash
-    then let
-      hash = builtins.substring 7 7 sourceInfo.narHash;
-    in
-      if sourceInfo ? lastModified
-      then "${lastmodified}-${hash}"
-      else hash
+    # else if sourceInfo ? rev && sourceInfo ? lastModified
+    # then lastmodified
+    else if sourceInfo ? lastModified && hash != null
+    then "${lastmodified}-${hash}"
     else version-none;
 
   nixpkgs-ver = lib.strings.removeSuffix "\n" (builtins.readFile "${nixpkgs-flakes}/.version");

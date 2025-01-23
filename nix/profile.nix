@@ -99,7 +99,7 @@
       glibcLocales
       gnugrep
       gnused
-      home-manager-bin-wrapped
+      # home-manager-bin-wrapped
       keychain
       # TODO: doesnt build
       # nix.doc
