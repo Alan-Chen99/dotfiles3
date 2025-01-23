@@ -433,7 +433,7 @@
 
 (defvar alan-shown-time nil)
 (defun alan-update-time (&optional donot-redisp)
-  (let ((new (format-time-string "%F %I:%M:%S %p")))
+  (let ((new (format-time-string "%F %a %I:%M:%S %p")))
     (unless (string= alan-shown-time new)
       (setq alan-shown-time new)
       (unless donot-redisp
@@ -445,6 +445,61 @@
 (progn
   (setq alan-update-time-timer (run-at-time t 1 #'ignore))
   (timer-set-function alan-update-time-timer #'alan-update-time))
+
+
+(defvar alan--last-seen-command nil)
+(defvar alan--n-processed-keys 0)
+(defvar alan--displayed-keys "")
+(defvar alan--last-key-time (current-time))
+
+(lossage-size 100)
+
+(defun alan--handle-key-pressed (key)
+  (unless (consp key)
+    (let ((desc (single-key-description key)))
+      (if (length= desc 1)
+          (setq alan--displayed-keys (concat alan--displayed-keys desc))
+        (if (string-suffix-p " " alan--displayed-keys)
+            (setq alan--displayed-keys (concat alan--displayed-keys desc " "))
+          (setq alan--displayed-keys (concat alan--displayed-keys " " desc " ")))))))
+
+(defvar alan-maybe-update-keys--nesting 0)
+
+(defun alan-maybe-update-keys (&rest _)
+  (span :alan-maybe-update-keys
+    (let* ((recent (recent-keys t))
+           (search-pos (cl-position alan--last-seen-command recent :test #'eq :from-end t))
+           (pos (if search-pos
+                    (+ search-pos alan--n-processed-keys 1)
+                  alan--n-processed-keys))
+           ;; TODO: emacs is allowed to regret stuff in (recent-keys) and decide that
+           ;; something isnt a key after all, usually in terminal
+           ;; this case can prob be handled better
+           (ans (if (length> recent pos) (cl-subseq recent pos) (vector)))
+           (new-pos (cl-position nil recent :if #'consp :from-end t)))
+      (when (length> ans 0)
+        (when (> (time-to-seconds (time-subtract (current-time) alan--last-key-time)) 1)
+          (setq alan--displayed-keys (concat alan--displayed-keys "  ")))
+        (setq alan--last-key-time (current-time))
+        (mapc #'alan--handle-key-pressed ans)
+        (when (length> alan--displayed-keys 50)
+          (setq alan--displayed-keys
+                (substring alan--displayed-keys (- (length alan--displayed-keys) 25))))
+        ;; TODO: perhaps not do this in pre-command-hook?
+        (span :force-mode-line-update
+          (force-mode-line-update t)))
+      (setq alan--last-seen-command (when new-pos (aref recent new-pos)))
+      (setq alan--n-processed-keys (if new-pos (- (length recent) new-pos 1) (length recent)))
+      nil)))
+
+
+(add-hook! 'set-message-functions :depth -100 #'alan-maybe-update-keys)
+(add-hook! 'pre-command-hook :depth -100 #'alan-maybe-update-keys)
+(advice-add #'read-key-sequence :after #'alan-maybe-update-keys)
+(advice-add #'read-key-sequence-vector :after #'alan-maybe-update-keys)
+(advice-add #'read-event :after #'alan-maybe-update-keys)
+
+
 (clear-and-backup-keymap tab-bar-map)
 (defvar alan-tabbar-count 0)
 (defun alan-do-format-tab-bar ()
@@ -456,7 +511,11 @@
                (put-text-property 1 2 'face 'font-lock-warning-face text)
                ;; (put-text-property 1 2 'help-echo "hello" text)
                text)
-             (format-message "%s" (cl-incf alan-tabbar-count))))
+             (format-message "%s" (cl-incf alan-tabbar-count))
+             " "
+             ;; buffer-file-name
+             alan--displayed-keys
+             ))
 
            (rhs (concat (alan-update-time t) "")))
 

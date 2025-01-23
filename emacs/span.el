@@ -511,12 +511,18 @@ designed to be created at compile time and used as constant"
 (defun span--instrument-with (sym)
   (lambda (fn &rest args)
     (let* ((verbose (get sym 'span--instrument-verbose))
+           (backtrace (get sym 'span--instrument-backtrace))
+           (callback (get sym 'span--instrument-callback))
            (msg
             (if verbose
                 (backtrace-print-to-string (cons sym args) 100)
               (span-fmt `(cl-prin1-to-string ,(:seq (cons sym args)))))))
       (span (:: (:unsafe msg))
         (span-flush)
+        (when backtrace
+          (span--backtrace))
+        (when callback
+          (funcall callback))
         ;; (span-msg "args: %s" args)
         (span-msg "buf: %s" (current-buffer))
         (let ((res (apply fn args)))
@@ -525,13 +531,26 @@ designed to be created at compile time and used as constant"
             (span-notef "%s -> %S" sym res))
           res)))))
 
-(defun span-add-instrument (sym &optional verbose)
+(defun span-add-instrument (sym verbose backtrace callback)
   (setf (get sym 'span--instrument-verbose) verbose)
+  (setf (get sym 'span--instrument-backtrace) backtrace)
+  (setf (get sym 'span--instrument-callback) callback)
   (advice-add sym :around (span--instrument-with sym)))
 
-(defmacro span-instrument (sym &optional verbose)
+(defmacro span-instrument (sym &rest rest)
+  (declare (indent 1))
   (cl-assert (symbolp sym))
-  `(span-add-instrument #',sym ,verbose))
+  (let ((verbose nil)
+        (backtrace nil))
+    (while (keywordp (car-safe rest))
+      (pcase (pop rest)
+        (:verbose (setq verbose (pop rest)))
+        (:backtrace (setq backtrace (pop rest)))
+        (_ (error "invalid"))))
+    `(span-add-instrument #',sym ,verbose, backtrace (lambda () ,@rest))))
+
+(defun span-uninstrument (sym)
+  (advice-remove sym (span--instrument-with sym)))
 
 (advice-add #'message :around #'span--wrap-message)
 (defun span--wrap-message (orig-fun format-string &rest args)
@@ -546,6 +565,29 @@ designed to be created at compile time and used as constant"
               (funcall orig-fun "%s" msg)))
         (funcall orig-fun nil))
     (apply orig-fun format-string args)))
+
+(defvar span--in-message-functions nil)
+(advice-add #'set-message-functions :around #'span--wrap-set-message-functions)
+(defun span--wrap-set-message-functions (orig-fun message)
+  (span :span--wrap-message-functions
+    ;; recursive invocations is legal, especially for garbage-collection-messages
+    ;; we put them in *span* instead
+    (if span--in-message-functions
+        (progn
+          (span-notef "recursive call to set-message-functions: %s" message)
+          'already-handled)
+      (let ((span--in-message-functions t))
+        (funcall orig-fun message)))))
+
+(advice-add #'clear-minibuffer-message :around #'span--wrap-clear-minibuffer-message)
+(defun span--wrap-clear-minibuffer-message (orig-fun)
+  (span :clear-minibuffer-message
+    (if span--in-message-functions
+        (progn
+          (span-notef "recursive call to clear-minibuffer-message")
+          'dont-clear-message)
+      (let ((span--in-message-functions t))
+        (funcall orig-fun)))))
 
 
 
@@ -718,7 +760,8 @@ designed to be created at compile time and used as constant"
   (span--context :span--internal
     (span :span--backtrace
       (span-flush)
-      (unless span--is-in-backtrace
+      (if span--is-in-backtrace
+          (span-notef "!! recursive invocation of span--backtrace")
         (let ((span--is-in-backtrace t)
               (inhibit-quit nil))
           (cl-incf span--n-backtrace-made-this-cycle)

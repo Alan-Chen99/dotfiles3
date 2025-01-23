@@ -264,8 +264,10 @@
 
 (add-hook! 'find-file-hook
   (defun find-file-maybe-set-tab-width ()
-    (when (string-prefix-p emacs-share-dir-truename (file-truename (buffer-file-name)))
-      (setq-local tab-width 8))))
+    (let ((fname (file-truename (buffer-file-name))))
+      (when (or (string-prefix-p emacs-share-dir-truename fname)
+                (and (string-prefix-p source-directory fname)))
+        (setq-local tab-width 8)))))
 
 (add-to-list 'read-only-dir-list emacs-share-dir)
 (add-to-list 'read-only-dir-list (expand-file-name user-emacs-directory))
