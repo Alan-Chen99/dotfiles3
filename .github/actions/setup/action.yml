@@ -1,0 +1,13 @@
+name: "setup"
+runs:
+  using: "composite"
+  steps:
+    - uses: DeterminateSystems/nix-installer-action@main
+    - uses: DeterminateSystems/magic-nix-cache-action@main
+    - run: nix --version
+      shell: bash
+    # - run: nix profile install .#d.nix
+    - run: nix profile install .#nix-stable
+      shell: bash
+    - run: nix --version
+      shell: bash

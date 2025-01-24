@@ -1,0 +1,27 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  # setup:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: ./.github/actions/setup
+
+  instantiate:
+    # needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - if: always()
+        run: nix shell .#nixwrapper -c nix path-info --derivation .#ci-instantiate --option eval-cache false
+      - if: always()
+        run: nix shell .#p.nixVersions.nix_2_23 -c nix path-info --derivation .#ci-instantiate --option eval-cache false
+      - if: always()
+        run: nix shell .#p.nixVersions.nix_2_24 -c nix path-info --derivation .#ci-instantiate --option eval-cache false
+      - if: always()
+        run: nix shell .#p.nixVersions.nix_2_25 -c nix path-info --derivation .#ci-instantiate --option eval-cache false

@@ -30,6 +30,7 @@
 
   export.basedpyright = jspkg "basedpyright";
   export.scmindent = jspkg "scmindent";
+  export.prettier = jspkg "prettier";
 
   deps = pkgs.mkYarnPackage {
     nodejs = nodejs;

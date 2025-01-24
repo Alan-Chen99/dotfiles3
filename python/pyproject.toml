@@ -45,4 +45,4 @@ yt-dlp = "^2024.10.7"
 factorio-draftsman = "^1.1.1"
 vcstool2 = "^0.4.5"
 
-RegexFactory = { git = 'git@github.com:Alan-Chen99/RegexFactory.git' }
+RegexFactory = { git = 'https://github.com/Alan-Chen99/RegexFactory.git' }

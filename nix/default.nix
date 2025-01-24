@@ -85,15 +85,21 @@
           pdf-tools-epdfinfo
           pkgs-unstable
           profile
+          pypkgs-bins
           run-cmd
           source-ver
           src
           std
           ;
         flakes-self = flakes.self;
+        super = self;
       };
   in
     mod.package.call-package-with aliases;
+
+  mod.ci = callpackage ./ci.nix {} (reexport (prev: {
+    inherit (prev) ci-deps ci-instantiate;
+  }));
 
   mod.cxx = callpackage ./cxx.nix {} (reexport (prev: {
     inherit (prev) cxxtools;
@@ -119,7 +125,7 @@
   }));
 
   mod.js = callpackage ../js {} (reexport (prev: {
-    inherit (prev) js scmindent basedpyright;
+    inherit (prev) js scmindent basedpyright prettier;
   }));
 
   mod.nixtools = callpackage ./nixtools.nix {} (reexport (prev: {

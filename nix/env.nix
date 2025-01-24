@@ -15,19 +15,20 @@
 
   # here we put the same stuff in the lock file into flake registery
   # we only do this for flakes we input directly
-  # we lookup their rev (previously narHash) in the lock file and get info there
-  # note: new lock file seem to not contain narHash anymore
+  # ~we lookup their rev (previously narHash) in the lock file and get info there
+  # ~note: new lock file seem to not contain narHash anymore
+  # above seem to be a bug in nix/lazy-trees
   # TODO: is this behavior what i actually want?
   hash-to-source-mapping = builtins.listToAttrs (
     lib.attrsets.mapAttrsToList (name: value: {
-      name = "${value.locked.rev}---${value.locked.dir or ""}";
+      name = "${value.locked.narHash}---${value.locked.dir or ""}";
       value = value.locked;
     })
     (removeAttrs flakelock.nodes [flakelock.root])
   );
 
   flakes-with-source =
-    builtins.mapAttrs (name: val: hash-to-source-mapping."${val.rev}---${val.dir or ""}")
+    builtins.mapAttrs (name: val: hash-to-source-mapping."${val.narHash}---${val.dir or ""}")
     (removeAttrs flakes ["self"]);
 
   export.flake-registry =

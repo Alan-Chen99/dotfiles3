@@ -147,7 +147,13 @@
   };
 
   pypkgs-bins_ = {
-    inherit (poetrypython.pkgs) yt-dlp vcstool2;
+    inherit
+      (poetrypython.pkgs)
+      black
+      isort
+      vcstool2
+      yt-dlp
+      ;
     poetry = poetrypython.pkgs._poetry;
   };
 

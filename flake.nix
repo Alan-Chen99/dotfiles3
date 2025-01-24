@@ -74,7 +74,7 @@
     nix = {
       # https://github.com/NixOS/nix/pull/6530
       # https://github.com/edolstra/nix/tree/lazy-trees
-      url = "github:edolstra/nix/f310fbb44cee7e16fd47103240133f2dbbd476ba";
+      url = "github:edolstra/nix/lazy-trees";
       inputs = {
         nixpkgs.follows = "nixpkgs";
         nixpkgs-23-11.follows = "empty";
@@ -178,6 +178,8 @@
             pkgs-versioned = {
               inherit
                 (prev)
+                ci-deps
+                ci-instantiate
                 cxxtools
                 env-scripts
                 flake-registry-file
@@ -207,6 +209,7 @@
                 test2
                 ;
 
+              nix-stable = prev.legacypkgs.nix-stable_;
               python = prev.poetrypython.python;
 
               schemat = final.craneLib.buildPackage {

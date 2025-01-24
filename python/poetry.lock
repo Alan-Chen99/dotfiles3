@@ -2955,7 +2955,7 @@ dev = ["black", "flake8", "hypothesis", "isort", "pylint", "pytest"]
 
 [package.source]
 type = "git"
-url = "ssh://git@github.com/Alan-Chen99/RegexFactory.git"
+url = "https://github.com/Alan-Chen99/RegexFactory.git"
 reference = "HEAD"
 resolved_reference = "799d5cc66638c0a2244d298b08c7c5a5b2012a2a"
 
@@ -3503,4 +3503,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<3.14"
-content-hash = "3e55d84af8be4acaca5b5c05102a4cc9dd5713de2b15d5928187b7a15eca05b6"
+content-hash = "6525018f2db45d184c6aecfd2d0bf64a8923b21a23ac3aa17948043befd463b2"
