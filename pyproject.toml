@@ -3,3 +3,5 @@ profile = "black"
 
 [tool.pyright]
 exclude = ["**/result*"]
+reportPrivateImportUsage = false
+typeCheckingMode = "standard"

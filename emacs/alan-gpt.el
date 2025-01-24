@@ -31,9 +31,7 @@
   (setq current-prefix-arg '(1))
   (call-interactively #'gpt))
 
-(defvar gpt-api-key)
-;; (setq-default gpt-api-key "********************************************************")
-(setq-default gpt-api-key "*****************************************************************************")
+(defvar gpt-api-key "*****************************************************************************")
 
 
 (startup-queue-package 'gptel-transient 50)

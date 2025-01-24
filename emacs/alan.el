@@ -15,6 +15,8 @@
 (require 'alan-base-bindings)
 (require 'alan-bindings)
 
+(require-noerr 'alan-private)
+
 ;; (add-hook! 'alan-end-of-init-hook
 ;;   (menu-bar-mode -1)
 ;;   (tool-bar-mode -1)

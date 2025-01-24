@@ -98,6 +98,7 @@
   # for running scripts in this repo
   export.env-scripts = poetrypython.withPackages (ps: [
     ps.pygit2
+    ps.regexfactory
   ]);
 
   export.python-all = poetrypython.withPackages (ps:
