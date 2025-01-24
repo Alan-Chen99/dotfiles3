@@ -35,6 +35,7 @@
   tzdata,
   which,
 }: rec {
+  # TODO: add indirect deps, possibly from lock file, to prevent them from being garbage collected
   cmds-attrs = builtins.mapAttrs (name: val: "ln -s ${val} ${name}") (removeAttrs flakes ["self" "nixpkgs-lib"]);
   cmd-body = builtins.concatStringsSep "\n" (builtins.attrValues cmds-attrs);
 

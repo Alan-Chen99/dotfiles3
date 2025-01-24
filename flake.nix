@@ -256,11 +256,11 @@
               };
           });
 
-          small = default (final: prev: {
+          less-build = default (final: prev: {
+            emacs = prev.legacypkgs.emacs29-gtk3;
             deps =
               prev.deps
               // {
-                emacs-base = prev.legacypkgs.emacs29-gtk3;
                 nix = prev.legacypkgs.nixVersions.latest;
               };
           });
