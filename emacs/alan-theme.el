@@ -125,7 +125,7 @@
   (add-to-list 'theme-short-list 'ef-winter)
   (add-to-list 'theme-short-list 'ef-frost)
 
-  (startup-switch-theme 'ef-winter))
+  (startup-switch-theme 'ef-owl))
 
 (defvar ef-themes-faces-overwrites)
 (setq ef-themes-faces-overwrites
