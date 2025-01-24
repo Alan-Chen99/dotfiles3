@@ -260,7 +260,7 @@
           });
 
           less-build = default (final: prev: {
-            emacs = prev.legacypkgs.emacs29-gtk3;
+            emacs = prev.deps.emacs-base;
             deps =
               prev.deps
               // {

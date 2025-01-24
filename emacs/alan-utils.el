@@ -126,4 +126,10 @@
     (let (pp-use-max-width print-circle print-level print-length)
       (pp data (current-buffer)))))
 
+(defmacro assert (x)
+  (declare (indent 1))
+  `(let ((assert--tmp ,x))
+     (cl-assert assert--tmp)
+     assert--tmp))
+
 (provide 'alan-utils)

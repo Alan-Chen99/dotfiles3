@@ -125,7 +125,7 @@
 
     home-manager-bin = pkgs.home-manager;
     coreutils = pkgs.coreutils-full;
-    emacs-base = pkgs.emacs29-pgtk;
+    emacs-base = pkgs.emacs30-pgtk;
 
     gcc = pkgs.gcc_latest;
 

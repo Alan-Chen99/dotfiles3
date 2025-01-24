@@ -656,3 +656,6 @@
 
 
 ;; (cl-pushnew "type" python--treesit-keywords :test #'string=)
+
+(add-hook! 'emacs-startup-hook
+  (span-dbgf :emacs-startup-hook debug-on-error))

@@ -12,26 +12,34 @@
 (let* ((repo  (expand-file-name "elpaca/" elpaca-repos-directory))
        (build (expand-file-name "elpaca/" elpaca-builds-directory))
        (order (cdr elpaca-order))
-       (default-directory repo))
+       (default-directory repo)
+       buffer emacs success)
   (add-to-list 'load-path (if (file-exists-p build) build repo))
   (unless (file-exists-p repo)
     (make-directory repo t)
-    (condition-case-unless-debug err
-        (if-let ((buffer (pop-to-buffer-same-window "*elpaca-bootstrap*"))
-                 ((zerop (apply #'call-process `("git" nil ,buffer t "clone"
-                                                 ,@(when-let ((depth (plist-get order :depth)))
-                                                     (list (format "--depth=%d" depth) "--no-single-branch"))
-                                                 ,(plist-get order :repo) ,repo))))
-                 ((zerop (call-process "git" nil buffer t "checkout"
+    (unwind-protect
+        (span :elpaca-init
+          (setq buffer (assert (pop-to-buffer-same-window "*elpaca-bootstrap*")))
+          (assert (zerop
+                   (apply #'call-process
+                          `("git" nil ,buffer t "clone"
+                            ,@(when-let ((depth (plist-get order :depth)))
+                                (list (format "--depth=%d" depth) "--no-single-branch"))
+                            ,(plist-get order :repo) ,repo))))
+          (assert (zerop (call-process "git" nil buffer t "checkout"
                                        (or (plist-get order :ref) "--"))))
-                 (emacs (concat invocation-directory invocation-name))
-                 ((zerop (call-process emacs nil buffer nil "-Q" "-L" "." "--batch"
+          (setq emacs (assert (concat invocation-directory invocation-name)))
+          (assert (zerop (call-process emacs nil buffer nil "-Q" "-L" "." "--batch"
                                        "--eval" "(byte-recompile-directory \".\" 0 'force)")))
-                 ((require 'elpaca))
-                 ((elpaca-generate-autoloads "elpaca" repo)))
-            (progn (message "%s" (buffer-string)) (kill-buffer buffer))
-          (error "%s" (with-current-buffer buffer (buffer-string))))
-      ((error) (warn "%s" err) (delete-directory repo 'recursive))))
+          (assert (require 'elpaca))
+          (assert (elpaca-generate-autoloads "elpaca" repo))
+          (setq success t))
+      (when buffer
+        (with-current-buffer buffer
+          (message "*elpaca-bootstrap*:\n%s" (buffer-string)))
+        (kill-buffer buffer))
+      (unless success
+        (delete-directory repo 'recursive))))
   (unless (require 'elpaca-autoloads nil t)
     (message "elpaca: generating autoloads")
     (require 'elpaca)
@@ -42,6 +50,8 @@
 
 (when (eq system-type 'windows-nt)
   (elpaca-no-symlink-mode))
+
+(setq elpaca-queue-limit 10)
 
 (defadvice! alan-elpaca--check-version-advice (orig-fun e)
   ;; fails on magit git-commit. supposedly never throw ig

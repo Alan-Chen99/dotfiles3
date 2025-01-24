@@ -61,6 +61,7 @@
       "$HOME/.nix-profile/share"
       "$XDG_DATA_DIRS"
     ];
+    SSL_CERT_FILE = "${legacypkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
     # FONTCONFIG_FILE = "$HOME/.nix-profile/etc/fonts/fonts.conf";
   };
 

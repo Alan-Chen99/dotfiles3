@@ -399,16 +399,20 @@ designed to be created at compile time and used as constant"
       (buffer-disable-undo))
     span--log-buf))
 
+(defvar span-log-handler #'span-default-log-handler)
+(defun span-default-log-handler (msg)
+  (let ((buffer-read-only nil))
+    (span-with-no-minibuffer-message
+     (save-excursion
+       (goto-char (point-max))
+       (insert-before-markers msg)))))
+
 (defun span--flush-log-impl (pending)
-  (let* ((msg (mapconcat #'span-format-one pending "")))
+  (let ((msg (mapconcat #'span-format-one pending "")))
     (with-current-buffer (span--get-or-create-log-buf)
-      (let ((buffer-read-only nil)
-            (span--handles-message nil)
+      (let ((span--handles-message nil)
             (debug-on-message nil))
-        (span-with-no-minibuffer-message
-         (save-excursion
-           (goto-char (point-max))
-           (insert-before-markers msg)))))))
+        (funcall span-log-handler msg)))))
 
 (defvar span--is-flushing nil)
 
@@ -424,7 +428,7 @@ designed to be created at compile time and used as constant"
          )
     `(let* ((span--cur-context ,context)
 
-            (debugger ,(if is-redisp '#'span--debug '#'debug))
+            (debugger ,(if is-redisp '#'span--debug '(if noninteractive #'span--debug #'debug)))
             (non-essential ,is-redisp)
             ,@(when is-redisp '((signal-hook-function nil)))
             ;; (inhibit-debugger nil)
@@ -444,29 +448,39 @@ designed to be created at compile time and used as constant"
             (span--handles-message t))
        ,@body)))
 
-(defun span--flush-log ()
+(defun span-flush-log ()
+  (when (and span--pending-log-list (not span--is-flushing))
+    (span :span--flush-log
+      (let ((inhibit-quit t)
+            (prev-len span--pending-log-list-len)
+            (span--is-flushing t)
+            (pending (nreverse span--pending-log-list)))
+        (setq span--pending-log-list nil)
+        (setq span--pending-log-list-len 0)
+        (setq span--n-backtrace-made-this-cycle 0)
+        (when (> prev-len 1000)
+          (span-notef
+            "warning: %s has been ommited due to too many messages"
+            (- prev-len 1000)))
+        (let (inhibit-quit)
+          (span--flush-log-impl pending))))))
+
+(defun span--flush-log-timer-fn ()
   (unwind-protect
-      (when (and span--pending-log-list (not span--is-flushing))
-        (span :span--flush-log
-          (let ((prev-len span--pending-log-list-len)
-                (span--is-flushing t)
-                (pending (nreverse span--pending-log-list)))
-            (setq span--pending-log-list nil)
-            (setq span--pending-log-list-len 0)
-            (setq span--n-backtrace-made-this-cycle 0)
-            (when (> prev-len 1000)
-              (span-notef
-                "warning: %s has been ommited due to too many messages"
-                (- prev-len 1000)))
-            (let (inhibit-quit)
-              (span--flush-log-impl pending)))))
-    (run-with-timer 0.5 nil #'span--flush-log)))
+      (span-flush-log)
+    (run-with-timer 0.5 nil #'span--flush-log-timer-fn)))
 
 (defvar span-log-timer nil)
 
 (unless span-log-timer
   (setq span-log-timer t)
-  (run-with-timer 0.5 nil #'span--flush-log))
+  (run-with-timer 0.5 nil #'span--flush-log-timer-fn))
+
+(defun span--kill-emacs-hook ()
+  (span-notef :span--kill-emacs-hook)
+  (span-flush-log))
+
+(add-hook 'kill-emacs-hook #'span--kill-emacs-hook 100)
 
 (defmacro span-wrap (sym &optional arglist &rest rest)
   (declare (indent 2))
@@ -768,8 +782,9 @@ designed to be created at compile time and used as constant"
           (when (< span--n-backtrace-made-this-cycle 10)
             (span-notef
               "backtrace:\n%s"
-              `(backtrace-to-string
-                ,(:unsafe (cdr (backtrace-get-frames base)))))))))))
+              `(let ((backtrace-line-length 100))
+                 (backtrace--to-string
+                  ,(:unsafe (cdr (backtrace-get-frames base))))))))))))
 
 (defun span--debug (type &rest args)
   (if (eq type 'error)
@@ -807,5 +822,10 @@ designed to be created at compile time and used as constant"
   (span :command-error-default-function
     (funcall orig-fun data context caller)))
 
+;; this dont always catch, sometimes Fkill_emacs called from c
+(span-wrap kill-emacs (&rest args)
+  (_ (:seq args))
+  (span-flush)
+  (span-flush-log))
 
 (provide 'span)

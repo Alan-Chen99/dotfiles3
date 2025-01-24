@@ -9,7 +9,7 @@
   (startup-queue-package 'hotfuzz 76))
 
 (pkg! '(hotfuzz-rs
-        :host github :repo "Alan-Chen99/hotfuzz-rs" :protocol ssh
+        :host github :repo "Alan-Chen99/hotfuzz-rs"
 	    :pre-build
 	    (let ((target-file (if (eq system-type 'windows-nt) "hotfuzz-rs-module.dll" "hotfuzz-rs-module.so"))
               (cargo-res (if (eq system-type 'windows-nt) "./target/release/hotfuzz_rs_module.dll" "./target/release/libhotfuzz_rs_module.so")))

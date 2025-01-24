@@ -11,17 +11,34 @@ jobs:
   #     - uses: actions/checkout@v4
   #     - uses: ./.github/actions/setup
 
-  instantiate:
+  nix:
     # needs: setup
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
       - if: always()
-        run: nix shell .#nixwrapper -c nix path-info --derivation .#ci-instantiate --option eval-cache false
-      - if: always()
         run: nix shell .#p.nixVersions.nix_2_23 -c nix path-info --derivation .#ci-instantiate --option eval-cache false
       - if: always()
         run: nix shell .#p.nixVersions.nix_2_24 -c nix path-info --derivation .#ci-instantiate --option eval-cache false
       - if: always()
         run: nix shell .#p.nixVersions.nix_2_25 -c nix path-info --derivation .#ci-instantiate --option eval-cache false
+      - if: always()
+        run: nix shell .#nixwrapper -c nix path-info --derivation .#ci-instantiate --option eval-cache false
+      - if: always()
+        run: nix build .#profile --option eval-cache false
+
+  emacs:
+    # needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - run: nix profile install .#less-build.emacs
+      - run: mv emacs/alan-private.example.el emacs/alan-private.el
+      - if: always()
+        run: emacs --batch --eval "(setq ci-build-verbose t)" -l emacs/ci.el
+      - if: always()
+        run: emacs --batch -l emacs/ci.el --eval "(ci-show-build-errs)"
+      - if: always()
+        run: emacs --batch -l emacs/ci.el --eval "(ci-load-packages)"
