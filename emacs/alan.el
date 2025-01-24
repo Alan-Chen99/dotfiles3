@@ -569,7 +569,7 @@
 ;; (span-wrap lock-file (file)
 ;;   (_ "%S" file)
 ;;   (span--backtrace))
-(span-instrument revert-buffer)
+;; (span-instrument revert-buffer)
 ;; (span-wrap revert-buffer (&rest args)
 ;;   (_)
 ;;   (span-flush)

@@ -43,7 +43,7 @@
   (if (get-text-property 0 'alan-transient-did-sub key)
       key
     (let ((ans (my-transient-substitude2-impl key)))
-      (span-dbgf ans)
+      ;; (span-dbgf ans)
       (propertize ans 'alan-transient-did-sub t))))
 
 

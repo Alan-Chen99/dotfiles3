@@ -254,9 +254,7 @@
 (general-def [remap display-local-help] #'my-display-local-help)
 
 
-(defun q ()
-  (interactive)
-  (save-buffers-kill-terminal))
+(defalias 'q #'save-buffers-kill-terminal)
 
 
 (defun copy-cur-filename ()

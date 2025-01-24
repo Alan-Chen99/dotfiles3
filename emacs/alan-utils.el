@@ -71,7 +71,9 @@
         (eval '(ignore nil) t))
 
       (when (> gcs-done prev-gcs-done)
-        (span-notef "gc: %.3fs" (- gc-elapsed prev-gc-elapsed))))))
+        (let ((time (- gc-elapsed prev-gc-elapsed)))
+          (when (> time 0.1)
+            (span-notef "gc: %.3fs" time)))))))
 
 ;; so that we do gc even if we leave emacs alone
 (defun alan-do-gc-long ()
