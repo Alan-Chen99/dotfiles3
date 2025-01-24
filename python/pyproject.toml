@@ -33,6 +33,7 @@ pybind11 = "^2.12.0"
 # libraries
 pyparsing = "^3.1.2"
 pulp = "^2.9.0"
+pygit2 = "^1.17.0"
 
 # misc
 meson = "^1.4.0"

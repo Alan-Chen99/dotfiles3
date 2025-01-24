@@ -179,6 +179,7 @@
               inherit
                 (prev)
                 cxxtools
+                env-scripts
                 flake-registry-file
                 fonts
                 js

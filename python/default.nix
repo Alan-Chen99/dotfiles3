@@ -95,6 +95,11 @@
     ];
   };
 
+  # for running scripts in this repo
+  export.env-scripts = poetrypython.withPackages (ps: [
+    ps.pygit2
+  ]);
+
   export.python-all = poetrypython.withPackages (ps:
     self.poetrypython.poetryPackages
     ++ [

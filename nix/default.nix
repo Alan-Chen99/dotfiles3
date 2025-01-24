@@ -137,7 +137,16 @@
   }));
 
   mod.python = callpackage ../python {} (reexport (prev: {
-    inherit (prev) pythontools poetrypython pythonlibs python-all pypkgs-bins basedpyright-wrapped;
+    inherit
+      (prev)
+      basedpyright-wrapped
+      env-scripts
+      poetrypython
+      pypkgs-bins
+      python-all
+      pythonlibs
+      pythontools
+      ;
   }));
 
   mod.repl = callpackage ./repl.nix {} (reexport (prev: {
