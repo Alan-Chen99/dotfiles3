@@ -160,7 +160,7 @@
     flake-utils,
     ...
   }: let
-    forsystem-impl = system: outputs-system: rec {
+    get-default = system: let
       package = import ./nix/package-bootstrap.nix {};
 
       default =
@@ -221,62 +221,65 @@
             };
             pkgs = (builtins.mapAttrs (name: pkg: appendversion pkg) pkgs-versioned) // pkgs-other;
           in
-            pkgs // {pkgs = final.pypkgs-bins // (builtins.mapAttrs (name: _: final."${name}") pkgs);}
+            pkgs
+            // {
+              pkgs = final.pypkgs-bins // (builtins.mapAttrs (name: _: final."${name}") pkgs);
+            }
         );
+    in
+      default;
 
-      export = rec {
+    from-default = default:
+      default
+      // {
+        default = default;
+      }
+      // rec {
         packages = default.pkgs;
 
-        # devShells.rust = default.rust-devshell;
-        # devShells.cargo = default.test-cargo;
+        homeConfigurations."alan" = default.home;
 
-        legacyPackages = {
-          homeConfigurations."alan" = default.home;
+        inputs = inputs;
 
-          inputs = inputs;
+        p = default.legacypkgs;
+        d = default.deps;
 
-          p = default.legacypkgs;
-          d = default.deps;
+        pypkgs = packages.python.pkgs;
 
-          pypkgs = packages.python.pkgs;
+        py310 = from-default (default (final: prev: {
+          deps =
+            prev.deps
+            // {
+              python = prev.legacypkgs.python310;
+            };
+        }));
 
-          _self = outputs-system;
-          _mods = outputs-system.default.__mods;
+        emacs29-gtk3 = from-default (default (final: prev: {
+          deps =
+            prev.deps
+            // {
+              emacs-base = prev.legacypkgs.emacs29-gtk3;
+            };
+        }));
 
-          py310 = default (final: prev: {
-            deps =
-              prev.deps
-              // {
-                python = prev.legacypkgs.python310;
-              };
-          });
+        less-download-flakes = from-default (default (final: prev: {
+          less-download-flakes = true;
+        }));
 
-          emacs29-gtk3 = default (final: prev: {
-            deps =
-              prev.deps
-              // {
-                emacs-base = prev.legacypkgs.emacs29-gtk3;
-              };
-          });
-
-          less-build = default (final: prev: {
-            emacs = prev.deps.emacs-base;
-            deps =
-              prev.deps
-              // {
-                nix = prev.legacypkgs.nixVersions.latest;
-              };
-          });
-        };
+        less-build = from-default (default (final: prev: {
+          emacs = prev.deps.emacs-base;
+          deps =
+            prev.deps
+            // {
+              nix = prev.legacypkgs.nixVersions.latest;
+            };
+        }));
       };
+
+    forsystem = system: rec {
+      legacyPackages = from-default (get-default system);
+      packages = legacyPackages.packages;
     };
-    forsystem = system: let
-      outputs-system = forsystem-impl system outputs-system;
-    in
-      outputs-system;
-    all = flake-utils.lib.eachDefaultSystem (
-      system: (forsystem system).export
-    );
   in
-    all;
+    flake-utils.lib.eachDefaultSystem forsystem;
 }

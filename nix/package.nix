@@ -64,16 +64,17 @@
 
   make-package = fn: args: let
     fixpt = final: let
-      prev-all = fn (args // {self = builtins.intersectAttrs prev final;});
-      prev = prev-all.export;
+      fn_args = args // {self = builtins.intersectAttrs prev final;};
+      fn_out = fn fn_args;
+      prev = fn_out.export;
     in
       {
         __unwrapped = fn;
-        __args = args;
-        __out = prev-all;
+        __args = fn_args;
+        __out = fn_out;
         __clean = builtins.removeAttrs final ["__unwrapped" "__args" "__out" "__clean"];
       }
-      // prev-all.export;
+      // prev;
   in
     make-package-helper {
       __unfix__ = fixpt;

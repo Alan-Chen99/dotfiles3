@@ -113,7 +113,7 @@
   }));
 
   mod.env = callpackage ./env.nix {} (reexport (prev: {
-    inherit (prev) nixwrapper flake-registry-file nixconf-file;
+    inherit (prev) nixwrapper flake-registry-file nixconf-file less-download-flakes;
   }));
 
   mod.fonts = callpackage ./fonts.nix {} (reexport (prev: {

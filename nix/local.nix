@@ -21,4 +21,4 @@ let
     )
     .defaultNix;
 in
-  flake.legacyPackages."${system}"._self // {__flake = flake;}
+  flake.legacyPackages."${system}" // {__flake = flake;}

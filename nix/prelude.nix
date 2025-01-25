@@ -8,7 +8,8 @@ in
   // {
     builtins = builtins.removeAttrs builtins ["builtins"];
     df = dotfiles;
-    df-inputs = dotfiles.export.legacyPackages.inputs;
+    mods = dotfiles.__mods;
+    df-inputs = dotfiles.inputs;
     inherit (default) dbg lib deps std;
     pkgs = default.legacypkgs;
   }

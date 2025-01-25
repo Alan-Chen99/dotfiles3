@@ -7,7 +7,7 @@ runs:
     - run: nix --version
       shell: bash
     # - run: nix profile install .#d.nix
-    - run: nix profile install .#nix-stable
+    - run: nix profile install .#less-download-flakes.nixwrapper
       shell: bash
     - run: nix --version
       shell: bash

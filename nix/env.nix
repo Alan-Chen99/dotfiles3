@@ -8,6 +8,8 @@
   std,
   dbg,
 }: rec {
+  export.less-download-flakes = false;
+
   flakelock = let
     flakelock = builtins.fromJSON (builtins.readFile ../flake.lock);
   in
@@ -31,13 +33,16 @@
     builtins.mapAttrs (name: val: hash-to-source-mapping."${val.narHash}---${val.dir or ""}")
     (removeAttrs flakes ["self"]);
 
+  _flake-registry = {
+    p = source-ver;
+    n = flakes-with-source.nixpkgs;
+    dotfiles = source-ver;
+  };
+
   export.flake-registry =
-    (removeAttrs flakes-with-source ["nixpkgs-lib"])
-    // {
-      p = source-ver;
-      n = flakes-with-source.nixpkgs;
-      dotfiles = source-ver;
-    };
+    if self.less-download-flakes
+    then _flake-registry
+    else (removeAttrs flakes-with-source ["nixpkgs-lib"]) // _flake-registry;
 
   flake-registry-list = {
     version = 2;
@@ -66,14 +71,17 @@
       registry remove --registry $out/registry.json dummy-nonexistent
   '';
 
+  _nix-path = {
+    n = "${nixpkgs-flakes}";
+    nixpkgs = "${nixpkgs-flakes}";
+    df = "${source-ver}/nix/local.nix";
+    prelude = "${source-ver}/nix/prelude.nix";
+  };
+
   export.nix-path =
-    (removeAttrs flakes ["self"])
-    // {
-      n = "${nixpkgs-flakes}";
-      nixpkgs = "${nixpkgs-flakes}";
-      df = "${source-ver}/nix/local.nix";
-      prelude = "${source-ver}/nix/prelude.nix";
-    };
+    if self.less-download-flakes
+    then _nix-path
+    else (removeAttrs flakes ["self"]) // _nix-path;
 
   export.nixconf = {
     nix-path =

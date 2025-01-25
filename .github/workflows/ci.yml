@@ -18,6 +18,8 @@ jobs:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
       - if: success() || failure()
+        run: nix path-info --derivation .#ci-instantiate --option eval-cache false
+      - if: success() || failure()
         run: nix shell .#p.nixVersions.nix_2_23 -c nix path-info --derivation .#ci-instantiate --option eval-cache false
       - if: success() || failure()
         run: nix shell .#p.nixVersions.nix_2_24 -c nix path-info --derivation .#ci-instantiate --option eval-cache false
@@ -34,7 +36,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
-      - run: nix profile install .#less-build.emacs
+      - run: nix profile install .#emacs
       # for vterm
       - run: nix profile install .#p.cmake .#p.gnumake .#p.gcc .#p.libtool
       - run: mv emacs/alan-private.example.el emacs/alan-private.el
