@@ -27,8 +27,20 @@ jobs:
         run: nix shell .#p.nixVersions.nix_2_25 -c nix path-info --derivation .#ci-instantiate --option eval-cache false
       - if: success() || failure()
         run: nix shell .#nixwrapper -c nix path-info --derivation .#ci-instantiate --option eval-cache false
+
       - if: success() || failure()
-        run: nix build .#profile --option eval-cache false
+        run: nix build .#profile
+
+      - if: success() || failure()
+        run: nix path-info --derivation .#less-build.ci-instantiate
+      - if: success() || failure()
+        run: nix path-info --derivation .#less-download-flakes.ci-instantiate
+      - if: success() || failure()
+        run: nix path-info --derivation .#less-build.less-download-flakes.ci-instantiate
+      - if: success() || failure()
+        run: nix path-info --derivation .#emacs29-gtk3.ci-instantiate
+      - if: success() || failure()
+        run: nix path-info --derivation .#py310.ci-instantiate
 
   emacs:
     # needs: setup
