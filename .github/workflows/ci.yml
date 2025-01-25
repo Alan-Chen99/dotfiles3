@@ -48,6 +48,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
+      - run: nix path-info --derivation .#emacs
       - run: nix profile install .#emacs
       # for vterm
       - run: nix profile install .#p.cmake .#p.gnumake .#p.gcc .#p.libtool

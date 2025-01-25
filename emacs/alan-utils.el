@@ -123,7 +123,12 @@
 (defun alan-write-elisp-data-file (file data)
   (with-temp-file file
     (require 'pp)
-    (let (pp-use-max-width print-circle print-level print-length)
+    (let (pp-use-max-width
+          print-circle
+          print-level
+          print-length
+          print-gensym
+          (print-symbols-bare t))
       (pp data (current-buffer)))))
 
 (defmacro assert (x)

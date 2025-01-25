@@ -1,21 +1,22 @@
 {
   self,
   alejandra,
+  flakes,
   flamegraph,
   git,
   nix,
   nix-stable,
   nix-tree,
+  nixconf-file,
   nixd,
   python,
   std,
-  nixconf-file,
 }: rec {
   # https://discourse.nixos.org/t/nix-flamegraph-or-profiling-tool/33333
   nix-instantiate-flamegraph = std.writeShellScriptBin "nix-instantiate-flamegraph" ''
     WORKDIR=$(mktemp -d /tmp/nix-fun-calls-XXXXX)
     ${nix}/bin/nix-instantiate --trace-function-calls "$1" -A "$2" 2> $WORKDIR/nix-function-calls.trace 1>/dev/null
-    ${python}/bin/python ${nix.src}/contrib/stack-collapse.py $WORKDIR/nix-function-calls.trace > $WORKDIR/nix-function-calls.folded
+    ${python}/bin/python ${flakes.nix}/contrib/stack-collapse.py $WORKDIR/nix-function-calls.trace > $WORKDIR/nix-function-calls.folded
     ${flamegraph}/bin/flamegraph.pl $WORKDIR/nix-function-calls.folded > $WORKDIR/nix-function-calls.svg
     echo $WORKDIR/nix-function-calls.svg
   '';

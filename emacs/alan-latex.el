@@ -1,6 +1,7 @@
 ;; -*- lexical-binding: t -*-
 
 (require 'alan-core)
+(require 'alan-evil)
 
 (require-if-is-bytecompile outline)
 (pkg! 'auctex)

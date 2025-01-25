@@ -229,6 +229,8 @@
     in
       default;
 
+    _inputs = inputs;
+
     from-default = default:
       default
       // {
@@ -239,7 +241,7 @@
 
         homeConfigurations."alan" = default.home;
 
-        inputs = inputs;
+        inputs = _inputs;
 
         p = default.legacypkgs;
         d = default.deps;

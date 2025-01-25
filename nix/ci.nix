@@ -22,7 +22,7 @@
       super.env-scripts
       super.fonts
       super.js
-      # super.nixtools
+      super.nixtools
       super.pdf-tools-epdfinfo
       super.pkgs-big
       super.pkgs-small

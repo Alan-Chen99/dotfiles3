@@ -87,7 +87,7 @@
    priority
    (lambda ()
      (alan-require-one package)
-     (unless (featurep package)
+     (unless (get package 'alan-has-required)
        (startup-queue-package package priority)))))
 
 

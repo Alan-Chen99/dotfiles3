@@ -1,7 +1,7 @@
 ;; -*- lexical-binding: t -*-
 
 (require 'cl-lib)
-
+(require 'cl-print)
 
 (defun span-fmt--immutable-or-replace (obj)
   (declare (pure t) (side-effect-free t))

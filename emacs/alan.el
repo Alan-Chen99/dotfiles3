@@ -4,7 +4,11 @@
 (setq load-prefer-newer t)
 (set-buffer (get-buffer-create " *initialization*"))
 
-(require 'alan-early-init)
+;; TODO: without this, this file does not native compile correctly:
+;; it simply returns here for some reason
+(defun alan--require-alan-early-init ()
+  (require 'alan-early-init))
+(alan--require-alan-early-init)
 
 (require 'alan-start)
 
@@ -622,8 +626,8 @@
 ;; (setq flycheck-navigation-minimum-level 'warnings)
 ;; (setq flycheck-error-list-minimum-level 'warnings)
 
-(eval-after-load! woman
-  (advice-add #'woman-dired-define-keys :around #'ignore))
+;; (eval-after-load! woman
+;;   (advice-add #'woman-dired-define-keys :override #'ignore))
 
 (defun qemu-stop ()
   (interactive)

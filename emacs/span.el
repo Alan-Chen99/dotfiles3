@@ -1,5 +1,6 @@
 ;; -*- lexical-binding: t -*-
 
+(require 'cl-lib)
 (require 'span-fmt)
 ;; (cl-declaim (optimize (safety 0) (speed 3)))
 
@@ -324,10 +325,12 @@ designed to be created at compile time and used as constant"
 (defvar span--pending-log-list-len 0)
 (defvar span--n-backtrace-made-this-cycle 0)
 
+(defvar span-message-limit-per-cycle 3000)
+
 (defmacro span--pending-log-list-push (entry)
   `(let ((l span--pending-log-list-len))
      (setq span--pending-log-list-len (1+ l))
-     (when (< l 1000)
+     (when (< l span-message-limit-per-cycle)
        (push ,entry span--pending-log-list))))
 
 (defun span--log-note (e depth)
@@ -428,7 +431,7 @@ designed to be created at compile time and used as constant"
          )
     `(let* ((span--cur-context ,context)
 
-            (debugger ,(if is-redisp '#'span--debug '(if noninteractive #'span--debug #'debug)))
+            (debugger ,(if is-redisp '#'span--debug '#'debug))
             (non-essential ,is-redisp)
             ,@(when is-redisp '((signal-hook-function nil)))
             ;; (inhibit-debugger nil)
@@ -458,10 +461,10 @@ designed to be created at compile time and used as constant"
         (setq span--pending-log-list nil)
         (setq span--pending-log-list-len 0)
         (setq span--n-backtrace-made-this-cycle 0)
-        (when (> prev-len 1000)
+        (when (> prev-len span-message-limit-per-cycle)
           (span-notef
             "warning: %s has been ommited due to too many messages"
-            (- prev-len 1000)))
+            (- prev-len span-message-limit-per-cycle)))
         (let (inhibit-quit)
           (span--flush-log-impl pending))))))
 
@@ -541,7 +544,7 @@ designed to be created at compile time and used as constant"
         (span-msg "buf: %s" (current-buffer))
         (let ((res (apply fn args)))
           (if verbose
-              (span-msg "%s -> %s" sym (backtrace-print-to-string res) 100)
+              (span-msg "%s -> %s" sym (backtrace-print-to-string res 100))
             (span-notef "%s -> %S" sym res))
           res)))))
 
@@ -755,16 +758,21 @@ designed to be created at compile time and used as constant"
     (let ((pre-redisplay-function #'ignore))
       (funcall orig-fn windows))))
 
-
-(span-wrap debug (&optional type &rest args)
-  (:debug (:seq args))
-  (if (eq type 'error)
-      (let* ((signal-args (car args))
-             (err-sym (car-safe signal-args))
-             (data (cdr-safe signal-args)))
-        (span-notef "error: %S" `(list ,(:unsafe err-sym) ,(:unsafe data))))
-    (span-notef "debug: %S %S" type (:unsafe args))))
-
+(advice-add #'debug :around #'span--wrap-debug)
+(defun span--wrap-debug (orig-fn &optional type &rest args)
+  (span :debug
+    (if (eq type 'error)
+        (let* ((signal-args (car args))
+               (err-sym (car-safe signal-args))
+               (data (cdr-safe signal-args)))
+          (span-notef "error: %S" `(list ,(:unsafe err-sym) ,(:unsafe data))))
+      (span-notef "debug: %S %S" type (:unsafe args)))
+    (if (or noninteractive
+            (and (eq t (framep (selected-frame)))
+                 (equal "initial_terminal" (terminal-name))))
+        ;; #'debug will (kill-emacs -1), preventing caller from catching the error
+        (apply #'span--debug type args)
+      (apply orig-fn type args))))
 
 (autoload 'backtrace-to-string "backtrace")
 (autoload 'backtrace-get-frames "backtrace")
@@ -799,7 +807,6 @@ designed to be created at compile time and used as constant"
     ;; TODO: should quit here if is here too many times, since might hang
     )
   nil)
-
 
 (advice-add #'tramp-file-name-handler :around #'span--wrap-tramp-file-name-handler)
 (defun span--wrap-tramp-file-name-handler (orig-fn &rest args)
