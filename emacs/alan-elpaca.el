@@ -4,7 +4,7 @@
 (require 'alan-utils)
 
 (defvar elpaca-installer-version 0.7)
-(defvar elpaca-order '(elpaca :repo "https://github.com/progfolio/elpaca.git"
+(defvar elpaca-order '(elpaca :repo "https://github.com/Alan-Chen99/elpaca.git"
                               :ref nil :depth 1
                               :files (:defaults "elpaca-test.el" (:exclude "extensions"))
                               :build (:not elpaca--activate-package)))

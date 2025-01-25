@@ -9,5 +9,5 @@ docker run -it --rm \
 	--workdir $(pwd) \
 	-e DISPLAY=$DISPLAY \
 	-v /tmp/.X11-unix:/tmp/.X11-unix \
-	-e PATH="/home/alan/.nix-profile/bin" \
+	-e PATH="$HOME/.nix-profile/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" \
 	simple /bin/bash

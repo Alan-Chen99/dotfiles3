@@ -10,6 +10,7 @@
 ;;     "SPC l" 'mistty-clear))
 
 (pkg! '(vterm
+        :remotes ("alan" :repo "Alan-Chen99/emacs-libvterm" :branch "master")
         :pre-build
         (progn
           ;; otherwise it will prompt for user interaction

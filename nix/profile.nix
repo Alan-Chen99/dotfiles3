@@ -150,6 +150,7 @@
       hyperfine
       ispell
       kavita
+      libtool
       nixfmt-classic
       nixpkgs-fmt
       shfmt
@@ -168,7 +169,6 @@
       (legacypkgs)
       fontfinder
       jre
-      libtool
       racket
       ;
   };

@@ -65,3 +65,6 @@
 (defun ci-load-packages ()
   (while process-queue-thread-exist
     (sit-for 0.1)))
+
+(defun ci-byte-compile ()
+  (byte-recompile-directory alan-dotemacs-dir 0 'force))
