@@ -104,10 +104,10 @@
 
     nixpkgs = {
       # nix flake update nixpkgs
-      url = "github:nixos/nixpkgs/nixos-24.11";
-      # url = "github:nixos/nixpkgs/797f7dc49e0bc7fab4b57c021cdf68f595e47841";
+      # url = "github:nixos/nixpkgs/nixos-24.11";
+      url = "github:nixos/nixpkgs/ae584d90cbd0396a422289ee3efb1f1c9d141dc3";
     };
-    nixpkgs-lib.url = "github:nixos/nixpkgs/797f7dc49e0bc7fab4b57c021cdf68f595e47841?dir=lib";
+    nixpkgs-lib.url = "github:nixos/nixpkgs/ae584d90cbd0396a422289ee3efb1f1c9d141dc3?dir=lib";
 
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixpkgs-unstable";
 
