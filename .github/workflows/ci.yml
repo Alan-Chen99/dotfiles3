@@ -5,14 +5,14 @@ on:
   pull_request:
 
 jobs:
-  # setup:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #     - uses: ./.github/actions/setup
+  setup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
 
   nix:
-    # needs: setup
+    needs: setup
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -43,7 +43,7 @@ jobs:
         run: nix path-info --derivation .#py310.ci-instantiate
 
   emacs:
-    # needs: setup
+    needs: setup
     runs-on: ubuntu-latest
     strategy:
       matrix:
