@@ -67,4 +67,7 @@
     (sit-for 0.1)))
 
 (defun ci-byte-compile ()
-  (byte-recompile-directory alan-dotemacs-dir 0 'force))
+  (span-with-no-minibuffer-message
+   (byte-recompile-directory alan-dotemacs-dir 0 'force))
+  (with-current-buffer "*Compile-Log*"
+    (span-msg "%s" (buffer-string))))

@@ -8,6 +8,7 @@
   (let ((tp (type-of obj)))
     (pcase tp
       ('symbol obj)
+      ('symbol-with-pos obj)
       ('integer obj)
       ('float obj)
       ('string (substring-no-properties obj))

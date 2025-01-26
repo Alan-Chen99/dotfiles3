@@ -16,6 +16,8 @@
    ;; TODO: maybe 0.2 for tramp and 0.1 local?
    consult-async-input-debounce 0.5)
 
+  (add-to-list 'consult-fd-args "--hidden" t)
+
   (general-def
     [remap switch-to-buffer] #'consult-buffer
     [remap switch-to-buffer-other-window] #'consult-buffer-other-window)

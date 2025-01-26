@@ -3,6 +3,13 @@
 (require 'cl-lib)
 (require 'span-fmt)
 ;; (cl-declaim (optimize (safety 0) (speed 3)))
+(eval-when-compile
+  (require 'backtrace))
+(autoload 'backtrace-print-to-string "backtrace")
+(autoload 'backtrace-to-string "backtrace")
+(autoload 'backtrace-get-frames "backtrace")
+(autoload 'backtrace--expand-ellipsis "backtrace")
+
 
 (defmacro span-fmt (&rest body)
   (cl-destructuring-bind (fn . val) (span-fmt-parse body)
@@ -399,7 +406,10 @@ designed to be created at compile time and used as constant"
     (setq span--log-buf (generate-new-buffer "*span*" t))
     (with-current-buffer span--log-buf
       (messages-buffer-mode)
-      (buffer-disable-undo))
+      (buffer-disable-undo)
+      ;; see backtrace.el
+      (add-function :around (local 'cl-print-expand-ellipsis-function)
+                    #'backtrace--expand-ellipsis))
     span--log-buf))
 
 (defvar span-log-handler #'span-default-log-handler)
@@ -521,9 +531,6 @@ designed to be created at compile time and used as constant"
   `(span-wrap ,sym (&rest args)
      (_ (:seq args))))
 
-(eval-when-compile
-  (require 'backtrace))
-(autoload 'backtrace-print-to-string "backtrace")
 
 (defun span--instrument-with (sym)
   (lambda (fn &rest args)
@@ -774,8 +781,6 @@ designed to be created at compile time and used as constant"
         (apply #'span--debug type args)
       (apply orig-fn type args))))
 
-(autoload 'backtrace-to-string "backtrace")
-(autoload 'backtrace-get-frames "backtrace")
 
 (defvar span--is-in-backtrace nil)
 (defun span--backtrace (&optional base)
