@@ -6,6 +6,7 @@
 (pkg! 'iflipb
   (startup-queue-package 'iflipb 50))
 
+(require-if-is-bytecompile iflipb)
 
 (defvar my-iflipb-buffer-list nil)
 (defun my-command-non-iflipb-p (&optional command)
@@ -21,6 +22,8 @@
                 alan-iflipb-kill-current-buffer
                 alan-iflipb-pop))
         (string-match-p "^iflipb-" (symbol-name command))))))
+
+
 (add-hook! 'pre-command-hook
   (defun pre-command-handle-iflipb ()
     (unless (or (minibufferp)
@@ -37,6 +40,21 @@
                  (let ((-compare-fn #'eq))
                    (-distinct my-iflipb-buffer-list)))))
 
+(defun alan-iflipb-kill-current-buffer ()
+  (interactive)
+  (kill-buffer)
+  (if (iflipb-first-iflipb-buffer-switch-command)
+      (setq last-command 'kill-buffer)
+    (if (< iflipb-current-buffer-index (length (iflipb-interesting-buffers)))
+        (iflipb-select-buffer iflipb-current-buffer-index)
+      (iflipb-select-buffer (1- iflipb-current-buffer-index)))))
+
+(defun alan-iflipb-pop ()
+  (interactive)
+  (setq my-iflipb-buffer-list (delq (current-buffer) my-iflipb-buffer-list))
+  (if (< iflipb-current-buffer-index (length (iflipb-interesting-buffers)))
+      (iflipb-select-buffer iflipb-current-buffer-index)
+    (iflipb-select-buffer (1- iflipb-current-buffer-index))))
 
 (eval-after-load! iflipb
   (advice-add #'iflipb-first-iflipb-buffer-switch-command
@@ -47,22 +65,6 @@
     :override #'iflipb-interesting-buffers
     (--filter (or (eq it (current-buffer)) (not (get-buffer-window it)))
               (my-iflipb-buffer-list-normalize)))
-
-  (defun alan-iflipb-kill-current-buffer ()
-    (interactive)
-    (kill-buffer)
-    (if (iflipb-first-iflipb-buffer-switch-command)
-        (setq last-command 'kill-buffer)
-      (if (< iflipb-current-buffer-index (length (iflipb-interesting-buffers)))
-          (iflipb-select-buffer iflipb-current-buffer-index)
-        (iflipb-select-buffer (1- iflipb-current-buffer-index)))))
-
-  (defun alan-iflipb-pop ()
-    (interactive)
-    (setq my-iflipb-buffer-list (delq (current-buffer) my-iflipb-buffer-list))
-    (if (< iflipb-current-buffer-index (length (iflipb-interesting-buffers)))
-        (iflipb-select-buffer iflipb-current-buffer-index)
-      (iflipb-select-buffer (1- iflipb-current-buffer-index))))
 
   (general-def
     [remap previous-buffer] #'iflipb-previous-buffer

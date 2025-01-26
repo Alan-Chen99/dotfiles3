@@ -103,9 +103,6 @@
     (with-current-buffer buf
       (run-hooks 'messages-buffer-mode-hook))))
 
-(eval-after-load! pp
-  (setq pp-use-max-width nil))
-
 
 (eval-after-load! edebug
   (clear-and-backup-keymap edebug-mode-map)

@@ -48,9 +48,10 @@
 (setq-default mode-line-format
               `(
                 ;; whitespace to pad to first column
-                ,(let* ((text " "))
-                   (put-text-property 0 1 'display '(space :align-to 0) text)
-                   text)
+                ,(eval-when-compile
+                   (let* ((text (copy-sequence " ")))
+                     (put-text-property 0 1 'display '(space :align-to 0) text)
+                     text))
                 ;; eldoc want its thing at the top level
                 (eldoc-mode-line-string ("" eldoc-mode-line-string " "))
                 (:eval (alan-format-modeline-wrapper))
@@ -506,11 +507,12 @@
   (span :alan-do-format-tab-bar
     (let* ((lhs
             (concat
-             (let* ((text " %"))
-               (put-text-property 0 1 'display '(space :align-to (+ left left-fringe left-margin)) text)
-               (put-text-property 1 2 'face 'font-lock-warning-face text)
-               ;; (put-text-property 1 2 'help-echo "hello" text)
-               text)
+             (eval-when-compile
+               (let* ((text (copy-sequence " %")))
+                 (put-text-property 0 1 'display '(space :align-to (+ left left-fringe left-margin)) text)
+                 (put-text-property 1 2 'face 'font-lock-warning-face text)
+                 ;; (put-text-property 1 2 'help-echo "hello" text)
+                 text))
              (format-message "%s" (cl-incf alan-tabbar-count))
              " "
              ;; buffer-file-name

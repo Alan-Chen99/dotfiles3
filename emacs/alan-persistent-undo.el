@@ -23,7 +23,7 @@
          (undo-package persistent-undo-package)
          (persistent-undo-setup-ran nil)
          (buf (current-buffer))
-         (func              
+         (func
           (lambda ()
             (unless persistent-undo-setup-ran
               (setq persistent-undo-setup-ran t)

@@ -40,7 +40,6 @@
 
 (span-wrap evil-initialize-state)
 (span-wrap evil-initialize)
-(span-wrap evil-mode-enable-in-buffers)
 (span-wrap evil-mode)
 
 (span-wrap evil-normalize-keymaps)

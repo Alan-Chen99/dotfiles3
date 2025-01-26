@@ -119,12 +119,10 @@
       (goto-char (point-min))
       (read (current-buffer)))))
 
-(defvar pp-use-max-width)
 (defun alan-write-elisp-data-file (file data)
   (with-temp-file file
     (require 'pp)
-    (let (pp-use-max-width
-          print-circle
+    (let (print-circle
           print-level
           print-length
           print-gensym

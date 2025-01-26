@@ -44,7 +44,7 @@
       (let ((evil-ex-search-direction 'backward))
         (evil-ex-search 1)))))
 
-(evil-define-command alan-evil-visual-paste-without-yank (count &optional register yank-handler)
+(evil-define-command alan-evil-visual-paste-without-yank (count &optional register _yank-handler)
   :suppress-operator t
   (interactive "*P<x>")
   (let ((evil-kill-on-visual-paste nil))
@@ -64,14 +64,14 @@
                  (skip-syntax-backward " " (line-beginning-position))
                  (point))))
       (evil-range start end))))
-(evil-define-text-object evil-a-line (count &optional beg end type)
+(evil-define-text-object evil-a-line (count &optional beg end _type)
   "Select range between a character by which the command is followed."
   (evil-line-range count beg end type t))
-(evil-define-text-object evil-inner-line (count &optional beg end type)
+(evil-define-text-object evil-inner-line (count &optional beg end _type)
   "Select inner range between a character by which the command is followed."
   (evil-line-range count beg end type))
 ;; https://github.com/syohex/evil-textobj-entire/blob/master/evil-textobj-entire.el
-(evil-define-text-object evil-entire-entire-buffer (count &optional beg end type)
+(evil-define-text-object evil-entire-entire-buffer (count &optional _beg _end _type)
   "Select entire buffer"
   (evil-range (point-min) (point-max)))
 

@@ -26,6 +26,8 @@
   ;; (tree-sitter-indent-mode-lazy)
   )
 
+(require-if-is-bytecompile lsp-rust rust-cargo)
+
 (eval-after-load! rust-mode
   (startup-queue-package 'rust-cargo 94)
   (startup-queue-package 'rust-compile 93)
@@ -35,7 +37,7 @@
   (setq
    rust-font-lock-keywords nil
    ;; lsp-rust-analyzer-server-display-inlay-hints nil
-   lsp-rust-analyzer-server-display-inlay-hints t
+   ;; lsp-rust-analyzer-server-display-inlay-hints t
 
    ;; lsp-rust-analyzer-display-lifetime-elision-hints-enable "always"
    lsp-rust-analyzer-display-lifetime-elision-hints-enable "never"
@@ -62,7 +64,7 @@
     (modify-syntax-entry p "w" rust-mode-syntax-table))
   (general-def rust-mode-map
     :states 'motion
-    "SPC SPC" 'rust-run
+    "SPC SPC" #'rust-run
     "SPC c" #'rust-compile
     "SPC a" #'lsp-rust-analyzer-expand-macro
     "SPC t" #'lsp-rust-analyzer-syntax-tree
@@ -73,18 +75,18 @@
     :states 'normal
     "'" #'rust-format-buffer)
 
-  (defun lsp-rust-analyzer-macro-expansion-custom (result)
-    "Default method for displaying macro expansion."
-    (let* ((root (lsp-workspace-root default-directory))
-           (buf (get-buffer-create (get-buffer-create (format "*rust-analyzer macro expansion %s*" root)))))
-      (with-current-buffer buf
-	    (let ((inhibit-read-only t))
-          (erase-buffer)
-          (insert (lsp--render-string result "rust"))
-          (rust-mode))
-        (read-only-mode))
-      (pop-to-buffer buf)))
-
   (setq-default lsp-rust-analyzer-macro-expansion-method #'lsp-rust-analyzer-macro-expansion-custom))
+
+(defun lsp-rust-analyzer-macro-expansion-custom (result)
+  "Default method for displaying macro expansion."
+  (let* ((root (lsp-workspace-root default-directory))
+         (buf (get-buffer-create (get-buffer-create (format "*rust-analyzer macro expansion %s*" root)))))
+    (with-current-buffer buf
+	  (let ((inhibit-read-only t))
+        (erase-buffer)
+        (insert (lsp--render-string result "rust"))
+        (rust-mode))
+      (read-only-mode))
+    (pop-to-buffer buf)))
 
 (provide 'alan-rust)

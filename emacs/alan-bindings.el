@@ -14,6 +14,7 @@
  alan-font
  alan-commands
  alan-consult
+ alan-iflipb
 
  alan-elisp)
 
@@ -371,7 +372,7 @@
 
   ;; "<T>" #'load-theme
 
-  "(" #'alan-find-url
+  ;; "(" #'alan-find-url
 
   ;; "z j" #'magit-status
   ;; "z l" #'magit-log

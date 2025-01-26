@@ -8,8 +8,7 @@
 (pkg! '(codeium :host github :repo "Exafunction/codeium.el"))
 (startup-queue-package 'codeium 0)
 
-(defvar company-mode)
-(defvar company--capf-cache)
+(require-if-is-bytecompile company company-capf)
 
 (eval-after-load! codeium
   (general-def insert

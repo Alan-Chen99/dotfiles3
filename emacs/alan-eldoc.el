@@ -1,3 +1,5 @@
+;; -*- lexical-binding: t -*-
+
 (require 'alan-core)
 (require 'evil)
 
@@ -19,7 +21,7 @@
       (setq p nx))
     (apply #'concat (nreverse ans))))
 
-(defun my-eldoc--echo-area-substring (available)
+(defun my-eldoc--echo-area-substring (_available)
   (let ((ans (resolve-display-text-prop (buffer-string))))
     (setq ans (replace-regexp-in-string (rx "\n\n") "\n" ans))
     ;; (setq ans (string-join (string-split ans "\n" t) "\n"))
@@ -31,7 +33,7 @@
    eldoc-idle-delay 0.05
    eldoc-echo-area-display-truncation-message nil)
   (advice-add #'eldoc--message-command-p :before-while
-              (lambda (&rest args) (not prefix-arg)))
+              (lambda (&rest _args) (not prefix-arg)))
   (advice-add #'eldoc--echo-area-substring :override #'my-eldoc--echo-area-substring)
   (global-eldoc-mode)
 

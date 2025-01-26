@@ -390,14 +390,25 @@ designed to be created at compile time and used as constant"
 (defun span-format-one (e)
   (condition-case-unless-debug err
       (cl-destructuring-bind (depth s time . obj) e
-        (format-message
-         "%.3f %s%s %s\n"
-         (float-time (time-subtract time before-init-time))
-         (make-string (* depth 2) (string-to-char " "))
-         (or (span-s<-tag s) "%")
-         (funcall (span-s<-fmt-fn s) obj)))
+        (let* (
+               (lines (split-string (funcall (span-s<-fmt-fn s) obj) "\n"))
+               (prefix
+                (format-message
+                 "%.3f %s%s"
+                 (float-time (time-subtract time before-init-time))
+                 (make-string (* depth 2) (eval-when-compile (string-to-char " ")))
+                 (or (span-s<-tag s) "%"))))
+          (apply #'concat (format-message "%s %s\n" prefix (car lines))
+                 (mapcar
+                  (lambda (x)
+                    (format-message
+                     "%s> %s\n"
+                     (make-string (1- (length prefix)) (eval-when-compile (string-to-char " ")))
+                     x))
+                  (cdr lines)))))
     (error
      (format-message "error (span-format-one): %S" err))))
+
 
 (defvar span--log-buf nil)
 (defun span--get-or-create-log-buf ()
