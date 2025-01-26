@@ -1,5 +1,7 @@
 {
   self,
+  system,
+  python,
   flakes,
   lib,
   nix,
@@ -98,24 +100,15 @@
     (lib.concatStringsSep "\n" (builtins.attrValues
         (builtins.mapAttrs (name: value: "${name} = ${builtins.toString value}") self.nixconf)));
 
-  export.nixwrapper = std.mkDerivation rec {
+  export.nixwrapper = derivation {
     name = "nixwrapper";
-    preferLocalBuild = true;
-
-    nativeBuildInputs = [std.makeWrapper];
-    phases = ["buildPhase"];
-    buildPhase = ''
-      mkdir -p $out/bin
-      for exe in $(ls ${nix}/bin); do
-        ln -s ${nix}/bin/$exe $out/bin/$exe-unwrapped
-        makeWrapper ${nix}/bin/$exe $out/bin/$exe \
-          --set NIX_USER_CONF_FILES ${self.nixconf-file}
-      done
-
-      rm $out/bin/nix
-      makeWrapper ${nix}/bin/nix $out/bin/nix \
-        --add-flags --print-build-logs \
-        --set NIX_USER_CONF_FILES ${self.nixconf-file}
-    '';
+    builder = "${python}/bin/python";
+    system = system;
+    args = [
+      "${./make_nix_wrapper.py}"
+      "${std.stdenv.shell}"
+      "${nix}"
+      "${self.nixconf-file}"
+    ];
   };
 }
