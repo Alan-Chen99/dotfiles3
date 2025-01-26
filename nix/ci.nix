@@ -17,7 +17,7 @@
     name = "ci-instantiate";
     paths = [
       super.ci-deps
-      # super.cxxtools
+      super.cxxtools
       super.emacs
       super.env-scripts
       super.fonts

@@ -4,7 +4,6 @@
   (redisplay))
 
 (require 'cl-lib)
-(cl-assert (version<= "29" emacs-version))
 
 (setq load-prefer-newer t)
 (setq package-enable-at-startup nil)
@@ -18,3 +17,6 @@
 (add-to-list 'load-path alan-dotemacs-dir)
 
 (require 'alan)
+
+;; (setq native-comp-verbose 1)
+;; (require 'alan-test)

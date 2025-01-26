@@ -22,6 +22,9 @@
   (setq comint-use-prompt-regexp nil)
   (setq comint-input-ignoredups nil)
 
+  (setq comint-terminfo-terminal "xterm")
+  (setq comint-pager "cat")
+
   ;; https://stackoverflow.com/questions/25819034/colors-in-emacs-shell-prompt
   (setq comint-highlight-input nil)
   ;; (face-spec-set 'comint-highlight-prompt '((t)) 'face-defface-spec)

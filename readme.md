@@ -6,7 +6,7 @@ This emacs configuration is optimized for speed and stability. Windows and Linux
 
 This configuration uses Evil, so it has insert, normal, etc states like VIM as well as most common VIM bindings.
 
-I currently use emacs 29. Other versions are not tested and may not work. A build with `treesit` is required.
+I currently use emacs 30. Other versions are not tested and may not work. A build with `treesit` is required.
 
 ## how to use this emacs configuration
 
@@ -91,6 +91,5 @@ cd ~
 ln -s dotfiles/emacs/.emacs ~/.emacs
 ln -s ../dotfiles/emacs/early-init.el ~/.emacs.d/early-init.el
 
-emacs/span.el -> emacs-lisp-byte-compile-and-load
-emacs/span-fmt.el -> emacs-lisp-byte-compile-and-load
+byte-recompile-directory -> emacs
 ```

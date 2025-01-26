@@ -3,7 +3,6 @@
 (setq gc-cons-threshold (* 800000 200))
 
 (require 'cl-lib)
-(cl-assert (version<= "29" emacs-version))
 
 (setq load-prefer-newer t)
 (setq package-enable-at-startup nil)

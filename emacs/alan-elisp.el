@@ -118,4 +118,8 @@
     [remap pp-eval-last-sexp] #'edebug-eval-last-sexp)
   (add-hook 'edebug-mode-hook #'evil-normalize-keymaps))
 
+(setq initial-scratch-message
+      (concat ";; -*- lexical-binding: t -*-\n\n"
+              initial-scratch-message))
+
 (provide 'alan-elisp)

@@ -129,11 +129,8 @@
 
     gcc = pkgs.gcc_latest;
 
-    llvmpkgs = pkgs.llvmPackages_17;
-    clangtools = (pkgs.clang-tools).override {
-      llvmPackages = self.deps.llvmpkgs;
-      # enableLibcxx = true;
-    };
+    llvmpkgs = pkgs.llvmPackages_18;
+    clangtools = self.deps.llvmpkgs.clang-tools;
 
     # TODO (1/22/2025): nodejs_latest is not in binary cache
     # nodejs = pkgs.nodejs_latest;

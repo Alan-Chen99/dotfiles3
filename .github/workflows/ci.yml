@@ -47,7 +47,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        emacs: [".#emacs", ".#p.emacs29-gtk3", ".#p.emacs30-nox"]
+        emacs:
+          [".#emacs", ".#p.emacs30-nox", ".#p.emacs29-gtk3", ".#p.emacs28-gtk3"]
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup

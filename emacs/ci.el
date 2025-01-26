@@ -1,7 +1,6 @@
 ;; -*- lexical-binding: t -*-
 
 (require 'cl-lib)
-(cl-assert (version<= "29" emacs-version))
 
 (setq load-prefer-newer t)
 (setq package-enable-at-startup nil)
