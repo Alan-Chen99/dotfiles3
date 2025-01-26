@@ -203,18 +203,13 @@
                 nixwrapper
                 pdf-tools-epdfinfo
                 python-all
-                rust-src-hack
                 scmindent
                 test
                 test2
                 ;
 
-              nix-stable = prev.legacypkgs.nix-stable_;
+              nix-stable = prev.deps.nix-stable;
               python = prev.poetrypython.python;
-
-              schemat = final.craneLib.buildPackage {
-                src = inputs.schemat;
-              };
 
               # rackt-test = final.deps.racket2nix;
               # racket-fmt = final.deps.racket2nix.buildRacketPackage inputs.racket-fmt;
@@ -273,7 +268,7 @@
           deps =
             prev.deps
             // {
-              nix = prev.legacypkgs.nixVersions.latest;
+              nix = prev.deps.nix-stable;
             };
         }));
       };

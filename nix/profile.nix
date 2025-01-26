@@ -16,7 +16,7 @@
   glibcLocales,
   gnugrep,
   gnused,
-  home-manager-bin-wrapped,
+  home-manager-bin,
   keychain,
   legacypkgs,
   lib,
@@ -101,7 +101,7 @@
       glibcLocales
       gnugrep
       gnused
-      # home-manager-bin-wrapped
+      home-manager-bin
       keychain
       # TODO: doesnt build
       # nix.doc

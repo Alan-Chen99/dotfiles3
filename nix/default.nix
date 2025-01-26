@@ -20,18 +20,17 @@
   mod.deps =
     mod.package.import-package ./deps.nix {
       inherit system nixpkgs-flakes;
+      flakes = flakes;
       crane = flakes.crane;
       crate2nix = flakes.crate2nix;
       dbg = self.dbg;
       dream2nix = flakes.dream2nix;
       emacs-overlay = flakes.emacs-overlay;
       gitignore-lib = flakes.gitignore.lib;
-      home-manager = flakes.home-manager;
       mini-compile-commands = flakes.mini-compile-commands;
-      nix = flakes.nix.packages.${system}.default;
       nix-filter = flakes.nix-filter;
       nix-ros-overlay = flakes.nix-ros-overlay.overlays.default;
-      nixd = flakes.nixd.packages.${system}.default;
+      # nixd = flakes.nixd.packages.${system}.default;
       nixpkgs-unstable = flakes.nixpkgs-unstable;
       poetry2nix = flakes.poetry2nix;
       rust-overlay = flakes.rust-overlay.overlays.default;
@@ -75,7 +74,7 @@
           deps
           emacs
           fonts
-          home-manager-bin-wrapped
+          # home-manager-bin-wrapped
           legacypkgs
           lib
           nixconf-file
@@ -121,7 +120,7 @@
   }));
 
   mod.home = callpackage ./home.nix {} (reexport (prev: {
-    inherit (prev) home home-manager-bin-wrapped;
+    inherit (prev) home;
   }));
 
   mod.js = callpackage ../js {} (reexport (prev: {
@@ -145,7 +144,6 @@
   mod.python = callpackage ../python {} (reexport (prev: {
     inherit
       (prev)
-      basedpyright-wrapped
       env-scripts
       poetrypython
       pypkgs-bins
@@ -164,7 +162,7 @@
   }));
 
   mod.rust = callpackage ../rust {} (reexport (prev: {
-    inherit (prev) rust-src-hack craneLib;
+    inherit (prev) craneLib schemat;
   }));
 
   mod.source = callpackage ./source.nix {} (reexport (prev: {

@@ -21,6 +21,7 @@
       super.emacs
       super.env-scripts
       super.fonts
+      super.home.activationPackage
       super.js
       super.nixtools
       super.pdf-tools-epdfinfo
@@ -30,7 +31,7 @@
       super.profile-root
       super.python-all
       super.pythontools
-      # super.schemat
+      super.schemat
     ];
   };
 }

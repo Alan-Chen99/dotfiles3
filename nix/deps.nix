@@ -1,17 +1,15 @@
 {
   self,
+  flakes,
   crane,
   crate2nix,
   dbg,
   dream2nix,
   emacs-overlay,
   gitignore-lib,
-  home-manager,
   mini-compile-commands,
-  nix,
   nix-filter,
   nix-ros-overlay,
-  nixd,
   nixpkgs-flakes,
   nixpkgs-unstable,
   poetry2nix,
@@ -27,11 +25,6 @@
       cudaSupport = true;
     };
     overlays = [
-      (final: prev: {
-        # nix = final.nixVersions.nix_2_18;
-        nix-stable_ = prev.nix;
-        nix = nix;
-      })
       rust-overlay
       nix-ros-overlay
       # emacs-overlay.overlays.emacs
@@ -92,7 +85,6 @@
       gnused
       keychain
       nerdfonts
-      nix
       nix-doc
       nix-plugins
       nix-tree
@@ -113,17 +105,21 @@
       crate2nix
       dream2nix
       gitignore-lib
-      home-manager
+      # home-manager
       nix-filter
-      nixd
       poetry2nix
       racket2nix
       ;
 
+    nix = flakes.nix.packages.${system}.default;
+    nix-stable = pkgs.nix;
+    nixd = flakes.nixd.packages.${system}.default;
+
     mcc-env = (pkgs.callPackage mini-compile-commands {}).wrap self.std.stdenv;
     mcc-hook = (pkgs.callPackage mini-compile-commands {}).hook;
 
-    home-manager-bin = pkgs.home-manager;
+    home-manager = flakes.home-manager;
+    home-manager-bin = self.deps.home-manager.packages.${system}.home-manager;
     coreutils = pkgs.coreutils-full;
     emacs-base = pkgs.emacs30-pgtk;
 
@@ -135,8 +131,6 @@
     # TODO (1/22/2025): nodejs_latest is not in binary cache
     # nodejs = pkgs.nodejs_latest;
     nodejs = pkgs.nodejs_22;
-
-    nix-stable = pkgs.nix-stable_;
 
     python = pkgs.python312.override {
       # enableOptimizations = true;

@@ -14,7 +14,7 @@ for x in (Path(nix_path) / "bin").iterdir():
         f"#! {bash_path} -e",
         # $HOME/.config/nix/nix.conf allows user and/or magic-nix-cache to inject stuff locally
         f'export NIX_USER_CONF_FILES="$NIX_USER_CONF_FILES:$HOME/.config/nix/nix.conf:{nixconf_file_path}"',
-        f'exec -a "$0" {x} --print-build-logs "$@"',
+        f'exec -a "$0" {x}{" --print-build-logs" if x.name == "nix" else ""} "$@"',
         f"",
     ]
     out_f = out_path / x.name

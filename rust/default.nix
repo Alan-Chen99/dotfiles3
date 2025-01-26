@@ -1,6 +1,8 @@
 {
   self,
+  coreutils,
   crane,
+  flakes,
   legacypkgs,
   lib,
   llvmpkgs,
@@ -14,7 +16,6 @@
   taplo,
   tree,
   which,
-  coreutils,
 }: let
   inherit (self) craneLib craneLib-dbg;
 in rec {
@@ -23,6 +24,10 @@ in rec {
   export.craneLib-dbg = craneLib.overrideScope (final: prev: {
     stdenv = std.keepDebugInfo std.stdenv;
   });
+
+  export.schemat = self.craneLib.buildPackage {
+    src = flakes.schemat;
+  };
 
   # commonArgs = {
   #   src = nix-filter {

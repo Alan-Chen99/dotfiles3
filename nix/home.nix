@@ -13,17 +13,19 @@
   std,
   system,
 }: rec {
-  export.home-manager-bin-wrapped =
-    std.runCommandLocal "home-manager-bin" {
-      nativeBuildInputs = [std.makeWrapper];
-    } ''
-      mkdir $out
-      makeWrapper ${home-manager-bin}/bin/home-manager $out/bin/home-manager \
-        --set PATH ${nix-stable}/bin:${git}/bin:${gnugrep}/bin
-    '';
+  # TODO: why?
+  # export.home-manager-bin-wrapped =
+  #   std.runCommandLocal "home-manager-bin" {
+  #     nativeBuildInputs = [std.makeWrapper];
+  #   } ''
+  #     mkdir $out
+  #     makeWrapper ${home-manager-bin}/bin/home-manager $out/bin/home-manager \
+  #       --set PATH ${nix-stable}/bin:${git}/bin:${gnugrep}/bin
+  #   '';
 
   # home-manager switch --flake .
   export.home = home-manager.lib.homeManagerConfiguration {
+    # home-manager wants to pin its nixpkgs?
     pkgs = home-manager.inputs.nixpkgs.legacyPackages."${system}";
 
     # Specify your home configuration modules here, for example,
