@@ -45,11 +45,14 @@ jobs:
   emacs:
     # needs: setup
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        emacs: [".#emacs", ".#p.emacs29-gtk3", ".#p.emacs30-nox"]
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
-      - run: nix path-info --derivation .#emacs
-      - run: nix profile install .#emacs
+      - run: nix path-info --derivation ${{ matrix.emacs }}
+      - run: nix profile install ${{ matrix.emacs }}
       # for vterm
       - run: nix profile install .#p.cmake .#p.gnumake .#p.gcc .#p.libtool
       - run: mv emacs/alan-private.example.el emacs/alan-private.el
@@ -59,3 +62,7 @@ jobs:
         run: emacs --batch -l emacs/ci.el --eval "(ci-show-build-errs)"
       - if: success() || failure()
         run: emacs --batch -l emacs/ci.el --eval "(ci-load-packages)"
+      - if: success() || failure()
+        run: emacs --batch -l emacs/ci.el --eval "(ci-load-packages)"
+      - if: success() || failure()
+        run: emacs --batch -l emacs/ci.el --eval "(ci-byte-compile)"
