@@ -66,8 +66,20 @@
   (while process-queue-thread-exist
     (sit-for 0.1)))
 
+(defun ci-emit-bytecomp-warning (string position &optional _fill level)
+  (with-temp-buffer
+    (insert-file-contents byte-compile-current-file)
+    (goto-char position)
+    (let ((standard-output t))
+      (princ (format-message ":%s file=%s,line=%s,col=%s::%s\n"
+                             level
+                             byte-compile-current-file (line-number-at-pos) (current-column)
+                             string)))))
+
 (defun ci-byte-compile ()
-  (span-with-no-minibuffer-message
-   (byte-recompile-directory alan-dotemacs-dir 0 'force))
-  (with-current-buffer "*Compile-Log*"
-    (span-msg "%s" (buffer-string))))
+  (let ((byte-compile-log-warning-function #'ci-emit-bytecomp-warning))
+    (span-with-no-minibuffer-message
+     (byte-recompile-directory alan-dotemacs-dir 0 'force))
+    ;; (with-current-buffer "*Compile-Log*"
+    ;;   (span-msg "%s" (buffer-string)))
+    ))

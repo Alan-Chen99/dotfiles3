@@ -63,6 +63,4 @@ jobs:
       - if: success() || failure()
         run: emacs --batch -l emacs/ci.el --eval "(ci-load-packages)"
       - if: success() || failure()
-        run: emacs --batch -l emacs/ci.el --eval "(ci-load-packages)"
-      - if: success() || failure()
         run: emacs --batch -l emacs/ci.el --eval "(ci-byte-compile)"
