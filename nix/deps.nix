@@ -144,7 +144,7 @@
       self = self.deps.python;
     };
 
-    rust = pkgs.rust-bin.nightly."2023-10-31".default.override {
+    rust = pkgs.rust-bin.nightly."2025-01-25".default.override {
       extensions = [
         "clippy"
         "cargo"
