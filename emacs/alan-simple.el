@@ -108,7 +108,7 @@
 
 
 ;;; ui
-(setq split-width-threshold 100)
+(setq split-width-threshold 80)
 (setq line-number-display-limit-width 2000)
 
 (setq use-dialog-box nil)

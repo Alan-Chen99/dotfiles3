@@ -32,7 +32,7 @@
 (defun ci-write-failed (e)
   (let ((standard-output t))
     (princ (format-message
-            "::error ::package %s failed to build\n"
+            "\n::error ::package %s failed to build\n"
             (elpaca<-id e))))
   (cl-loop for (status _ info _) in (reverse (elpaca<-log e)) concat
            (span-notef "%-20s %-10s %-10s" (elpaca<-id e) status info))
@@ -75,7 +75,7 @@
     (insert-file-contents byte-compile-current-file)
     (goto-char position)
     (let ((standard-output t))
-      (princ (format-message ":%s file=%s,line=%s,col=%s::%s\n"
+      (princ (format-message "\n:%s file=%s,line=%s,col=%s::%s\n"
                              level
                              byte-compile-current-file (line-number-at-pos) (current-column)
                              string)))))
