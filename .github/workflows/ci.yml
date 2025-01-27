@@ -64,9 +64,7 @@ jobs:
       - run: nix profile install .#p.lilypond
       - run: mv emacs/alan-private.example.el emacs/alan-private.el
       - if: success() || failure()
-        run: emacs --batch --eval "(setq ci-build-verbose t)" -l emacs/ci.el
-      - if: success() || failure()
-        run: emacs --batch -l emacs/ci.el --eval "(ci-show-build-errs)"
+        run: emacs --batch --eval "(setq ci-build-verbose t)" -l emacs/ci.el --eval "(ci-show-build-errs)"
       - if: success() || failure()
         run: emacs --batch -l emacs/ci.el --eval "(ci-load-packages)"
       - if: success() || failure()
