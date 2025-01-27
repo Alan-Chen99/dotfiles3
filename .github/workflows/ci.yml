@@ -42,6 +42,9 @@ jobs:
       - if: success() || failure()
         run: nix path-info --derivation .#py310.ci-instantiate
 
+      - if: success() || failure()
+        run: nix build .#python-all --no-link --print-out-paths
+
   emacs:
     needs: setup
     runs-on: ubuntu-latest
@@ -57,6 +60,8 @@ jobs:
       - run: nix profile install ${{ matrix.emacs }}
       # for vterm
       - run: nix profile install .#p.cmake .#p.gnumake .#p.gcc .#p.libtool
+      # for lilypond-mode
+      - run: nix profile install .#p.lilypond
       - run: mv emacs/alan-private.example.el emacs/alan-private.el
       - if: success() || failure()
         run: emacs --batch --eval "(setq ci-build-verbose t)" -l emacs/ci.el

@@ -154,7 +154,11 @@
       vcstool2
       yt-dlp
       ;
-    poetry = poetrypython.pkgs._poetry;
+    poetry = poetrypython.withPackages (ps: [
+      ps._poetry
+      ps.poetry-plugin-shell
+      ps.poetry-plugin-up
+    ]);
   };
 
   export.pypkgs-bins = builtins.mapAttrs (n: e:

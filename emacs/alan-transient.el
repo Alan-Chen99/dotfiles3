@@ -65,7 +65,7 @@
      (setq key (replace-match (alan-keys ,@val) t t key))))
 
 (defun my-transient-substitude2-impl (key)
-  (span-dbgf key)
+  ;; (span-dbgf key)
   (setq key (alan-normalize-key key))
   (let ((case-fold-search))
 
@@ -139,7 +139,7 @@
 
   (setq transient-substitute-key-function
         (lambda (obj)
-          (span-dbgf (oref obj key))
+          ;; (span-dbgf (oref obj key))
           (my-transient-substitude2 (oref obj key))))
   ;; (setq transient-substitute-key-function nil)
 
