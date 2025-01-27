@@ -46,6 +46,7 @@ jobs:
     needs: setup
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         emacs:
           [".#emacs", ".#p.emacs30-nox", ".#p.emacs29-gtk3", ".#p.emacs28-gtk3"]

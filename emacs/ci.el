@@ -30,6 +30,10 @@
 (require 'alan)
 
 (defun ci-write-failed (e)
+  (let ((standard-output t))
+    (princ (format-message
+            "::error ::package %s failed to build\n"
+            (elpaca<-id e))))
   (cl-loop for (status _ info _) in (reverse (elpaca<-log e)) concat
            (span-notef "%-20s %-10s %-10s" (elpaca<-id e) status info))
   (span-notef))
@@ -59,7 +63,8 @@
            do (cl-loop for (_ . e) in (elpaca-q<-elpacas q)
                        for status = (elpaca--status e)
                        do (unless (eq status 'finished) (ci-write-failed e))))
-  (kill-emacs (if (alist-get 'failed ci-pkgs-statuses) 1 0)))
+  (when (version<= "29" emacs-version)
+    (kill-emacs (if (alist-get 'failed ci-pkgs-statuses) 1 0))))
 
 (defun ci-load-packages ()
   (while process-queue-thread-exist
