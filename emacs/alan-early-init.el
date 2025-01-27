@@ -49,7 +49,7 @@
 (pkg! 'evil-visualstar)
 (pkg! 'undo-fu)
 (pkg! 'undo-fu-session)
-(pkg! 'format-all)
+(pkg! '(format-all :repo "Alan-Chen99/emacs-format-all-the-code"))
 (pkg! 'hydra)
 
 ;; todo: builtin seq is too old, how to deal with this?

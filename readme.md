@@ -26,7 +26,6 @@ copy `emacs/alan-private.example.el` to `emacs/alan-private.el`
 
 Start emacs; dependencies will be installed into `~/.emacs.d`.
 Some dependencies will fail due to missing system dependencies. Just ignore them for now.
-On windows, you may have to start emacs multiple times for most packages to build.
 
 ### get started
 
@@ -91,5 +90,5 @@ cd ~
 ln -s dotfiles/emacs/.emacs ~/.emacs
 ln -s ../dotfiles/emacs/early-init.el ~/.emacs.d/early-init.el
 
-byte-recompile-directory -> emacs
+(byte-recompile-directory alan-dotemacs-dir 0 'force)
 ```
