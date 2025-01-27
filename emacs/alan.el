@@ -48,6 +48,7 @@
 (require-noerr 'alan-evil-surround)
 (require-noerr 'alan-jump)
 (require-noerr 'alan-embark)
+(require-noerr 'alan-tramp)
 
 
 ;; completion ui
@@ -72,7 +73,7 @@
 (require-noerr 'alan-with-editor)
 (require-noerr 'alan-magit)
 (require-noerr 'alan-gpt)
-(require-noerr 'alan-term)
+(require-noerr 'alan-vterm)
 (require-noerr 'alan-codeium)
 (require-noerr 'alan-info)
 (require-noerr 'alan-flyspell)
@@ -229,12 +230,6 @@
 (alan-set-ignore-debug-on-error #'comment-region-default)
 (alan-set-ignore-debug-on-error #'revert-buffer)
 
-(defadvice! alan-wrap-tramp-debug-message (orig-fn vec fmt-string &rest arguments)
-  :around 'tramp-debug-message
-  (span :tramp-debug-message
-    (span-note (apply #'format-message fmt-string arguments))
-    ;; (span--note-and-flush (apply #'format-message fmt-string arguments))
-    (apply orig-fn vec fmt-string arguments)))
 
 (span-wrap tree-sitter-langs--call (&rest args)
   (:tree-sitter-langs--call (:seq args))
@@ -657,9 +652,3 @@
 
 ;; (disassemble #'read-extended-command-1)
 ;; (symbol-function #'completing-read)
-
-
-;; (cl-pushnew "type" python--treesit-keywords :test #'string=)
-
-(add-hook! 'emacs-startup-hook
-  (span-dbgf :emacs-startup-hook debug-on-error))

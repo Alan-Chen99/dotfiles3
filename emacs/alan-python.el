@@ -9,14 +9,16 @@
 ;; (pkg! 'python-black)
 ;; (pkg! '(python-isort :repo "https://github.com/wyuenho/emacs-python-isort"))
 
-(declare-function lsp-completion-at-point "lsp-completion")
-(declare-function lsp-completion-mode "lsp-completion")
+(require-if-is-bytecompile lsp-completion)
 
 (defun alan-redef-python-mode ()
   ;; remove uneeded stuff from python
   (define-derived-mode python-mode prog-mode "python"
     (setq-local comment-start "# ")
     (setq-local comment-start-skip "#+\\s-*"))
+
+  (define-derived-mode inferior-python-mode comint-mode "Inferior Python"
+    )
 
   (seq-doseq (p "_")
     (modify-syntax-entry p "w" python-mode-syntax-table)))

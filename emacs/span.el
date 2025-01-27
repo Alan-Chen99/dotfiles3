@@ -388,26 +388,31 @@ designed to be created at compile time and used as constant"
     (span--unsafe-flush-stack)))
 
 (defun span-format-one (e)
-  (condition-case-unless-debug err
-      (cl-destructuring-bind (depth s time . obj) e
-        (let* (
-               (lines (split-string (funcall (span-s<-fmt-fn s) obj) "\n"))
-               (prefix
+  (cl-destructuring-bind (depth s time . obj) e
+    (let* ((msg
+            (condition-case-unless-debug err
+                (funcall (span-s<-fmt-fn s) obj)
+              (error
+               (format-message
+                "error (span-format-one): %S\n%s\n%s"
+                err
+                (span-fmt-to-string (span-s<-fmt-fn s))
+                (span-fmt-to-string obj)))))
+           (lines (split-string msg "\n"))
+           (prefix
+            (format-message
+             "%.3f %s%s"
+             (float-time (time-subtract time before-init-time))
+             (make-string (* depth 2) (eval-when-compile (string-to-char " ")))
+             (or (span-s<-tag s) "%"))))
+      (apply #'concat (format-message "%s %s\n" prefix (car lines))
+             (mapcar
+              (lambda (x)
                 (format-message
-                 "%.3f %s%s"
-                 (float-time (time-subtract time before-init-time))
-                 (make-string (* depth 2) (eval-when-compile (string-to-char " ")))
-                 (or (span-s<-tag s) "%"))))
-          (apply #'concat (format-message "%s %s\n" prefix (car lines))
-                 (mapcar
-                  (lambda (x)
-                    (format-message
-                     "%s> %s\n"
-                     (make-string (1- (length prefix)) (eval-when-compile (string-to-char " ")))
-                     x))
-                  (cdr lines)))))
-    (error
-     (format-message "error (span-format-one): %S" err))))
+                 "%s> %s\n"
+                 (make-string (1- (length prefix)) (eval-when-compile (string-to-char " ")))
+                 x))
+              (cdr lines))))))
 
 
 (defvar span--log-buf nil)
@@ -550,7 +555,7 @@ designed to be created at compile time and used as constant"
            (callback (get sym 'span--instrument-callback))
            (msg
             (if verbose
-                (backtrace-print-to-string (cons sym args) 100)
+                (span-fmt-to-string (cons sym args))
               (span-fmt `(cl-prin1-to-string ,(:seq (cons sym args)))))))
       (span (:: (:unsafe msg))
         (span-flush)
@@ -562,7 +567,7 @@ designed to be created at compile time and used as constant"
         (span-msg "buf: %s" (current-buffer))
         (let ((res (apply fn args)))
           (if verbose
-              (span-msg "%s -> %s" sym (backtrace-print-to-string res 100))
+              (span-msg "%s -> %s" sym (span-fmt-to-string res))
             (span-notef "%s -> %S" sym res))
           res)))))
 
@@ -601,27 +606,29 @@ designed to be created at compile time and used as constant"
         (funcall orig-fun nil))
     (apply orig-fun format-string args)))
 
-(defvar span--in-message-functions nil)
+(defvar span--in-message-functions 0)
 (advice-add #'set-message-functions :around #'span--wrap-set-message-functions)
 (defun span--wrap-set-message-functions (orig-fun message)
-  (span :span--wrap-message-functions
+  (span :set-message-functions
+    (span-dbg set-message-functions)
     ;; recursive invocations is legal, especially for garbage-collection-messages
     ;; we put them in *span* instead
-    (if span--in-message-functions
+    (if (>= span--in-message-functions 1)
         (progn
           (span-notef "recursive call to set-message-functions: %s" message)
           'already-handled)
-      (let ((span--in-message-functions t))
+      (let ((span--in-message-functions (1+ span--in-message-functions)))
         (funcall orig-fun message)))))
 
 (advice-add #'clear-minibuffer-message :around #'span--wrap-clear-minibuffer-message)
 (defun span--wrap-clear-minibuffer-message (orig-fun)
   (span :clear-minibuffer-message
-    (if span--in-message-functions
+    (if (>= span--in-message-functions 2)
         (progn
+          (span-dbgf set-message-functions)
           (span-notef "recursive call to clear-minibuffer-message")
           'dont-clear-message)
-      (let ((span--in-message-functions t))
+      (let ((span--in-message-functions (1+ span--in-message-functions)))
         (funcall orig-fun)))))
 
 
@@ -796,19 +803,21 @@ designed to be created at compile time and used as constant"
 (defvar span--is-in-backtrace nil)
 (defun span--backtrace (&optional base)
   (span--context :span--internal
-    (span :span--backtrace
-      (span-flush)
-      (if span--is-in-backtrace
-          (span-notef "!! recursive invocation of span--backtrace")
-        (let ((span--is-in-backtrace t)
-              (inhibit-quit nil))
-          (cl-incf span--n-backtrace-made-this-cycle)
-          (when (< span--n-backtrace-made-this-cycle 10)
-            (span-notef
-              "backtrace:\n%s"
-              `(let ((backtrace-line-length 100))
-                 (backtrace--to-string
-                  ,(:unsafe (cdr (backtrace-get-frames base))))))))))))
+    (span-flush)
+    (if span--is-in-backtrace
+        (span :span--backtrace
+          (span-notef "!! recursive invocation of span--backtrace"))
+      (let ((span--is-in-backtrace t)
+            (inhibit-quit nil))
+        (cl-incf span--n-backtrace-made-this-cycle)
+        (if (> span--n-backtrace-made-this-cycle 10)
+            ;; perhaps its fine if we collect many backtraces if we dont flush them?
+            (span-notef "too many backtraces; ommiting")
+          (span-note
+            "backtrace:\n%s"
+            `(let ((backtrace-line-length 100))
+               (backtrace--to-string
+                ,(:unsafe (cdr (backtrace-get-frames base)))))))))))
 
 (defun span--debug (type &rest args)
   (if (eq type 'error)
@@ -816,6 +825,7 @@ designed to be created at compile time and used as constant"
              (err-sym (car-safe signal-args))
              (data (cdr-safe signal-args)))
         (span (:span--debug "error: %S" `(list ,(:unsafe err-sym) ,(:unsafe data)))
+          (span-flush)
           (span--backtrace)
           (let ((inhibit-debugger t))
             (signal err-sym data))))
@@ -823,6 +833,13 @@ designed to be created at compile time and used as constant"
     ;; TODO: should quit here if is here too many times, since might hang
     )
   nil)
+
+(defun span--signal-hook-function (error-symbol data)
+  (let ((signal-hook-function nil))
+    (span (:span--signal-hook-function "%s %s" error-symbol (:ts data))
+      (span-flush)
+      (span--backtrace)
+      (signal error-symbol data))))
 
 (advice-add #'tramp-file-name-handler :around #'span--wrap-tramp-file-name-handler)
 (defun span--wrap-tramp-file-name-handler (orig-fn &rest args)

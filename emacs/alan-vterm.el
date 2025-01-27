@@ -2,7 +2,9 @@
 
 (require 'alan-core)
 (require 'evil)
+(require 'alan-shell)
 
+(require-if-is-bytecompile evil-collection-vterm)
 ;; (pkg! 'mistty)
 ;; (eval-after-load! mistty
 ;;   (general-def mistty-mode-map
@@ -26,37 +28,42 @@
 (defmacro vterm-with-send-key (expr)
   `(lambda () (interactive) (vterm-send ,expr)))
 
+(evil-define-operator alan-vterm-delete-whole-line-without-yank (beg end type register)
+  :motion evil-line-or-visual-line
+  :type line
+  (interactive "<R><x>")
+  (evil-collection-vterm-delete beg end type ?_))
+
 (eval-after-load! vterm
+  (setq vterm-environment
+        (append alan-bash-fns-env-vars
+                (list
+                 ;; TODO: append instead
+                 "PROMPT_COMMAND=vterm_prompt_command")))
+
   (defadvice! alan-vterm--get-shell ()
     :override #'vterm--get-shell
-    (let ((f (expand-file-name "etc/emacs-vterm-bash.sh"
-                               (file-name-directory (find-library-name "vterm")))))
-      (format
-       "%s --init-file <(echo %s)"
-       vterm-shell
-       (shell-quote-argument
-        (concat
-         ". \"$HOME/.bashrc\"\n"
-         (with-temp-buffer
-           (insert-file-contents f)
-           (buffer-string)))
-        t))))
+    ;; (let ((f
+    ;;        ;; (expand-file-name "etc/emacs-vterm-bash.sh"
+    ;;        ;;                   (file-name-directory (find-library-name "vterm")))
+    ;;        (expand-file-name "emacs-shell-bash.sh" alan-dotemacs-dir)))
+    ;;   (format
+    ;;    "%s --init-file <(echo %s)"
+    ;;    vterm-shell
+    ;;    (shell-quote-argument
+    ;;     ;; (concat
+    ;;     ;; ". \"$HOME/.bashrc\"\n"
+    ;;     (with-temp-buffer
+    ;;       (insert-file-contents f)
+    ;;       (buffer-string))
+    ;;     t)))
+    vterm-shell)
 
 
   (defadvice! alan-vterm--get-directory (path)
     :override #'vterm--get-directory
-    (span (:vterm--get-directory path)
-      (span-dbgf default-directory)
-      (span-dbgf (file-local-name default-directory))
-      (span-dbgf (file-remote-p default-directory))
-
-      (when (string-match "^\\(.*?\\)@\\(.*?\\):\\(.*?\\)$" path)
-        (progn
-          (let (
-                ;; (user (match-string 1 path))
-                ;; (host (match-string 2 path))
-                (dir (match-string 3 path)))
-            (concat (file-remote-p default-directory) (file-name-as-directory dir)))))))
+    ;; (span-dbgf path)
+    (concat (file-remote-p default-directory) (file-name-as-directory path)))
 
   ;; (span-instrument vterm--set-directory)
   (clear-and-backup-keymap vterm-mode-map)
@@ -74,7 +81,10 @@
     [remap forward-paragraph] #'vterm-next-prompt
     [remap alan-completion-at-point] (vterm-with-send-key "<tab>")
     [remap end-of-buffer] #'vterm-reset-cursor-point
-    [remap evil-delete-whole-line] (vterm-with-send-key "C-u C-k")
+    ;; "C-u C-k" sometimes dont work?
+    ;; [remap evil-delete-whole-line] (vterm-with-send-key "C-u C-k")
+    [remap evil-delete-whole-line] #'alan-vterm-delete-whole-line-without-yank
+    [remap move-beginning-of-line] #'vterm-previous-prompt
 
     )
 
@@ -110,7 +120,6 @@
 
   (evil-collection-require-lazy 'vterm))
 
-
 (eval-after-load! evil-collection-vterm
   (span-msg "evil-collection-vterm (eval-after-load!)")
   (let ((evil-collection-state-denylist '(insert))
@@ -121,4 +130,4 @@
   )
 
 
-(provide 'alan-term)
+(provide 'alan-vterm)

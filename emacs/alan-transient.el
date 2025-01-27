@@ -57,7 +57,7 @@
 
 (defun alan-keys (&rest keys)
   (apply #'concat " "
-         (-interleave keys (-cycle '(" ")))))
+         (-interleave keys (make-list (length keys) " "))))
 
 (defmacro alan-key-rep (rx val)
   (declare (indent 1))
@@ -170,7 +170,6 @@
       (setq-local cursor-in-non-selected-windows nil)
       ;; allow windmove-up to move to the transient window
       (set-window-parameter nil 'no-other-window nil))))
-
 
 
 (provide 'alan-transient)

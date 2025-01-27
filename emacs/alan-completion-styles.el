@@ -88,6 +88,12 @@
     (alan-update-completion-styes)))
 
 
+(defadvice! completion--nth-completion--throw-on-input (fn &rest args)
+  :around #'completion--nth-completion
+  (let ((throw-on-input (or throw-on-input 'quit)))
+    (span :completion--nth-completion
+      (apply fn args))))
+
 ;; (use-package hotfuzz
 ;;    :elpaca nil
 ;;    :autoload (hotfuzz--adjust-metadata hotfuzz-vertico-mode hotfuzz-all-completions)

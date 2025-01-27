@@ -2,6 +2,9 @@
 
 (require 'cl-lib)
 (require 'cl-print)
+(eval-when-compile
+  (require 'backtrace))
+(autoload 'backtrace-print-to-string "backtrace")
 
 (defun span-fmt--immutable-or-replace (obj)
   (declare (pure t) (side-effect-free t))
@@ -21,6 +24,9 @@
   (if (stringp obj)
       obj
     (prin1-to-string obj)))
+
+(defun span-fmt-to-string (obj)
+  (backtrace-print-to-string obj 100))
 
 (defsubst span-fmt--immutable-or-replace-seq (obj)
   (cl-map (type-of obj) #'span-fmt--immutable-or-replace obj))
@@ -77,15 +83,22 @@
   (cond
    ((eq (car-safe form) :unsafe)
     (cl-assert (length= form 2))
-    (span-fmt--push (cadr form) state))
+    (span-fmt--push (nth 1 form) state))
    ((eq (car-safe form) :seq)
     (cl-assert (length= form 2))
-    (let ((val (span-fmt--push `(copy-sequence ,(cadr form)) state)))
+    (let ((val (span-fmt--push `(copy-sequence ,(nth 1 form)) state)))
       `(span-fmt--immutable-or-replace-seq ,val)))
+   ((eq (car-safe form) :ts)
+    (cl-assert (length= form 2))
+    (span-fmt--push `(span-fmt-to-string ,(nth 1 form)) state))
+   ((eq (car-safe form) :unsafe-ts)
+    (cl-assert (length= form 2))
+    (let ((val (span-fmt--push (nth 1 form) state)))
+      `(span-fmt-to-string ,val)))
 
    ((eq (car-safe form) '\`)
     (cl-assert (length= form 2))
-    (span-fmt--parse-backquote (cadr form) state))
+    (span-fmt--parse-backquote (nth 1 form) state))
 
    ;; ((vectorp form)
    ;;  (cl-assert (length= form 1))

@@ -15,4 +15,9 @@
     (advice-add #'marginalia--library-doc :override #'marginalia--library-doc-ignore))
   (marginalia-mode))
 
+(defadvice! marginalia--library-doc--set-dir (orig-fn &rest args)
+  :around #'marginalia--library-doc
+  (let ((default-directory "/"))
+    (apply orig-fn args)))
+
 (provide 'alan-marginalia)

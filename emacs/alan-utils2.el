@@ -18,16 +18,26 @@
 
 (declare-function evil-collection-require "evil-collection")
 
+(eval-and-compile
+  (defun require-if-is-bytecompile--one (feature)
+    (when (bound-and-true-p byte-compile-current-file)
+      (when (string-prefix-p "evil-collection-" (symbol-name feature))
+        (require 'evil-collection)
+        (evil-collection-require (intern (string-remove-prefix "evil-collection-" (symbol-name feature)))))
+      (require feature))
+    nil))
+
+(defmacro require-if-is-bytecompile (&rest features)
+  (dolist (feature features)
+    (require-if-is-bytecompile--one feature))
+  nil)
+
 (defmacro eval-after-load! (feature &rest body)
   ;; with-eval-after-load but requires feature when byte compiling to silent errors.
   ;; warning: the byte compiler sees feature being loaded even afte this macro
   ;; TODO: maybe its possible to fix above?
   (declare (indent 1) (debug (form def-body)))
-  (when (bound-and-true-p byte-compile-current-file)
-    (when (string-prefix-p "evil-collection-" (symbol-name feature))
-      (require 'evil-collection)
-      (evil-collection-require (intern (string-remove-prefix "evil-collection-" (symbol-name feature)))))
-    (require feature))
+  (require-if-is-bytecompile--one feature)
   `(alan-eval-after-load ',feature (lambda () ,@body)))
 
 (defun alan-wrap-callback (fn)
@@ -76,11 +86,6 @@
   ;;(interactive)
   (= (save-excursion (move-end-of-line nil) (point)) (point)))
 
-
-(defmacro require-if-is-bytecompile (&rest features)
-  (when (bound-and-true-p byte-compile-current-file)
-    (mapc (lambda (f) (require f)) features))
-  nil)
 
 (defun force--noerr (cb)
   ;; cant seem to be able to do this with just condition-case?

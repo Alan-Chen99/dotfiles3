@@ -16,6 +16,9 @@
   (add-to-list 'comint-output-filter-functions #'comint-truncate-buffer)
   (add-to-list 'comint-output-filter-functions #'comint-osc-process-output)
 
+  (setf (alist-get "0" (default-value 'ansi-osc-handlers) nil nil #'string=)
+        #'ansi-osc-window-title-handler)
+
   (setq comint-use-prompt-regexp nil)
   (setq comint-input-ignoredups nil)
 
@@ -185,29 +188,6 @@
     ;;   )
 
     ))
-
-
-(eval-after-load! shell
-  ;; https://emacs.stackexchange.com/questions/62418/how-to-change-tramp-default-remote-shell-or-any-of-its-descendants
-  ;; TODO: windows
-  ;; (setq explicit-shell-file-name "/bin/bash")
-
-  (setq-default shell-font-lock-keywords nil)
-  ;; (setq-default company-global-modes '(not shell-mode))
-
-  ;; (setq-default shell-fontify-input-enable t)
-  (setq-default shell-fontify-input-enable nil)
-
-
-  (defadvice! shell-reapply-ansi-color-inhibit-readonly (fn)
-    :around #'shell-reapply-ansi-color
-    (let ((inhibit-read-only t))
-      (funcall fn)))
-
-  ;; (add-hook! 'shell-mode-hook
-  ;;   (setq-local font-lock-fontify-syntactically-function nil))
-
-  )
 
 
 (provide 'alan-comint)
