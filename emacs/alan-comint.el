@@ -14,6 +14,7 @@
 
   (setq comint-buffer-maximum-size 10000)
   (add-to-list 'comint-output-filter-functions #'comint-truncate-buffer)
+  (add-to-list 'comint-output-filter-functions #'comint-osc-process-output)
 
   (setq comint-use-prompt-regexp nil)
   (setq comint-input-ignoredups nil)

@@ -650,10 +650,10 @@
 ;; (defun lsp--calculate-root (session file-name)
 ;;   (let ((debug-on-error t))
 ;;     (debug)))
-(defadvice! lsp--calculate-root--bt (fn &rest args)
-  :around #'lsp--calculate-root
-  (span--backtrace)
-  (apply fn args))
+;; (defadvice! lsp--calculate-root--bt (fn &rest args)
+;;   :around #'lsp--calculate-root
+;;   (span--backtrace)
+;;   (apply fn args))
 
 ;; (disassemble #'read-extended-command-1)
 ;; (symbol-function #'completing-read)

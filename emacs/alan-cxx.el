@@ -3,7 +3,9 @@
 (require 'alan-core)
 (require 'alan-evil)
 
-(pkg! '(cmake-mode :main "Auxiliary/cmake-mode.el"))
+(pkg! '(cmake-mode
+        :repo ("https://gitlab.kitware.com/cmake/cmake.git" . "cmake")
+        :main "Auxiliary/cmake-mode.el"))
 
 (add-to-list 'major-mode-remap-alist (cons #'c-mode #'c++-ts-mode))
 (add-to-list 'major-mode-remap-alist (cons #'c++-mode #'c++-ts-mode))

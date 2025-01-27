@@ -3,12 +3,12 @@
 (require 'alan-config)
 (require 'alan-utils)
 
-(defvar elpaca-installer-version 0.7)
+(defvar elpaca-installer-version 0.9)
 (defvar elpaca-order '(elpaca :repo "https://github.com/Alan-Chen99/elpaca.git"
                               :ref nil :depth 1
                               :files (:defaults "elpaca-test.el" (:exclude "extensions"))
                               :build (:not elpaca--activate-package)))
-(defvar elpaca-core-date -1)
+(defvar elpaca-core-date '(-1))
 
 (let* ((repo  (expand-file-name "elpaca/" elpaca-repos-directory))
        (build (expand-file-name "elpaca/" elpaca-builds-directory))

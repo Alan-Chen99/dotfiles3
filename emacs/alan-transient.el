@@ -47,11 +47,11 @@
       (propertize ans 'alan-transient-did-sub t))))
 
 
-(eval-when-compile
+(eval-and-compile
   (defun alan-make-key-desc-rx (keys)
     `(seq
       " "
-      ,@(-interleave keys (-cycle '(" ")))))
+      ,@(-interleave keys (make-list (length keys) " "))))
 
   (rx-define alan-keys (&rest keys) (eval (alan-make-key-desc-rx '(keys)))))
 
@@ -143,12 +143,6 @@
           (my-transient-substitude2 (oref obj key))))
   ;; (setq transient-substitute-key-function nil)
 
-
-  ;; TODO: transient--make-redisplay-map seems to alwasy fail?
-  (defadvice! transient--make-redisplay-map-advice (&rest _args)
-    :override #'transient--make-redisplay-map
-    (make-sparse-keymap))
-
   (setq transient-display-buffer-action
         '(display-buffer-in-side-window
           (side . bottom)
@@ -159,18 +153,23 @@
         )
   ;; (setq-default transient-mode-line-format 'line
   ;; (setq-default transient-enable-popup-navigation nil)
-  (defadvice! transient--show-after (&rest _)
-    :after 'transient--show
-    (with-current-buffer transient--buffer
-      (setq window-size-fixed nil))
-    (when (window-live-p transient--window)
-      (with-selected-window transient--window
-        ;; disable cursor in transient window
-        (setq-local cursor-in-non-selected-windows nil)
-        ;; allow windmove-up to move to the transient window
-        (set-window-parameter nil 'no-other-window nil))))
-
   )
+
+;; TODO: transient--make-redisplay-map seems to alwasy fail?
+(defadvice! transient--make-redisplay-map-advice (&rest _args)
+  :override #'transient--make-redisplay-map
+  (make-sparse-keymap))
+
+(defadvice! transient--show-after (&rest _)
+  :after 'transient--show
+  (with-current-buffer transient--buffer
+    (setq window-size-fixed nil))
+  (when (window-live-p transient--window)
+    (with-selected-window transient--window
+      ;; disable cursor in transient window
+      (setq-local cursor-in-non-selected-windows nil)
+      ;; allow windmove-up to move to the transient window
+      (set-window-parameter nil 'no-other-window nil))))
 
 
 

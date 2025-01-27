@@ -14,7 +14,7 @@
       (with-current-buffer (get-buffer-create " *eval-after-load*" t)
         (funcall form)))))
 
-(string-prefix-p "evil-collection-" (symbol-name 'evil-collection-rg))
+;; (string-prefix-p "evil-collection-" (symbol-name 'evil-collection-rg))
 
 (declare-function evil-collection-require "evil-collection")
 
