@@ -81,6 +81,7 @@
                              string)))))
 
 (defun ci-byte-compile ()
+  ;; TODO: some error seems to be missing (they can be seen in *Async-native-compile-log*)
   (let ((byte-compile-log-warning-function #'ci-emit-bytecomp-warning))
     (span-with-no-minibuffer-message
      (byte-recompile-directory alan-dotemacs-dir 0 'force))

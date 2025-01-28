@@ -19,20 +19,18 @@
     ans))
 
 (eval-after-load! evil-surround
-
   (add-to-list 'evil-surround-operator-alist '(evil-change-without-yank . change))
-
-  (span-wrap evil-surround-edit (op)
-    (:evil-surround-edit op))
-  (span-wrap evil-Surround-edit (op)
-    (:evil-Surround-edit op))
-
-  (defadvice! alan--evil-surround-read-char ()
-    :override #'evil-surround-read-char
-    (if (evil-operator-state-p)
-        (save-restriction (widen) (alan--evil-surround-read-char-one))
-      (alan--evil-surround-read-char-one)))
-
   (global-evil-surround-mode))
+
+(defadvice! alan--evil-surround-read-char ()
+  :override #'evil-surround-read-char
+  (if (evil-operator-state-p)
+      (save-restriction (widen) (alan--evil-surround-read-char-one))
+    (alan--evil-surround-read-char-one)))
+
+(span-wrap evil-surround-edit (op)
+  (:evil-surround-edit op))
+(span-wrap evil-Surround-edit (op)
+  (:evil-Surround-edit op))
 
 (provide 'alan-evil-surround)

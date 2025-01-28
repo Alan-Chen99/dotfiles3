@@ -192,12 +192,11 @@
 (pkg! 'page-break-lines
   (startup-queue-package 'page-break-lines 50))
 (eval-after-load! page-break-lines
-  (global-page-break-lines-mode)
-  ;; TODO: the following activates in temp buffers
-  (define-advice page-break-lines-mode-maybe
-      (:override () redefine)
-    (page-break-lines-mode 1))
-  )
+  (global-page-break-lines-mode))
+;; TODO: the following activates in temp buffers
+(define-advice page-break-lines-mode-maybe
+    (:override () redefine)
+  (page-break-lines-mode 1))
 
 (pkg! 'evil-anzu
   (startup-queue-package 'evil-anzu 75))
