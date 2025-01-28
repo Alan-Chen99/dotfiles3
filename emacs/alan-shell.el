@@ -16,7 +16,9 @@
     (defun alan-setup-bash ()
       (setq-local format-all-formatters '(("Shell" shfmt))))))
 
-
+(defun alan-use-prompt-dirtrack ()
+  (or (not (eq system-type 'windows-nt))
+      (file-remote-p default-directory)))
 
 
 (defun alan-load-shell-bash-fns ()
@@ -35,17 +37,21 @@
      (string-match-p (rx bos "BASH_FUNC_") it)
      (read stdout))))
 
-(defvar alan-bash-fns-env-vars)
-(setq alan-bash-fns-env-vars (alan-load-shell-bash-fns))
+(defvar alan-bash-fns-env-vars nil)
+(if (eq system-type 'windows-nt)
+    (span-msg "TODO")
+  (setq alan-bash-fns-env-vars (alan-load-shell-bash-fns)))
 
 (defadvice! comint-term-environment--inject (fn)
   :around #'comint-term-environment
-  (let ((ans (funcall fn)))
-    (append
-     ans alan-bash-fns-env-vars
-     (list
-      ;; TODO: append instead
-      "PROMPT_COMMAND=vterm_prompt_command"))))
+  (if (alan-use-prompt-dirtrack)
+      (let ((ans (funcall fn)))
+        (append
+         ans alan-bash-fns-env-vars
+         (list
+          ;; TODO: append instead
+          "PROMPT_COMMAND=vterm_prompt_command")))
+    (funcall fn)))
 
 
 (eval-after-load! shell
@@ -67,7 +73,8 @@
   (add-hook! 'shell-mode-hook
     (defun alan-shell-setup ()
       ;; (setq-local font-lock-fontify-syntactically-function nil)
-      (shell-dirtrack-mode -1)
+      (when (alan-use-prompt-dirtrack)
+        (shell-dirtrack-mode -1))
       )))
 
 

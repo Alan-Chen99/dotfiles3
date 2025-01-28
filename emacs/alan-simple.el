@@ -108,7 +108,11 @@
 
 
 ;;; ui
+;; on windows (window-width) reports 95 but should be 126
+;; so these are modified
 (setq split-width-threshold 80)
+(setq truncate-partial-width-windows 40)
+
 (setq line-number-display-limit-width 2000)
 
 (setq use-dialog-box nil)
