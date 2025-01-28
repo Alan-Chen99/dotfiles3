@@ -2,7 +2,29 @@
 
 (require 'alan-core)
 
+;; https://emacs.stackexchange.com/questions/18262/tramp-how-to-add-a-agent-forwarding-to-ssh-connections
 (eval-after-load! tramp
+
+  ;; (setq tramp-inhibit-progress-reporter t)
+  (setq tramp-connection-timeout 5)
+  (setq tramp-histfile-override nil)
+
+  ;; (add-to-list 'tramp-connection-properties
+  ;;              (list (regexp-quote "/ssh:host@192.168.0.238:")
+  ;;                    "login-args"
+  ;;                    '(("-A") ("-l" "%u") ("-p" "%p") ("%c")
+  ;;                      ("-e" "none") ("%h"))
+
+  ;;                    ;; "remote-shell" "/usr/bin/bash"
+
+  ;;                    ;; "direct-async-process" t
+  ;;                    ))
+
+  ;; ;; https://stackoverflow.com/questions/26630640/tramp-ignores-tramp-remote-path
+  ;; (add-to-list 'tramp-remote-path 'tramp-own-remote-path)
+
+  ;; ;; TODO: this sends a "kill" but that seems to never work?
+  ;; (advice-add #'tramp-interrupt-process :override #'ignore)
 
   (connection-local-set-profile-variables
    'alan-custom-vars
@@ -12,16 +34,35 @@
      (shell-command-switch . "-c")))
   (connection-local-set-profiles nil 'alan-custom-vars)
 
-  (setq tramp-histfile-override nil)
-
   (setq tramp-password-prompt-regexp
         (rx-to-string
          ;; this "group" is shown as prompt
          `(group
            (: bos (* anything)
               (| . ,password-word-equivalents)
-              (* nonl) (any . ,tramp-compat-password-colon-equivalents)
-              (? "\^@") (* blank))))))
+              (* nonl) (any . ,(or (bound-and-true-p tramp-compat-password-colon-equivalents)
+                                   '(?\N{COLON}
+                                     ?\N{FULLWIDTH COLON}
+                                     ?\N{SMALL COLON}
+                                     ?\N{PRESENTATION FORM FOR VERTICAL COLON}
+                                     ?\N{KHMER SIGN CAMNUC PII KUUH})))
+              (? "\^@") (* blank)))))
+
+  ;; https://emacs.stackexchange.com/questions/62919/how-to-disable-magit-on-remote-files-with-tramp
+  (setq vc-ignore-dir-regexp
+        (rx-to-string
+         '(seq bos
+               (or (seq (any "/\\") (any "/\\")
+                        (one-or-more (not (any "/\\")))
+                        (any "/\\"))
+                   (seq "/" (or "net" "afs" "...") "/")
+                   ;; Ignore all tramp paths.
+                   (seq "/"
+                        (eval (cons 'or (mapcar #'car tramp-methods)))
+                        ":"
+                        (zero-or-more anything)))
+               eos))))
+
 
 (require-if-is-bytecompile
  tramp tramp-sh)

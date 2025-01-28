@@ -9,6 +9,8 @@
 ;; (setq print-level 10)
 (setq print-level nil)
 (setq print-length nil)
+;; (setq print-gensym t)
+(setq print-gensym nil)
 
 ;; (setq eval-expression-print-level nil)
 
@@ -121,5 +123,9 @@
 (setq initial-scratch-message
       (concat ";; -*- lexical-binding: t -*-\n\n"
               initial-scratch-message))
+
+(let ((dir (expand-file-name "src" source-directory)))
+  (if (file-accessible-directory-p dir)
+      (setq find-function-C-source-directory dir)))
 
 (provide 'alan-elisp)

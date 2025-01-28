@@ -235,69 +235,9 @@
   (:tree-sitter-langs--call (:seq args))
   (span-flush))
 
-;; (span (:tramp-send-command command)
-;;   :flush-on-err t
-;;   (funcall orig-fn vec command neveropen nooutput)
-;;   (message "tramp-send-command: done"))
-;; )
-;; tramp-debug-message
-
-;; (defadvice! alan-wrap-tramp2 (orig-fn vec command &optional neveropen nooutput)
-;;   :around #'tramp-send-command
-;;   (span (:tramp-send-command command)
-;;     :flush-on-err t
-;;     (funcall orig-fn vec command neveropen nooutput)
-;;     (message "tramp-send-command: done")))
-
-;; (defadvice! alan-wrap-tramp3 (orig-fn vec string)
-;;   :around #'tramp-send-string
-;;   (span :tramp-send-string
-;;     :flush-on-err t
-;;     (message "tramp-send-string %s %s" vec string)
-;;     (funcall orig-fn vec string)
-;;     (message "tramp-send-string: done")))
-
-;; tramp-send-string
-
-;; (defadvice! alan-wrap-tramp4 (orig-fn proc &optional timeout)
-;;   :around #'tramp-wait-for-output
-;;   (span (:tramp-wait-for-output proc)
-;;     :flush-on-err t
-;;     (message "tramp-wait-for-output %s %s" proc timeout)
-;;     (funcall orig-fn proc timeout)))
-
-;; (defadvice! alan-wrap-tramp5 (orig-fn vec)
-;;   :around #'tramp-maybe-open-connection
-;;   (span :tramp-maybe-open-connection
-;;     :flush-on-err t
-;;     (message "tramp-maybe-open-connection %s" vec)
-;;     (funcall orig-fn vec)))
-
-;; (defadvice! accept-process-output-adv (orig-fn &optional process seconds millisec just-this-one)
-;;   :around #'accept-process-output
-
-;;   (let ((inhibit-quit-old inhibit-quit)
-;;         (inhibit-quit t))
-;;     (span--unchecked :accept-process-output
-;;       (when (and (not inhibit-quit-old) (input-pending-p))
-;;         (setq quit-flag t)
-;; 	    (eval '(ignore nil) t))
-;;       (when inhibit-quit-old
-;;         (message "accept-process-output %s %s %s %s" process seconds millisec just-this-one))
-;;       (let ((inhibit-quit inhibit-quit-old))
-;;         (funcall orig-fn process seconds millisec just-this-one)))))
-
-
-
 ;; (sleep-for 1)
 ;; (throw 'quit nil)
 ;; tramp-maybe-open-connection
-
-(setq tmake-lock-file-nameramp-verbose 4)
-;; tramp-send-command
-
-;; (setq print-gensym t)
-(setq print-gensym nil)
 
 ;; TODO: directory-abbrev-alist
 
@@ -362,15 +302,7 @@
 ;; 5) jit-lock-functions (hook)
 ;; 6) font-lock-fontify-region
 
-;; hint: Consider setting the necessary environment variables by running:
 
-;;      GUIX_PROFILE="/root/.config/guix/current"
-;;      . "$GUIX_PROFILE/etc/profile"
-
-;; Alternately, see `guix package --search-paths -p "/root/.config/guix/current"'.
-
-
-;; hint: After setting `PATH', run `hash guix' to make sure your shell refers to `/root/.config/guix/current/bin/guix'.
 
 ;; error after (top-level)
 
@@ -424,10 +356,7 @@
 ;; #14 0x000000000056016f in Frecursive_edit ()
 
 
-;; (symbol-plist 'ef-night)
-
 ;; (read-multiple-choice "a" '((?b "b") (?c "c")))
-
 
 (alan-set-ignore-debug-on-quit #'read-multiple-choice)
 
@@ -438,46 +367,6 @@
 ;;   :around #'read-file-name-default
 ;;   (let ((predicate (or predicate #'identity)))
 ;;     (funcall orig-fun prompt dir default-filename mustmatch initial predicate)))
-
-(defun alan-throwe ()
-  (error "hello"))
-
-;; (add-hook! 'pre-redisplay-functions #'alan-throwe)
-
-;; https://emacs.stackexchange.com/questions/18262/tramp-how-to-add-a-agent-forwarding-to-ssh-connections
-(eval-after-load! tramp
-  ;; https://stackoverflow.com/questions/26630640/tramp-ignores-tramp-remote-path
-  (add-to-list 'tramp-remote-path 'tramp-own-remote-path)
-  ;; (add-to-list 'tramp-connection-properties
-  ;;              (list (regexp-quote "/ssh:host@192.168.0.238:")
-  ;;                    "login-args"
-  ;;                    '(("-A") ("-l" "%u") ("-p" "%p") ("%c")
-  ;;                      ("-e" "none") ("%h"))
-
-  ;;                    ;; "remote-shell" "/usr/bin/bash"
-
-  ;;                    ;; "direct-async-process" t
-  ;;                    ))
-
-  (setq tramp-connection-timeout 5)
-  ;; TODO: this sends a "kill" but that seems to never work?
-  (advice-add #'tramp-interrupt-process :override #'ignore)
-
-  ;; https://emacs.stackexchange.com/questions/62919/how-to-disable-magit-on-remote-files-with-tramp
-  (setq vc-ignore-dir-regexp
-        (rx-to-string
-         '(seq bos
-               (or (seq (any "/\\") (any "/\\")
-                        (one-or-more (not (any "/\\")))
-                        (any "/\\"))
-                   (seq "/" (or "net" "afs" "...") "/")
-                   ;; Ignore all tramp paths.
-                   (seq "/"
-                        (eval (cons 'or (mapcar #'car tramp-methods)))
-                        ":"
-                        (zero-or-more anything)))
-               eos)))
-  )
 
 
 ;; (setq remote-file-name-inhibit-cache 10)
@@ -546,72 +435,10 @@
 
 ;; (get 'let 'byte-compile)
 
-
-;; (time-to-seconds (current-time))
-
-;; (let (current-time-list)
-;;   (current-time))
-
-;; (expand-file-name "/ssh:host@192.168.0.238:~/jitsi/config/transcripts/" "/ssh:host@192.168.0.238:~/jitsi/config/transcripts/")
-
-;; (span-instrument tramp-file-name-handler)
-
-;; (span-instrument tramp-handler)
-;; ;; (span-instrument rename-file)
-;; (span-instrument tramp-handle-write-region)
-;; (span-instrument tramp-sh-handle-write-region)
-
-;; (setq print-circle nil)
-
-(setq tramp-inhibit-progress-reporter t)
-
-;; (span-wrap lock-file (file)
-;;   (_ "%S" file)
-;;   (span--backtrace))
-;; (span-instrument revert-buffer)
-;; (span-wrap revert-buffer (&rest args)
-;;   (_)
-;;   (span-flush)
-;;   ;; (span--backtrace)
-;;   )
-
-;; (span-instrument call-process)
-;; (span-instrument insert-directory)
-;; (span-instrument tramp-sh-handle-insert-directory)
-;; (span-instrument tramp-sh-file-name-handler)
-
-;; ;; (span-instrument tramp-gvfs-monitor-process-filter)
-;; (span-instrument tramp-sh-gio-monitor-process-filter)
-;; (span-instrument tramp-sh-inotifywait-process-filter)
-;; (span-instrument tramp-gvfs-monitor-process-filter)
-;; (span-instrument tramp-process-sentinel)
-;; (span-instrument tramp-call-process)
-;; (span-instrument tramp-get-ls-command)
-
-;; (span-instrument force-mode-line-update)
-
 (eval-after-load! midnight
   (setq clean-buffer-list-delay-general 1.5))
 
-(setq-default tab-always-indent 'complete)
-
-
-(let ((dir (expand-file-name "src" source-directory)))
-  (if (file-accessible-directory-p dir)
-      (setq find-function-C-source-directory dir)))
-
-;; (substring x 95 100)
-
-;; (setq test-ps
-;;       (propertize
-;;        "---"
-;;        'display "\n"
-;;        ;; 'font-lock-multiline t
-;;        'face
-;;        '(:inherit markdown-hr-face :underline t :extend t)
-;;        ;; markdown-hr
-;;        ;; (113 116 113 116 #<killed buffer>)
-;;        ))
+(setq tab-always-indent 'complete)
 
 ;; symlinks
 ;; (setq find-file-visit-truename nil)
