@@ -1,6 +1,8 @@
 ;; -*- lexical-binding: t -*-
 
 (require 'cl-lib)
+(eval-when-compile
+  (setq byte-compile-docstring-max-column 160))
 
 ;; from doom https://github.com/doomemacs/doomemacs/blob/master/lisp/doom-lib.el
 (eval-and-compile

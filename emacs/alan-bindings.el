@@ -5,9 +5,10 @@
 
 (require-if-is-bytecompile
  consult
- vertico
- magit
  embark
+ flycheck
+ magit
+ vertico
 
  alan-theme
  alan-minibuffer

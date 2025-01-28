@@ -63,14 +63,18 @@
            do (cl-loop for (_ . e) in (elpaca-q<-elpacas q)
                        for status = (elpaca--status e)
                        do (unless (eq status 'finished) (ci-write-failed e))))
-  (when (version<= "29" emacs-version)
-    (kill-emacs (if (alist-get 'failed ci-pkgs-statuses) 1 0))))
+  (kill-emacs
+   (if (and (version<= "29" emacs-version) (alist-get 'failed ci-pkgs-statuses))
+       1 0)))
 
 (defun ci-load-packages ()
   (while process-queue-thread-exist
     (sit-for 0.1)))
 
+(defvar ci-bytecomp-did-error nil)
 (defun ci-emit-bytecomp-warning (string position &optional _fill level)
+  (when (eq level :error)
+    (setq ci-bytecomp-did-error t))
   (with-temp-buffer
     (insert-file-contents byte-compile-current-file)
     (goto-char position)
@@ -87,4 +91,7 @@
      (byte-recompile-directory alan-dotemacs-dir 0 'force))
     ;; (with-current-buffer "*Compile-Log*"
     ;;   (span-msg "%s" (buffer-string)))
-    ))
+    )
+  (kill-emacs
+   (if (and (version<= "29" emacs-version) ci-bytecomp-did-error)
+       1 0)))
