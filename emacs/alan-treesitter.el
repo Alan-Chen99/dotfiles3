@@ -50,9 +50,10 @@
       make
       nix
       python
+      rust
       toml
-      typescript
       tsx
+      typescript
       yaml
       ))))
 

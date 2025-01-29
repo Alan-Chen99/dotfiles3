@@ -1,6 +1,7 @@
 ;; -*- lexical-binding: t -*-
 
 (require 'alan-core)
+(require 'alan-evil)
 
 (setenv "LSP_USE_PLISTS" "true")
 (pkg! 'lsp-mode)
@@ -9,7 +10,7 @@
 ;; (defvar my-lsp-keymap-mode-map (make-sparse-keymap))
 ;; (define-minor-mode my-lsp-keymap-mode "TODO: make lsp-mode-map work with evil"
 ;;   :keymap my-lsp-keymap-mode-map)
-
+(require-if-is-bytecompile lsp-completion)
 
 (eval-after-load! lsp-mode
   (add-to-list 'lsp-file-watch-ignored-directories (rx string-start "/nix/store/"))

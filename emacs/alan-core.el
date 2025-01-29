@@ -152,6 +152,7 @@
 (make-lazy tree-sitter-hl-mode-lazy 'tree-sitter 'tree-sitter-hl-mode)
 
 (autoload 'treesit-major-mode-setup "treesit")
+(autoload 'treesit-font-lock-recompute-features "treesit")
 
 
 
