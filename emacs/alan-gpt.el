@@ -5,10 +5,7 @@
 
 (pkg! '(gptel :host github :repo "karthink/gptel"))
 
-(autoload 'gptel "gptel")
-(autoload 'gptel-menu "gptel-transient")
-(autoload 'gptel-backend-name "gptel-openai")
-(autoload 'gptel-abort "gptel")
+(require-if-is-bytecompile gptel gptel-transient)
 
 (defun gpt (name)
   (interactive
@@ -42,22 +39,26 @@
   (clear-and-backup-keymap gptel-mode-map)
   (general-def gptel-mode-map
     :states 'motion
-    ;; "SPC h" #'gptel-system-prompt
-    "SPC SPC"
-    (lambda ()
-      (interactive)
-      (save-excursion
-        (goto-char (point-max))
-        (gptel-send)))
-
-    ;; "SPC m" #'gptel-model
+    "SPC h" #'gptel-system-prompt
+    "SPC SPC" #'alan-gptel-send
+    "SPC m" #'alan-gptel-model
     "SPC a" #'gptel-abort
     "SPC g" #'gptel-menu)
 
-  ;; (require 'gptel-transient)
-  (add-hook! 'gptel-mode-hook #'evil-normalize-keymaps)
+  (add-hook! 'gptel-mode-hook #'evil-normalize-keymaps))
 
-  ;; (span-quickwrap gptel-file-handler)
-  )
+(defun alan-gptel-send ()
+  (interactive)
+  (save-excursion
+    (goto-char (point-max))
+    (gptel-send)))
+
+(defun alan-gptel-model ()
+  (interactive)
+  ;; uses internal data format
+  ;; this return from `transient-infix-read` is only supposed to be used by:
+  ;; (cl-defmethod transient-infix-set ((obj gptel-provider-variable) value)
+  (setq gptel-model (nth 1 (transient-infix-read #'gptel--infix-provider))))
+
 
 (provide 'alan-gpt)

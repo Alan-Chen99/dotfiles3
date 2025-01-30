@@ -43,7 +43,7 @@
   (if (get-text-property 0 'alan-transient-did-sub key)
       key
     (let ((ans (my-transient-substitude2-impl key)))
-      ;; (span-dbgf ans)
+      (span-dbg ans)
       (propertize ans 'alan-transient-did-sub t))))
 
 
@@ -65,27 +65,29 @@
      (setq key (replace-match (alan-keys ,@val) t t key))))
 
 (defun my-transient-substitude2-impl (key)
-  ;; (span-dbgf key)
+  (span-dbg key)
   (setq key (alan-normalize-key key))
   (let ((case-fold-search))
 
     (when (string-match-p (rx bos (alan-keys "SPC") eos) key)
       (setq key (alan-keys "S-SPC S-SPC")))
 
-    (alan-key-rep ("-" (group (any "a-z")))
-      ("<.>" (match-string 1 key)))
+    ;; TODO: these can cause conflicts
+    ;; (alan-key-rep ("-" (group (any "a-z")))
+    ;;   ("<.>" (match-string 1 key)))
 
-    (alan-key-rep ("-" (group (any "A-Z")))
-      ("SPC" (downcase (match-string 1 key))))
+    ;; (alan-key-rep ("-" (group (any "A-Z")))
+    ;;   ("SPC" (downcase (match-string 1 key))))
 
-    (alan-key-rep ("=" (group (any "a-z")))
-      ("<.>" (upcase (match-string 1 key))))
+    ;; (alan-key-rep ("=" (group (any "a-z")))
+    ;;   ("<.>" (upcase (match-string 1 key))))
 
-    (alan-key-rep ("=" (group (any "A-Z")))
-      ("SPC" (match-string 1 key)))
+    ;; (alan-key-rep ("=" (group (any "A-Z")))
+    ;;   ("SPC" (match-string 1 key)))
 
     (alan-key-rep ("-") ("<.>"))
     (alan-key-rep ("=") ("SPC"))
+
     (alan-key-rep ("RET") ("<return>"))
 
     (setq key
@@ -139,7 +141,8 @@
 
   (setq transient-substitute-key-function
         (lambda (obj)
-          ;; (span-dbgf (oref obj key))
+          (span-dbg (oref obj key))
+          ;; (span-notef "%s" (:ts (record-to-list obj)))
           (my-transient-substitude2 (oref obj key))))
   ;; (setq transient-substitute-key-function nil)
 
@@ -154,6 +157,8 @@
   ;; (setq-default transient-mode-line-format 'line
   ;; (setq-default transient-enable-popup-navigation nil)
   )
+
+(span-wrap transient--make-transient-map)
 
 ;; TODO: transient--make-redisplay-map seems to alwasy fail?
 (defadvice! transient--make-redisplay-map-advice (&rest _args)

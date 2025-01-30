@@ -117,4 +117,7 @@
   (ignore-errors
     (apply func args)))
 
+(defun record-to-list (r)
+  (--map (aref r it) (number-sequence 0 (1- (length r)))))
+
 (provide 'alan-utils2)
