@@ -287,6 +287,11 @@
     (message "%s" v)
     (kill-new v)))
 
+(defun copy-default-directory ()
+  (interactive)
+  (let ((v default-directory))
+    (message "%s" v)
+    (kill-new v)))
 
 ;; (defalias 'sh 'shell)
 (cl-defun sh ()

@@ -9,16 +9,13 @@
 ;; (pkg! 'python-black)
 ;; (pkg! '(python-isort :repo "https://github.com/wyuenho/emacs-python-isort"))
 
-(require-if-is-bytecompile lsp-completion)
+(require-if-is-bytecompile lsp-completion python)
 
 (defun alan-redef-python-mode ()
   ;; remove uneeded stuff from python
   (define-derived-mode python-mode prog-mode "python"
     (setq-local comment-start "# ")
     (setq-local comment-start-skip "#+\\s-*"))
-
-  (define-derived-mode inferior-python-mode comint-mode "Inferior Python"
-    )
 
   (seq-doseq (p "_")
     (modify-syntax-entry p "w" python-mode-syntax-table)))
@@ -38,6 +35,8 @@
 (alan-redef-python-mode)
 (eval-after-load! python
   (alan-redef-python-mode)
+
+  (setq python-shell-font-lock-enable nil)
 
   (when (executable-find "ipython")
     ;; https://www.emacswiki.org/emacs/PythonProgrammingInEmacs#h5o-41
@@ -78,6 +77,9 @@
   :states 'motion
   "SPC SPC" #'run-python)
 
+(general-def inferior-python-mode-map
+  :states 'motion
+  "SPC SPC" #'run-python)
 
 (add-hook-once! 'python-mode-hook
   (startup-queue-package 'python 100)
@@ -144,6 +146,13 @@
 
 (add-hook! 'inferior-python-mode-hook
   (defun alan-setup-inferior-python ()
+    (setq-local comint-output-filter-functions
+                '(comint-osc-process-output
+                  ansi-color-process-output
+                  python-shell-comint-watch-for-first-prompt-output-filter
+                  comint-watch-for-password-prompt))
+    ;; note: the modification in #'inferior-python-mode got overriden
+    ;; in our comint hook
     (add-hook 'completion-at-point-functions
               #'alan-python-shell-completion-at-point nil 'local)))
 

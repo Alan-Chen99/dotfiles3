@@ -479,3 +479,19 @@
 
 ;; (disassemble #'read-extended-command-1)
 ;; (symbol-function #'completing-read)
+
+;; (span-instrument comint-term-environment)
+
+;; (span-wrap eldoc-display-in-echo-area (docs interactive)
+;;   (_)
+;;   (dolist (doc docs)
+;;     (span-notef "%s" (:unsafe (car doc)))
+;;     (span-notef "%s" (:ts (cdr doc)))))
+
+;; (span-wrap lsp--render-markdown ()
+;;   (_)
+;;   (span-notef "%s" (:unsafe (buffer-string))))
+
+;; (span-wrap lsp--setup-markdown (mode)
+;;   (_)
+;;   (span-notef "%s" (:unsafe (buffer-string))))

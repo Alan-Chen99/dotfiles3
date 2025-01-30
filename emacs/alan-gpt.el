@@ -58,7 +58,7 @@
   ;; uses internal data format
   ;; this return from `transient-infix-read` is only supposed to be used by:
   ;; (cl-defmethod transient-infix-set ((obj gptel-provider-variable) value)
-  (setq gptel-model (nth 1 (transient-infix-read #'gptel--infix-provider))))
+  (setq-local gptel-model (nth 1 (transient-infix-read #'gptel--infix-provider))))
 
 
 (provide 'alan-gpt)

@@ -134,10 +134,14 @@
   "<down>" #'forward-paragraph
   "<up>" #'backward-paragraph
 
-  "H" #'move-beginning-of-line
-  "L" #'move-end-of-line
-  "J" #'evil-jump-forward
+  ;; "H" #'move-beginning-of-line
+  ;; "L" #'move-end-of-line
+  "a h" #'move-beginning-of-line
+  "a l" #'move-end-of-line
   "K" #'evil-jump-backward
+
+  "a k" (lambda () (interactive) (evil-previous-visual-line (- (window-height) 5)))
+  "a j" (lambda () (interactive) (evil-next-visual-line (- (window-height) 5)))
 
   ;; mode changing
 
@@ -195,17 +199,15 @@
   "g u" #'evil-scroll-line-to-top
   "g i" #'evil-scroll-line-to-bottom
   "g s" #'evil-scroll-line-to-center
-  ;; TODO: dont work in visual state?
-  "g k" (lambda () (interactive) (evil-previous-visual-line (- (window-height) 5)))
-  "g j" (lambda () (interactive) (evil-next-visual-line (- (window-height) 5)))
 
   "g c" #'copy-cur-filename
   "g C" #'copy-wsl-windows-filename
   "g x" #'copy-cur-filename-last
+  "g d" #'copy-default-directory
 
   "g e" #'flycheck-list-errors
 
-  "z s" #'shell
+  "a s" #'shell
 
   "S-SPC" #'embark-act
 
@@ -218,6 +220,7 @@
   "z r" #'magit-remote
   "z =" #'magit-fetch
   "z m" #'magit-merge
+  "z s" #'magit-branch-reset
   )
 
 
@@ -231,7 +234,8 @@
   ;; I do need this, prevents ret from entering newline in normal state
   "RET" #'evil-ret
 
-  "a" #'evil-append
+  ;; perhaps move to smth els
+  "x" #'evil-append
   "<end>" #'evil-append-line ;; A
 
   "i" #'evil-insert
@@ -303,7 +307,7 @@
 
   "<escape>" #'evil-exit-visual-state
   "i" evil-inner-text-objects-map
-  "a" evil-outer-text-objects-map
+  "x" evil-outer-text-objects-map
 
   ;; ")" 'evil-insert
   ;; "A" 'evil-append
