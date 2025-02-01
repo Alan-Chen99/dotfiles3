@@ -1,0 +1,57 @@
+name: "build nix derivation"
+
+inputs:
+  drv:
+    required: true
+  cache_path_root:
+    default: /tmp/nix_cache
+  install:
+    default: "false"
+
+outputs:
+  drv_path:
+    value: ${{ steps.instantiate.outputs.drv_path }}
+
+runs:
+  using: "composite"
+  steps:
+    - id: instantiate
+      run: ./scripts/ci_nix_build.py instantiate ${{ inputs.drv }} ${{ inputs.cache_path_root }}
+      shell: bash
+
+    - id: cache
+      uses: actions/cache@v4
+      with:
+        path: ${{ steps.instantiate.outputs.cache_path }}
+        key: ${{ steps.instantiate.outputs.cache_key }}
+        restore-keys: |
+          ${{ steps.instantiate.outputs.restore_key }}
+
+    - id: load_cached
+      # https://github.com/actions/cache says:
+      # cache-hit - A string value to indicate an exact match was found for the key.
+      # If there's a cache hit, this will be 'true' or 'false' to indicate if there's an exact match for key.
+      # If there's a cache miss, this will be an empty string.
+      if: steps.cache.outputs.cache-hit != ''
+      run: |
+        ./scripts/ci_nix_build.py load_cached ${{ steps.instantiate.outputs.cache_path }} ${{ steps.instantiate.outputs.cache_key }}
+      shell: bash
+
+    - id: build
+      run: |
+        ./scripts/ci_nix_build.py build \
+          ${{ inputs.drv }} \
+          ${{ steps.instantiate.outputs.drv_path }} \
+          ${{ steps.instantiate.outputs.cache_path }} \
+          "${{ steps.cache.outputs.cache-hit }}"
+      shell: bash
+
+    - if: steps.cache.outputs.cache-hit != 'true'
+      uses: actions/cache/save@v4
+      with:
+        path: ${{ steps.instantiate.outputs.cache_path }}
+        key: ${{ steps.instantiate.outputs.cache_key }}
+
+    - if: inputs.install == 'true'
+      run: nix profile install ${{ steps.instantiate.outputs.drv_path }}
+      shell: bash
