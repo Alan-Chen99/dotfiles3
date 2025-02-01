@@ -2,15 +2,17 @@ name: "setup"
 runs:
   using: "composite"
   steps:
-    - uses: DeterminateSystems/nix-installer-action@main
-    - uses: DeterminateSystems/magic-nix-cache-action@main
+    - uses: cachix/install-nix-action@v27
     - run: nix --version
       shell: bash
     - run: nix config show
       shell: bash
-    # - run: nix profile install .#d.nix
-    - run: nix profile install .#less-download-flakes.nixwrapper
-      shell: bash
+    - uses: ./.github/actions/build_nix
+      with:
+        # drv: .#p.nixVersions.nix_2_25
+        # drv: .#d.nix
+        drv: .#less-download-flakes.nixwrapper
+        install: "true"
     - run: nix --version
       shell: bash
     - run: nix config show

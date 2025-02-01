@@ -97,6 +97,7 @@
 
 (add-to-list 'auto-mode-alist '("\\.ya?ml\\'" . yaml-ts-mode))
 (add-hook! 'yaml-ts-mode-hook
+  (setq-local evil-shift-width 2)
   (setq-local format-all-formatters '(("YAML" prettierd))))
 
 

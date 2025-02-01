@@ -22,8 +22,10 @@
         # ${coreutils}/bin/ls -la /nix/store
 
         echo "hello" >> $out
+        echo "${std.stdenv.shell}" >> $dev
       ''
     ];
+    outputs = ["out" "dev"];
     # requiredSystemFeatures = ["recursive-nix"];
     # NIX_REMOTE_RECURSIVE_PROTOCOL_VERSION = "0x101";
   };

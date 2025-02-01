@@ -43,7 +43,9 @@ jobs:
         run: nix path-info --derivation .#py310.ci-instantiate
 
       - if: success() || failure()
-        run: nix build .#python-all --no-link --print-out-paths
+        uses: ./.github/actions/build_nix
+        with:
+          drv: .#python-all
 
   emacs:
     needs: setup
@@ -57,6 +59,10 @@ jobs:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
       - run: nix path-info --derivation ${{ matrix.emacs }}
+      - if: matrix.emacs == '.#emacs'
+        uses: ./.github/actions/build_nix
+        with:
+          drv: ${{ matrix.emacs }}
       - run: nix profile install ${{ matrix.emacs }}
       # for vterm
       - run: nix profile install .#p.cmake .#p.gnumake .#p.gcc .#p.libtool
