@@ -53,5 +53,5 @@ runs:
         key: ${{ steps.instantiate.outputs.cache_key }}
 
     - if: inputs.install == 'true'
-      run: nix profile install ${{ steps.instantiate.outputs.drv_path }}
+      run: nix profile install ${{ steps.instantiate.outputs.drv_path }}^*
       shell: bash

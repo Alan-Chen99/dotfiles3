@@ -20,13 +20,19 @@ jobs:
       - if: success() || failure()
         run: nix path-info --derivation .#ci-instantiate --option eval-cache false
       - if: success() || failure()
-        run: nix shell .#p.nixVersions.nix_2_23 -c nix path-info --derivation .#ci-instantiate --option eval-cache false
+        run: nix run .#p.nixVersions.nix_2_23 -- path-info --derivation .#ci-instantiate --option eval-cache false
       - if: success() || failure()
-        run: nix shell .#p.nixVersions.nix_2_24 -c nix path-info --derivation .#ci-instantiate --option eval-cache false
+        run: nix run .#p.nixVersions.nix_2_24 -- path-info --derivation .#ci-instantiate --option eval-cache false
       - if: success() || failure()
-        run: nix shell .#p.nixVersions.nix_2_25 -c nix path-info --derivation .#ci-instantiate --option eval-cache false
+        run: nix run .#p.nixVersions.nix_2_25 -- path-info --derivation .#ci-instantiate --option eval-cache false
       - if: success() || failure()
         run: nix shell .#nixwrapper -c nix path-info --derivation .#ci-instantiate --option eval-cache false
+
+      # registery
+      - if: success() || failure()
+        run: nix path-info --derivation n#emacs
+      - if: success() || failure()
+        run: nix path-info --derivation p#ci-instantiate
 
       - if: success() || failure()
         run: nix build .#profile
@@ -42,13 +48,19 @@ jobs:
       - if: success() || failure()
         run: nix path-info --derivation .#py310.ci-instantiate
 
+      # python
       - if: success() || failure()
         uses: ./.github/actions/build_nix
         with:
           drv: .#python-all
       # test "inject"
       - if: success() || failure()
-        run: nix build p#python.inject.pygit2.regexfactory
+        run: nix build .#python.inject.pygit2.regexfactory
+
+      - if: success() || failure()
+        uses: ./.github/actions/build_nix
+        with:
+          drv: .#js
 
   emacs:
     needs: setup
