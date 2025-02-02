@@ -82,7 +82,7 @@
   ;; (message "received: %S" text)
   (let ((subcmd (aref text 0))
         (cmd (substring text 1)))
-    (span-dbgf subcmd cmd)
+    ;; (span-dbgf subcmd cmd)
     (when (= subcmd (eval-when-compile (string-to-char "A")))
       (let ((remote (file-remote-p default-directory)))
         (if remote

@@ -25,7 +25,7 @@
     (setq-local format-all-formatters '(("JSON" prettierd)))))
 
 (eval-after-load! typescript-ts-mode
-  (seq-doseq (p "_")
+  (seq-doseq (p "_#")
     (modify-syntax-entry p "w" typescript-ts-mode--syntax-table)))
 
 (provide 'alan-js)
