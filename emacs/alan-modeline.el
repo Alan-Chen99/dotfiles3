@@ -500,6 +500,10 @@
 (advice-add #'read-key-sequence-vector :after #'alan-maybe-update-keys)
 (advice-add #'read-event :after #'alan-maybe-update-keys)
 
+(defun alan-fmt-cmd (cmd)
+  (if (symbolp cmd)
+      (format "%s" cmd)
+    (format "[%s]" (type-of cmd))))
 
 (clear-and-backup-keymap tab-bar-map)
 (defvar alan-tabbar-count 0)
@@ -516,11 +520,24 @@
              (format-message "%s" (cl-incf alan-tabbar-count))
              " "
              ;; buffer-file-name
-             alan--displayed-keys
-             ))
+             (format "%-52s" alan--displayed-keys)
+             (if (> (time-to-seconds (time-subtract (current-time) alan--last-key-time)) 1)
+                 ""
+               (let ((cmd (cdr alan--last-seen-command)))
+                 ;; (span-dbgf alan--last-seen-command real-last-command)
+                 (if (eq cmd real-last-command)
+                     (format "| %s" (alan-fmt-cmd cmd))
+                   (format "| %s -> %s" (alan-fmt-cmd cmd) (alan-fmt-cmd real-last-command)))))))
 
-           (rhs (concat (alan-update-time t) "")))
+           (rhs (concat (alan-update-time t) ""))
 
+           (lhs-limit (- (frame-width) (string-width rhs))))
+      (when (< lhs-limit 0)
+        (setq lhs-limit 0))
+      ;; here we force truncation bc overflowing cause the buffer to move
+      ;; but perhaps we can make it not move the buffer and let it overflow
+      (when (length> lhs lhs-limit)
+        (setq lhs (substring lhs 0 lhs-limit)))
       (concat
        lhs
        (alan-right-align-space (string-pixel-width rhs) t)
