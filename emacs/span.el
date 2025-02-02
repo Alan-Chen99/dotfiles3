@@ -9,6 +9,7 @@
 (autoload 'backtrace-to-string "backtrace")
 (autoload 'backtrace-get-frames "backtrace")
 (autoload 'backtrace--expand-ellipsis "backtrace")
+(autoload 'backtrace--to-string "backtrace")
 
 
 (defmacro span-fmt (&rest body)
@@ -801,7 +802,7 @@ designed to be created at compile time and used as constant"
 
 
 (defvar span--is-in-backtrace nil)
-(defun span--backtrace (&optional base)
+(defun span--backtrace (&optional base eager)
   (span--context :span--internal
     (span-flush)
     (if span--is-in-backtrace
@@ -813,11 +814,18 @@ designed to be created at compile time and used as constant"
         (if (> span--n-backtrace-made-this-cycle 10)
             ;; perhaps its fine if we collect many backtraces if we dont flush them?
             (span-notef "too many backtraces; ommiting")
-          (span-note
-            "backtrace:\n%s"
-            `(let ((backtrace-line-length 100))
-               (backtrace--to-string
-                ,(:unsafe (cdr (backtrace-get-frames base)))))))))))
+          (if eager
+              (span-notef
+                "backtrace:\n%s"
+                (:unsafe
+                 (let ((backtrace-line-length 100))
+                   (backtrace--to-string
+                    (cdr (backtrace-get-frames base))))))
+            (span-notef
+              "backtrace:\n%s"
+              `(let ((backtrace-line-length 100))
+                 (backtrace--to-string
+                  ,(:unsafe (cdr (backtrace-get-frames base))))))))))))
 
 (defun span--debug (type &rest args)
   (if (eq type 'error)

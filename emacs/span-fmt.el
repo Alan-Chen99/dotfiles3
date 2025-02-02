@@ -128,4 +128,17 @@
 
 
 
+(defun span-fmt--record-to-list (r)
+  (mapcar (lambda (x) (aref r x))
+          (number-sequence 0 (1- (length r)))))
+
+(advice-add #'cl-print-object :around #'span-fmt--cl-print-object-show-record)
+(defun span-fmt--cl-print-object-show-record (orig-fn object stream)
+  (funcall orig-fn object stream)
+  (when (recordp object)
+    (princ "[#s" stream)
+    (cl-print-insert-ellipsis (span-fmt--record-to-list object) nil stream)
+    (princ "]" stream)))
+
+
 (provide 'span-fmt)

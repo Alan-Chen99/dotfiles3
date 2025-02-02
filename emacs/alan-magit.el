@@ -73,12 +73,10 @@
     "SPC c" #'magit-copy-thing
     )
 
-  ;; TODO: doesnt work, why?
-  (setq-default magit-buffer-log-args '("--graph" "--color" "--decorate" "-n256"))
-  (setf (alist-get 'magit-log:magit-log-mode transient-values)
-        (default-value 'magit-buffer-log-args))
-
   (add-to-list 'debug-ignored-errors 'magit-outside-git-repo)
+
+  (put #'magit-log-mode 'magit-log-default-arguments
+       '("--graph" "-n256" "--decorate" "--color"))
   )
 
 

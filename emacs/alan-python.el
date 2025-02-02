@@ -20,6 +20,15 @@
   (seq-doseq (p "_")
     (modify-syntax-entry p "w" python-mode-syntax-table)))
 
+(eval-after-load! format-all
+  (define-format-all-formatter isort-black
+    (:executable "isort")
+    (:install "pip install isort")
+    (:languages "Python")
+    (:features)
+    (:format (format-all--buffer-easy executable "--profile" "black" "-q" "-"))))
+
+
 ;; copied from python.el
 (defvar python--treesit-keywords
   '("as" "assert" "async" "await" "break" "case" "class" "continue" "def"
@@ -109,7 +118,7 @@
     (if (string-equal (file-name-extension (buffer-file-name)) "pyi")
         ;; TODO: isort here
         (setq-local format-all-formatters '(("Python" blackd)))
-      (setq-local format-all-formatters '(("Python" blackd isort))))
+      (setq-local format-all-formatters '(("Python" blackd isort-black))))
 
     (alan-lsp-deferred 'lsp-pyright
       (lsp-completion-mode)

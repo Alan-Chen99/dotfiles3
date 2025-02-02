@@ -202,6 +202,7 @@
                 emacs-test
                 nixwrapper
                 pdf-tools-epdfinfo
+                pyright
                 python-all
                 scmindent
                 test

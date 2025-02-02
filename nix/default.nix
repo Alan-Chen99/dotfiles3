@@ -124,7 +124,14 @@
   }));
 
   mod.js = callpackage ../js {} (reexport (prev: {
-    inherit (prev) js scmindent basedpyright prettier;
+    inherit
+      (prev)
+      basedpyright
+      js
+      prettier
+      pyright
+      scmindent
+      ;
   }));
 
   mod.nixtools = callpackage ./nixtools.nix {} (reexport (prev: {

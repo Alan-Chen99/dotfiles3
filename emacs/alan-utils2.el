@@ -120,4 +120,9 @@
 (defun record-to-list (r)
   (--map (aref r it) (number-sequence 0 (1- (length r)))))
 
+(defmacro alan-compile-or-keep (&rest form)
+  (if (bound-and-true-p byte-compile-current-file)
+      `(progn ,@form)
+    `(eval '(progn ,@form) t)))
+
 (provide 'alan-utils2)

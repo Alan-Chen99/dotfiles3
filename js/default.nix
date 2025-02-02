@@ -28,6 +28,7 @@
       pathsToLink = ["/bin"];
     };
 
+  export.pyright = jspkg "pyright";
   export.basedpyright = jspkg "basedpyright";
   export.scmindent = jspkg "scmindent";
   export.prettier = jspkg "prettier";
