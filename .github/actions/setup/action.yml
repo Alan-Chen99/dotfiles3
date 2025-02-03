@@ -21,6 +21,7 @@ runs:
         # drv: .#p.nixVersions.nix_2_25
         # drv: .#d.nix
         drv: .#less-download-flakes.nixwrapper
+        cachix: ${{ inputs.cachix }}
         CACHIX_AUTH_TOKEN: ${{ inputs.CACHIX_AUTH_TOKEN }}
         install: "true"
     - run: nix --version

@@ -126,3 +126,13 @@ jobs:
           commit-message: "update python dependencies"
           title: "update python dependencies"
           branch: "update-python-deps"
+
+  emacs-experimental:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - uses: ./.github/actions/build_nix
+        with:
+          drv: .#emacs-test
+          CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}

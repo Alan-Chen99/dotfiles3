@@ -213,10 +213,6 @@
 
               # rackt-test = final.deps.racket2nix;
               # racket-fmt = final.deps.racket2nix.buildRacketPackage inputs.racket-fmt;
-
-              emacs-test = final.legacypkgs.emacs30-pgtk.override {
-                gtk3 = final.legacypkgs.gtk4;
-              };
             };
             pkgs = (builtins.mapAttrs (name: pkg: appendversion pkg) pkgs-versioned) // pkgs-other;
           in
@@ -275,6 +271,17 @@
               nix = prev.deps.nix-stable;
             };
         }));
+
+        _gtk4 = from-default (default (final: prev: {
+          legacypkgs = prev.legacypkgs.extend (
+            final_: prev_: {
+              # this doesnt work; does that mean gtk4 depends on gtk3 ??
+              # gtk3 = final_.gtk4;
+              gtk3 = prev.legacypkgs.gtk4;
+            }
+          );
+        }));
+        emacs-test = _gtk4.emacs;
       };
 
     forsystem = system: rec {
