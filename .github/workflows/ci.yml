@@ -3,6 +3,9 @@ name: CI
 on:
   push:
   pull_request:
+  schedule:
+    # Runs at 08:00 UTC every day
+    - cron: "0 8 * * *"
 
 jobs:
   setup:
@@ -90,3 +93,21 @@ jobs:
         run: emacs --batch -l emacs/ci.el --eval "(ci-load-packages)"
       - if: success() || failure()
         run: emacs --batch -l emacs/ci.el --eval "(ci-byte-compile)"
+      - if: success() || failure()
+        run: emacs --batch -l emacs/ci.el --eval "(ci-load-packages)"
+
+  update:
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - uses: ./.github/actions/build_nix
+        with:
+          drv: .#python-all
+      - run: nix profile install .#p.curl
+      - uses: romoh/dependencies-autoupdate@v1.1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          update-command: "'nix run ..#poetry -- lock && nix run ..#poetry -- up --latest --no-install'"
+          update-path: "'./python'"
