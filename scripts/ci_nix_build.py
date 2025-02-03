@@ -88,12 +88,17 @@ elif step == "build":
     for x in drv_out_l:
         print(x)
 
+    drv_out_space_sep = " ".join(drv_out_l)
+
     if cache_hit != "true":
         run(
-            f"nix copy --no-check-sigs --to {cache_path} {' '.join(drv_out_l)}",
+            f"nix copy --no-check-sigs --to {cache_path} {drv_out_space_sep}",
             stdout=subprocess.PIPE,
         )
 
+    write_gh_out(
+        drv_out_space_sep=drv_out_space_sep,
+    )
 
 else:
     assert False
