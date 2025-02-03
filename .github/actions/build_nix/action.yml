@@ -7,6 +7,10 @@ inputs:
     default: /tmp/nix_cache
   install:
     default: "false"
+  cachix:
+    default: "true"
+  CACHIX_AUTH_TOKEN:
+    required: true
 
 outputs:
   drv_path:
@@ -54,4 +58,10 @@ runs:
 
     - if: inputs.install == 'true'
       run: nix profile install ${{ steps.instantiate.outputs.drv_path }}^*
+      shell: bash
+
+    - if: inputs.cachix == 'true'
+      run: cachix push alan-chen-public ${{ steps.build.outputs.drv_out_space_sep }}
+      env:
+        CACHIX_AUTH_TOKEN: ${{ inputs.CACHIX_AUTH_TOKEN }}
       shell: bash

@@ -13,6 +13,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
+        with:
+          cachix: "true"
+          CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
 
   nix:
     needs: setup
@@ -56,6 +59,7 @@ jobs:
         uses: ./.github/actions/build_nix
         with:
           drv: .#python-all
+          CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
       # test "inject"
       - if: success() || failure()
         run: nix build .#python.inject.pygit2.regexfactory
@@ -64,6 +68,7 @@ jobs:
         uses: ./.github/actions/build_nix
         with:
           drv: .#js
+          CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
 
   emacs:
     needs: setup
@@ -81,6 +86,7 @@ jobs:
         uses: ./.github/actions/build_nix
         with:
           drv: ${{ matrix.emacs }}
+          CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
       - run: nix profile install ${{ matrix.emacs }}
       # for vterm
       - run: nix profile install .#p.cmake .#p.gnumake .#p.gcc .#p.libtool
@@ -101,7 +107,7 @@ jobs:
         timeout-minutes: 5
 
   update:
-    if: ${{ github.event_name == 'push' && github.ref_name == 'master' }}
+    if: ${{ github.event_name == 'schedule' && github.ref_name == 'master' }}
     needs: setup
     runs-on: ubuntu-latest
     steps:

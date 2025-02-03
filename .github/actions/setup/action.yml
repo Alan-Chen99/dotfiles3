@@ -1,4 +1,11 @@
 name: "setup"
+
+inputs:
+  cachix:
+    default: "false"
+  CACHIX_AUTH_TOKEN:
+    required: false
+
 runs:
   using: "composite"
   steps:
@@ -7,11 +14,14 @@ runs:
       shell: bash
     - run: nix config show
       shell: bash
+    - run: nix profile install .#p.cachix
+      shell: bash
     - uses: ./.github/actions/build_nix
       with:
         # drv: .#p.nixVersions.nix_2_25
         # drv: .#d.nix
         drv: .#less-download-flakes.nixwrapper
+        CACHIX_AUTH_TOKEN: ${{ inputs.CACHIX_AUTH_TOKEN }}
         install: "true"
     - run: nix --version
       shell: bash
