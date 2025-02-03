@@ -3,6 +3,9 @@ name: CI
 on:
   push:
   pull_request:
+  schedule:
+    # Runs at 08:00 UTC every day
+    - cron: "0 8 * * *"
 
 jobs:
   setup:
@@ -86,7 +89,35 @@ jobs:
       - run: mv emacs/alan-private.example.el emacs/alan-private.el
       - if: success() || failure()
         run: emacs --batch --eval "(setq ci-build-verbose t)" -l emacs/ci.el --eval "(ci-show-build-errs)"
+        timeout-minutes: 5
       - if: success() || failure()
         run: emacs --batch -l emacs/ci.el --eval "(ci-load-packages)"
+        timeout-minutes: 5
       - if: success() || failure()
         run: emacs --batch -l emacs/ci.el --eval "(ci-byte-compile)"
+        timeout-minutes: 5
+      - if: success() || failure()
+        run: emacs --batch -l emacs/ci.el --eval "(ci-load-packages)"
+        timeout-minutes: 5
+
+  update:
+    if: ${{ github.event_name == 'push' && github.ref_name == 'master' }}
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - uses: ./.github/actions/build_nix
+        with:
+          drv: .#python-all
+      - run: (cd python && nix run ..#poetry -- lock && nix run ..#poetry -- up --latest --no-install)
+      - uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.PAT }}
+          branch-token: ${{ secrets.GITHUB_TOKEN }}
+          add-paths: |
+            python/pyproject.toml
+            python/poetry.lock
+          commit-message: "update python dependencies"
+          title: "update python dependencies"
+          branch: "update-python-deps"

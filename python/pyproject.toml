@@ -4,6 +4,10 @@ version = "0.1.0"
 description = ""
 authors = []
 
+[tool.pyright]
+exclude = ["**/result*"]
+typeCheckingMode = "standard"
+
 # upgrade using
 # nix run ..#poetry -- lock
 # nix run ..#poetry -- up --latest --no-install
