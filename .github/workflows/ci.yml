@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-  pull_request:
+  # pull_request:
   schedule:
     # Runs at 08:00 UTC every day
     - cron: "0 8 * * *"
@@ -114,7 +114,6 @@ jobs:
       - uses: peter-evans/create-pull-request@v7
         with:
           token: ${{ secrets.PAT }}
-          branch-token: ${{ secrets.GITHUB_TOKEN }}
           add-paths: |
             python/pyproject.toml
             python/poetry.lock
