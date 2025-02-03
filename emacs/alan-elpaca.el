@@ -48,6 +48,24 @@
     (load "./elpaca-autoloads")))
 
 (require 'elpaca)
+(require 'elpaca-menu-elpa)
+
+;; https://git.savannah.gnu.org is often down, we dont use it
+(setq elpaca-menu-elpas
+      `((gnu . ((name         . "GNU ELPA")
+                (cache . ,(elpaca--read-file (expand-file-name "gnu-elpa.eld" elpaca-cache-directory)))
+                (cache-path   . ,(expand-file-name "gnu-elpa.eld" elpaca-cache-directory))
+                (packages-url . "https://raw.githubusercontent.com/emacsmirror/gnu_elpa/refs/heads/main/elpa-packages")
+                (metadata-url . "https://elpa.gnu.org/packages/")
+                (remote       . "https://github.com/emacsmirror/gnu_elpa.git")
+                (branch-prefix . "externals")))
+        (nongnu . ((name         . "NonGNU ELPA")
+                   (cache-path   . ,(expand-file-name "non-gnu-elpa.eld" elpaca-cache-directory))
+                   (cache . ,(elpaca--read-file (expand-file-name "non-gnu-elpa.eld" elpaca-cache-directory)))
+                   (packages-url . "https://raw.githubusercontent.com/emacsmirror/nongnu_elpa/refs/heads/main/elpa-packages")
+                   (metadata-url . "https://elpa.nongnu.org/nongnu/")
+                   (remote       . "https://github.com/emacsmirror/nongnu_elpa.git")
+                   (branch-prefix . "elpa")))))
 
 (when (eq system-type 'windows-nt)
   (elpaca-no-symlink-mode))

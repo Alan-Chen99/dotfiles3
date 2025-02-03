@@ -4,5 +4,8 @@ RUN	apt-get update && apt-get install -y \
 	ca-certificates \
 	&& rm -rf /var/lib/apt/lists/*
 RUN	useradd -m -u 1000 dockeruser
+RUN	mkdir /home/dockeruser/.cache
+RUN	chmod 700 /home/dockeruser/.cache
+RUN	chown 1000:1000 /home/dockeruser/.cache
 RUN	echo 'dockeruser ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 RUN	echo "export PS1='${debian_chroot:+($debian_chroot)}\u@\h:\w\$ '" >> /home/dockeruser/.bashrc
