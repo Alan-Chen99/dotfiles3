@@ -108,7 +108,7 @@
   pub.dbg = mod.debug;
 
   mod.emacs = callpackage ../emacs {} (reexport (prev: {
-    inherit (prev) pdf-tools-epdfinfo emacs emacs-test;
+    inherit (prev) pdf-tools-epdfinfo emacs;
   }));
 
   mod.env = callpackage ./env.nix {} (reexport (prev: {

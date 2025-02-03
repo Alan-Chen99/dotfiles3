@@ -25,14 +25,6 @@
       '';
     });
 
-  export.emacs-test =
-    (legacypkgs.hello.override (prev: {
-      stdenv = mcc-env;
-    }))
-    .overrideAttrs (final: prev: {
-      MCC_BUILD_DIR = "$out/${final.pname}-${final.version}-src";
-    });
-
   pdf-tools = (legacypkgs.emacsPackagesFor self.emacs).pdf-tools;
 
   export.pdf-tools-epdfinfo =

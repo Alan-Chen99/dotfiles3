@@ -199,7 +199,6 @@
                 (prev)
                 basedpyright
                 emacs
-                emacs-test
                 nixwrapper
                 pdf-tools-epdfinfo
                 pyright
@@ -214,6 +213,10 @@
 
               # rackt-test = final.deps.racket2nix;
               # racket-fmt = final.deps.racket2nix.buildRacketPackage inputs.racket-fmt;
+
+              emacs-test = final.legacypkgs.emacs30-pgtk.override {
+                gtk3 = final.legacypkgs.gtk4;
+              };
             };
             pkgs = (builtins.mapAttrs (name: pkg: appendversion pkg) pkgs-versioned) // pkgs-other;
           in

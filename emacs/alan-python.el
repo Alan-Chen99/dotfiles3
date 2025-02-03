@@ -115,7 +115,9 @@
      ;; lsp-completion-enable nil
      ;; (list (cape-super-capf #'codeium-completion-at-point #'lsp-completion-at-point))
      )
-    (if (string-equal (file-name-extension (buffer-file-name)) "pyi")
+    (if (and
+         (buffer-file-name)
+         (string-equal (file-name-extension (buffer-file-name)) "pyi"))
         ;; TODO: isort here
         (setq-local format-all-formatters '(("Python" blackd)))
       (setq-local format-all-formatters '(("Python" blackd isort-black))))

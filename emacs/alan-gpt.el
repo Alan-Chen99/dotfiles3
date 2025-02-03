@@ -35,7 +35,7 @@
 
 (eval-after-load! gptel
   (setq gptel-api-key gpt-api-key)
-  (setq gptel-model "gpt-4-turbo")
+  (setq gptel-model "gpt-4o")
   (clear-and-backup-keymap gptel-mode-map)
   (general-def gptel-mode-map
     :states 'motion
