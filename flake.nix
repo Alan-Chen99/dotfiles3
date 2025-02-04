@@ -213,10 +213,6 @@
 
               # rackt-test = final.deps.racket2nix;
               # racket-fmt = final.deps.racket2nix.buildRacketPackage inputs.racket-fmt;
-
-              emacs-test = final.legacypkgs.emacs30-pgtk.override {
-                gtk3 = final.legacypkgs.gtk4;
-              };
             };
             pkgs = (builtins.mapAttrs (name: pkg: appendversion pkg) pkgs-versioned) // pkgs-other;
           in
@@ -255,11 +251,11 @@
             };
         }));
 
-        emacs29-gtk3 = from-default (default (final: prev: {
+        emacs-gtk = from-default (default (final: prev: {
           deps =
             prev.deps
             // {
-              emacs-base = prev.legacypkgs.emacs29-gtk3;
+              emacs-base = prev.legacypkgs.emacs30-gtk3;
             };
         }));
 

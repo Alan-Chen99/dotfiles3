@@ -43,6 +43,7 @@
       "prettier"
       "typescript"
       "typescript-language-server"
+      "tsx"
     ];
 
     doDist = false;

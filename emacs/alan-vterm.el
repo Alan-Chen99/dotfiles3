@@ -84,7 +84,6 @@
     ;; "C-u C-k" sometimes dont work?
     ;; [remap evil-delete-whole-line] (vterm-with-send-key "C-u C-k")
     [remap evil-delete-whole-line] #'alan-vterm-delete-whole-line-without-yank
-    [remap move-beginning-of-line] #'vterm-previous-prompt
 
     )
 
@@ -112,7 +111,10 @@
   (add-hook! 'vterm-mode-hook
     (defun alan-vterm-mode-setup ()
       (span-msg "alan-vterm-mode-setup")
-      (setq-local alan--inhibit-motion-state-on-ro t)
+      ;; (setq-local alan--inhibit-motion-state-on-ro t)
+      ;; Vterm sets buffer-read-only to t but some commands complains;
+      ;; nil seems to do fine?
+      (setq-local buffer-read-only nil)
       (evil-normal-state)))
 
   (setq vterm-kill-buffer-on-exit t)
@@ -123,7 +125,7 @@
 (eval-after-load! evil-collection-vterm
   (span-msg "evil-collection-vterm (eval-after-load!)")
   (let ((evil-collection-state-denylist '(insert))
-        (evil-collection-key-blacklist (append '("[[" "]]") evil-collection-key-blacklist)))
+        (evil-collection-key-blacklist (append '("[[" "]]" "a") evil-collection-key-blacklist)))
     (evil-collection-vterm-setup))
 
   ;; (general-def vterm-mode-map)
