@@ -114,6 +114,8 @@
   (setq transient-save-history nil)
   (setq transient--buffer-name "*transient*")
 
+  (setq transient-show-during-minibuffer-read t)
+
   (general-def transient-map
     ;; "s" #'execute-extended-command
     "M-x" #'execute-extended-command
@@ -136,7 +138,7 @@
     [execute-extended-command] #'transient--do-stay
     ;; [evil-window-down] #'transient--do-stay
     ;; [evil-window-up] #'transient--do-stay
-    ;; [pp-eval-expression] #'transient--do-stay
+    [pp-eval-expression] #'transient--do-stay
     )
 
   (setq transient-substitute-key-function
