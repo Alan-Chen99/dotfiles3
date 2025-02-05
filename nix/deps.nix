@@ -111,7 +111,7 @@
       racket2nix
       ;
 
-    nix = flakes.nix.packages.${system}.default;
+    nix = flakes.nix.packages.${system}.default.overrideAttrs {allowSubstitutes = true;};
     nix-stable = pkgs.nix;
     nixd = flakes.nixd.packages.${system}.default;
 
