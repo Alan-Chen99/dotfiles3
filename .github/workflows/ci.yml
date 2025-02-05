@@ -112,7 +112,7 @@ jobs:
         run: emacs --batch -l emacs/ci.el --eval "(ci-load-packages)"
         timeout-minutes: 5
 
-  update:
+  update-python:
     if: ${{ github.event_name == 'schedule' && github.ref_name == 'master' }}
     needs: setup
     runs-on: ubuntu-latest
@@ -132,3 +132,20 @@ jobs:
           commit-message: "update python dependencies"
           title: "update python dependencies"
           branch: "update-python-deps"
+
+  update-nixpkgs:
+    if: ${{ github.event_name == 'schedule' && github.ref_name == 'master' }}
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - run: nix run .#nix-stable -- flake update nixpkgs
+      - uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.PAT }}
+          add-paths: |
+            flake.lock
+          commit-message: "update nixpkgs"
+          title: "update nixpkgs"
+          branch: "update-nixpkgs"
