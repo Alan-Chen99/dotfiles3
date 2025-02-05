@@ -8,127 +8,135 @@ on:
     - cron: "0 8 * * *"
 
 jobs:
-  setup:
+  # setup:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: ./.github/actions/setup
+  #       with:
+  #         cachix: "true"
+  #         CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
+
+  test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: ./.github/actions/setup
-        with:
-          cachix: "true"
-          CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
+      - uses: cachix/install-nix-action@v27
+      - run: nix path-info --derivation .#d.nix --option eval-cache false
+      - run: nix path-info --derivation -r .#d.nix --option eval-cache false
 
-  nix:
-    needs: setup
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/setup
-      - if: success() || failure()
-        run: nix path-info --derivation .#ci-instantiate --option eval-cache false
-      - if: success() || failure()
-        run: nix run .#p.nixVersions.nix_2_23 -- path-info --derivation .#ci-instantiate --option eval-cache false
-      - if: success() || failure()
-        run: nix run .#p.nixVersions.nix_2_24 -- path-info --derivation .#ci-instantiate --option eval-cache false
-      - if: success() || failure()
-        run: nix run .#p.nixVersions.nix_2_25 -- path-info --derivation .#ci-instantiate --option eval-cache false
-      - if: success() || failure()
-        run: nix shell .#nixwrapper -c nix path-info --derivation .#ci-instantiate --option eval-cache false
+  # nix:
+  #   needs: setup
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: ./.github/actions/setup
+  #     - if: success() || failure()
+  #       run: nix path-info --derivation .#ci-instantiate --option eval-cache false
+  #     - if: success() || failure()
+  #       run: nix run .#p.nixVersions.nix_2_23 -- path-info --derivation .#ci-instantiate --option eval-cache false
+  #     - if: success() || failure()
+  #       run: nix run .#p.nixVersions.nix_2_24 -- path-info --derivation .#ci-instantiate --option eval-cache false
+  #     - if: success() || failure()
+  #       run: nix run .#p.nixVersions.nix_2_25 -- path-info --derivation .#ci-instantiate --option eval-cache false
+  #     - if: success() || failure()
+  #       run: nix shell .#nixwrapper -c nix path-info --derivation .#ci-instantiate --option eval-cache false
 
-      # registery
-      - if: success() || failure()
-        run: nix path-info --derivation n#emacs
-      - if: success() || failure()
-        run: nix path-info --derivation p#ci-instantiate
+  #     # registery
+  #     - if: success() || failure()
+  #       run: nix path-info --derivation n#emacs
+  #     - if: success() || failure()
+  #       run: nix path-info --derivation p#ci-instantiate
 
-      - if: success() || failure()
-        run: nix build .#profile
+  #     - if: success() || failure()
+  #       run: nix build .#profile
 
-      - if: success() || failure()
-        run: nix path-info --derivation .#less-build.ci-instantiate
-      - if: success() || failure()
-        run: nix path-info --derivation .#less-download-flakes.ci-instantiate
-      - if: success() || failure()
-        run: nix path-info --derivation .#less-build.less-download-flakes.ci-instantiate
-      - if: success() || failure()
-        run: nix path-info --derivation .#with_emacs-gtk.ci-instantiate
-      - if: success() || failure()
-        run: nix path-info --derivation .#py310.ci-instantiate
+  #     - if: success() || failure()
+  #       run: nix path-info --derivation .#less-build.ci-instantiate
+  #     - if: success() || failure()
+  #       run: nix path-info --derivation .#less-download-flakes.ci-instantiate
+  #     - if: success() || failure()
+  #       run: nix path-info --derivation .#less-build.less-download-flakes.ci-instantiate
+  #     - if: success() || failure()
+  #       run: nix path-info --derivation .#with_emacs-gtk.ci-instantiate
+  #     - if: success() || failure()
+  #       run: nix path-info --derivation .#py310.ci-instantiate
 
-      # python
-      - if: success() || failure()
-        uses: ./.github/actions/build_nix
-        with:
-          drv: .#python-all
-          CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
-      # test "inject"
-      - if: success() || failure()
-        run: nix build .#python.inject.pygit2.regexfactory
+  #     # python
+  #     - if: success() || failure()
+  #       uses: ./.github/actions/build_nix
+  #       with:
+  #         drv: .#python-all
+  #         CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
+  #     # test "inject"
+  #     - if: success() || failure()
+  #       run: nix build .#python.inject.pygit2.regexfactory
 
-      - if: success() || failure()
-        uses: ./.github/actions/build_nix
-        with:
-          drv: .#js
-          CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
+  #     - if: success() || failure()
+  #       uses: ./.github/actions/build_nix
+  #       with:
+  #         drv: .#js
+  #         CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
 
-  emacs:
-    needs: setup
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        emacs:
-          [
-            ".#emacs",
-            ".#emacs-gtk",
-            ".#p.emacs30-nox",
-            ".#p.emacs29-gtk3",
-            ".#p.emacs28-gtk3",
-          ]
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/setup
-      - run: nix path-info --derivation ${{ matrix.emacs }}
-      - if: ${{ matrix.emacs == '.#emacs' || matrix.emacs == '.#emacs-gtk' }}
-        uses: ./.github/actions/build_nix
-        with:
-          drv: ${{ matrix.emacs }}
-          CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
-      - run: nix profile install ${{ matrix.emacs }}
-      # for vterm
-      - run: nix profile install .#p.cmake .#p.gnumake .#p.gcc .#p.libtool
-      # for lilypond-mode
-      - run: nix profile install .#p.lilypond
-      - run: mv emacs/alan-private.example.el emacs/alan-private.el
-      - if: success() || failure()
-        run: emacs --batch --eval "(setq ci-build-verbose t)" -l emacs/ci.el --eval "(ci-show-build-errs)"
-        timeout-minutes: 5
-      - if: success() || failure()
-        run: emacs --batch -l emacs/ci.el --eval "(ci-load-packages)"
-        timeout-minutes: 5
-      - if: success() || failure()
-        run: emacs --batch -l emacs/ci.el --eval "(ci-byte-compile)"
-        timeout-minutes: 5
-      - if: success() || failure()
-        run: emacs --batch -l emacs/ci.el --eval "(ci-load-packages)"
-        timeout-minutes: 5
+  # emacs:
+  #   needs: setup
+  #   runs-on: ubuntu-latest
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       emacs:
+  #         [
+  #           ".#emacs",
+  #           ".#emacs-gtk",
+  #           ".#p.emacs30-nox",
+  #           ".#p.emacs29-gtk3",
+  #           ".#p.emacs28-gtk3",
+  #         ]
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: ./.github/actions/setup
+  #     - run: nix path-info --derivation ${{ matrix.emacs }}
+  #     - if: ${{ matrix.emacs == '.#emacs' || matrix.emacs == '.#emacs-gtk' }}
+  #       uses: ./.github/actions/build_nix
+  #       with:
+  #         drv: ${{ matrix.emacs }}
+  #         CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
+  #     - run: nix profile install ${{ matrix.emacs }}
+  #     # for vterm
+  #     - run: nix profile install .#p.cmake .#p.gnumake .#p.gcc .#p.libtool
+  #     # for lilypond-mode
+  #     - run: nix profile install .#p.lilypond
+  #     - run: mv emacs/alan-private.example.el emacs/alan-private.el
+  #     - if: success() || failure()
+  #       run: emacs --batch --eval "(setq ci-build-verbose t)" -l emacs/ci.el --eval "(ci-show-build-errs)"
+  #       timeout-minutes: 5
+  #     - if: success() || failure()
+  #       run: emacs --batch -l emacs/ci.el --eval "(ci-load-packages)"
+  #       timeout-minutes: 5
+  #     - if: success() || failure()
+  #       run: emacs --batch -l emacs/ci.el --eval "(ci-byte-compile)"
+  #       timeout-minutes: 5
+  #     - if: success() || failure()
+  #       run: emacs --batch -l emacs/ci.el --eval "(ci-load-packages)"
+  #       timeout-minutes: 5
 
-  update:
-    if: ${{ github.event_name == 'schedule' && github.ref_name == 'master' }}
-    needs: setup
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/setup
-      - uses: ./.github/actions/build_nix
-        with:
-          drv: .#python-all
-      - run: (cd python && nix run ..#poetry -- lock && nix run ..#poetry -- up --latest --no-install)
-      - uses: peter-evans/create-pull-request@v7
-        with:
-          token: ${{ secrets.PAT }}
-          add-paths: |
-            python/pyproject.toml
-            python/poetry.lock
-          commit-message: "update python dependencies"
-          title: "update python dependencies"
-          branch: "update-python-deps"
+  # update:
+  #   if: ${{ github.event_name == 'schedule' && github.ref_name == 'master' }}
+  #   needs: setup
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: ./.github/actions/setup
+  #     - uses: ./.github/actions/build_nix
+  #       with:
+  #         drv: .#python-all
+  #     - run: (cd python && nix run ..#poetry -- lock && nix run ..#poetry -- up --latest --no-install)
+  #     - uses: peter-evans/create-pull-request@v7
+  #       with:
+  #         token: ${{ secrets.PAT }}
+  #         add-paths: |
+  #           python/pyproject.toml
+  #           python/poetry.lock
+  #         commit-message: "update python dependencies"
+  #         title: "update python dependencies"
+  #         branch: "update-python-deps"
