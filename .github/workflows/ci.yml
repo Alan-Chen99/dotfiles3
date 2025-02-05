@@ -23,7 +23,8 @@ jobs:
       - uses: actions/checkout@v4
       - uses: cachix/install-nix-action@v27
       - run: nix path-info --derivation .#d.nix --option eval-cache false
-      - run: nix path-info --derivation -r .#d.nix --option eval-cache false
+      - run: nix path-info --derivation -r .#less-download-flakes.nixwrapper --option eval-cache false
+      # - run: nix run .#p.nixVersions.nix_2_24 -- path-info --derivation .#less-download-flakes.nixwrapper --option eval-cache false
 
   # nix:
   #   needs: setup
