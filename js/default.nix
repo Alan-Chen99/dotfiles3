@@ -41,9 +41,10 @@
     publishBinsFor = [
       "@fsouza/prettierd"
       "prettier"
+      "ts-node"
+      "tsx"
       "typescript"
       "typescript-language-server"
-      "tsx"
     ];
 
     doDist = false;
