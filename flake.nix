@@ -251,13 +251,14 @@
             };
         }));
 
-        emacs-gtk = from-default (default (final: prev: {
+        with_emacs-gtk = from-default (default (final: prev: {
           deps =
             prev.deps
             // {
               emacs-base = prev.legacypkgs.emacs30-gtk3;
             };
         }));
+        emacs-gtk = with_emacs-gtk.emacs;
 
         less-download-flakes = from-default (default (final: prev: {
           less-download-flakes = true;

@@ -50,7 +50,7 @@ jobs:
       - if: success() || failure()
         run: nix path-info --derivation .#less-build.less-download-flakes.ci-instantiate
       - if: success() || failure()
-        run: nix path-info --derivation .#emacs29-gtk3.ci-instantiate
+        run: nix path-info --derivation .#with_emacs-gtk.ci-instantiate
       - if: success() || failure()
         run: nix path-info --derivation .#py310.ci-instantiate
 
@@ -77,12 +77,18 @@ jobs:
       fail-fast: false
       matrix:
         emacs:
-          [".#emacs", ".#p.emacs30-nox", ".#p.emacs29-gtk3", ".#p.emacs28-gtk3"]
+          [
+            ".#emacs",
+            ".#emacs-gtk",
+            ".#p.emacs30-nox",
+            ".#p.emacs29-gtk3",
+            ".#p.emacs28-gtk3",
+          ]
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
       - run: nix path-info --derivation ${{ matrix.emacs }}
-      - if: matrix.emacs == '.#emacs'
+      - if: ${{ matrix.emacs == '.#emacs' || matrix.emacs == '.#emacs-gtk' }}
         uses: ./.github/actions/build_nix
         with:
           drv: ${{ matrix.emacs }}
