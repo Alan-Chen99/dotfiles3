@@ -53,16 +53,15 @@
     "dafny": {
       "flake": false,
       "locked": {
-        "lastModified": 1734688825,
-        "narHash": "sha256-M4qI6ei5PwdK2OobO371cC7NFCZJ2GKwrHyiO9m2V14=",
-        "owner": "dafny-lang",
+        "lastModified": 1738890919,
+        "narHash": "sha256-Y++HBd9kbUf43r04lb8RQfp8eCi+WbvhhS21pZnhpIk=",
+        "owner": "Alan-Chen99",
         "repo": "dafny",
-        "rev": "632c85bc66e51dd278678a930bce0d104b727426",
+        "rev": "22221ceb2c7c79ffe85d1064c31933c3619611f8",
         "type": "github"
       },
       "original": {
-        "owner": "dafny-lang",
-        "ref": "4.9.1",
+        "owner": "Alan-Chen99",
         "repo": "dafny",
         "type": "github"
       }

@@ -3,14 +3,15 @@
 (require 'alan-core)
 (require 'alan-format-all)
 
-(pkg! 'boogie-friends)
+(pkg! '(boogie-friends
+        :repo "https://github.com/Alan-Chen99/boogie-friends.git"))
 
 (require-if-is-bytecompile lsp-dafny)
 
 (eval-after-load! dafny-mode
   (add-hook! 'dafny-mode-hook
     (defun alan-setup-dafny ()
-      (setq-local format-all-formatters '(("_dafny" dafny)))
+      ;; (setq-local format-all-formatters '(("_dafny" dafny)))
 
       (alan-lsp-deferred 'lsp-dafny
         ;; (lsp-completion-mode)
@@ -39,16 +40,21 @@
 
 (advice-add #'boogie-friends-setup-prettify :override #'ignore)
 
+;; (eval-after-load! format-all
+;;   (define-format-all-formatter dafny
+;;     (:executable "dafny")
+;;     (:install)
+;;     (:languages "_dafny")
+;;     (:features)
+;;     (:format
+;;      (format-all--buffer-easy
+;;       executable
+;;       "format"
+;;       "--stdin"
+;;       "--print"))))
 
-;; (defun lsp-dafny--server-command ()
-;;   "Compute the command to run Dafny's LSP server."
-;;   )
-
-;; (defadvice! lsp-dafny--installed-executable--overwrite (executable)
-;;   :override #'lsp-dafny--installed-executable
-;;   (pcase executable
-;;     ("DafnyLanguageServer" (expand-file-name "../../lib/Dafny/DafnyServer" (executable-find "dafny")))
-;;     (_ (error "Unknown executable %S" executable))))
+(general-def dafny-mode-map
+  [remap evil-indent] #'lsp-format-buffer)
 
 
 (provide 'alan-dafny)

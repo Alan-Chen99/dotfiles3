@@ -38,21 +38,6 @@
     (:install)
     (:languages "Scheme")
     (:features)
-    (:format (format-all--buffer-easy executable)))
-
-  (define-format-all-formatter dafny
-    (:executable "dafny")
-    (:install)
-    (:languages "_dafny")
-    (:features)
-    (:format
-     ;; (with-temp-file
-     ;;     (insert (buffer-string)))
-     (format-all--buffer-easy
-      executable
-      "format"
-      ;; "--stdin"
-      (buffer-file-name)
-      "--print"))))
+    (:format (format-all--buffer-easy executable))))
 
 (provide 'alan-format-all)

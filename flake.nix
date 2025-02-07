@@ -19,7 +19,7 @@
     };
 
     dafny = {
-      url = "github:dafny-lang/dafny/4.9.1";
+      url = "github:Alan-Chen99/dafny";
       flake = false;
     };
 
@@ -217,9 +217,17 @@
               nix-stable = prev.deps.nix-stable;
               python = prev.poetrypython.python;
 
-              dafny = final.legacypkgs.dafny.overrideAttrs {
-                src = inputs.dafny;
-              };
+              dafny =
+                (final.legacypkgs.dafny.override (prev_: {
+                  buildDotnetModule = args:
+                    prev_.buildDotnetModule (args
+                      // {
+                        dotnet-runtime = final.legacypkgs.dotnet-sdk;
+                      });
+                }))
+                .overrideAttrs {
+                  src = inputs.dafny;
+                };
 
               # rackt-test = final.deps.racket2nix;
               # racket-fmt = final.deps.racket2nix.buildRacketPackage inputs.racket-fmt;
