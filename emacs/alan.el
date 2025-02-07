@@ -91,6 +91,7 @@
 (require-noerr 'alan-cxx)
 (require-noerr 'alan-scheme)
 (require-noerr 'alan-latex)
+(require-noerr 'alan-dafny)
 (pkg! 'dockerfile-mode)
 (pkg! 'lua-mode)
 (pkg! 'php-mode)

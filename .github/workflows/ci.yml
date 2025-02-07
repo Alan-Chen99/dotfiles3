@@ -149,3 +149,14 @@ jobs:
           commit-message: "update nixpkgs"
           title: "update nixpkgs"
           branch: "update-nixpkgs"
+
+  dafny:
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - uses: ./.github/actions/build_nix
+        with:
+          drv: .#dafny
+          CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}

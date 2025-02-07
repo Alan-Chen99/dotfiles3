@@ -16,7 +16,8 @@
     :before-until #'format-all--language-id-buffer
     (or
      (and (eq major-mode 'LilyPond-mode) "_lilypond")
-     (and (eq major-mode 'nix-ts-mode) "Nix")))
+     (and (eq major-mode 'nix-ts-mode) "Nix")
+     (and (eq major-mode 'dafny-mode) "_dafny")))
 
   (define-format-all-formatter python-ly
     (:executable "ly")
@@ -38,7 +39,20 @@
     (:languages "Scheme")
     (:features)
     (:format (format-all--buffer-easy executable)))
-  )
 
+  (define-format-all-formatter dafny
+    (:executable "dafny")
+    (:install)
+    (:languages "_dafny")
+    (:features)
+    (:format
+     ;; (with-temp-file
+     ;;     (insert (buffer-string)))
+     (format-all--buffer-easy
+      executable
+      "format"
+      ;; "--stdin"
+      (buffer-file-name)
+      "--print"))))
 
 (provide 'alan-format-all)

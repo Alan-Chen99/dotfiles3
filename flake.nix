@@ -18,6 +18,11 @@
       inputs.nix-test-runner.follows = "empty";
     };
 
+    dafny = {
+      url = "github:dafny-lang/dafny/4.9.1";
+      flake = false;
+    };
+
     dream2nix = {
       url = "github:nix-community/dream2nix";
       inputs = {
@@ -211,6 +216,10 @@
 
               nix-stable = prev.deps.nix-stable;
               python = prev.poetrypython.python;
+
+              dafny = final.legacypkgs.dafny.overrideAttrs {
+                src = inputs.dafny;
+              };
 
               # rackt-test = final.deps.racket2nix;
               # racket-fmt = final.deps.racket2nix.buildRacketPackage inputs.racket-fmt;
