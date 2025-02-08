@@ -24,13 +24,15 @@
     };
   };
 
-  poetryPackages-attrs = builtins.listToAttrs (
-    map (drv: {
-      name = drv.pname;
-      value = drv;
-    })
-    self.poetrypython.poetryPackages
-  );
+  poetryPackages-attrs =
+    builtins.listToAttrs (
+      map (drv: {
+        name = drv.pname;
+        value = drv;
+      })
+      self.poetrypython.poetryPackages
+    )
+    // {tkinter = null;};
 
   # ex: nix shell ..#python.inject.pip.ipython
   export.poetrypython = let

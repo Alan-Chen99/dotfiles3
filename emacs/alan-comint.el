@@ -42,11 +42,14 @@
   (general-define-key
    :states 'insert
    :keymaps '(comint-mode-map)
-   "<down>" 'comint-next-input
-   "<up>" 'comint-previous-input
+   "<down>" #'comint-next-input
+   "<up>" #'comint-previous-input
    ;; "<right>" (lambda () (interactive) (if (point-at-eol-p) (completion-at-point) (right-char)))
-   "RET" 'comint-send-input
+   "RET" #'comint-send-input
    )
+
+  (setf (get 'comint-send-input 'company-abort) t)
+
   (general-define-key
    :states 'motion
    :keymaps '(comint-mode-map)

@@ -106,11 +106,23 @@
       (call-interactively #'company-complete-selection)
     (call-interactively #'company-complete-common)))
 
-(eval-after-load! company-capf
-  (defadvice! company-capf--nonessential (fn &rest args)
-    :around #'company-capf
-    (let ((non-essential t))
+(defadvice! company-call-backend--throw-on-input (fn &rest args)
+  :around #'company-call-backend
+  (let ((non-essential t)
+        (inhibit-quit nil)
+        (throw-on-input (or throw-on-input 'quit)))
+    (span :company-call-backend
       (apply fn args))))
+
+(defadvice! company-post-command--maybe-abort ()
+  :before #'company-post-command
+  (when (ignore-errors (get this-command 'company-abort))
+    (company-abort)))
+
+;; (defadvice! company-capf--nonessential (fn &rest args)
+;;   :around #'company-capf
+;;   (let ((non-essential t))
+;;     (apply fn args))))
 
 (eval-after-load! company-dabbrev
   (setq company-dabbrev-ignore-case t)
