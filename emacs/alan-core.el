@@ -18,10 +18,10 @@
       (alan-startup-process-queue))))
 
 (defun alan-startup-process-queue ()
-  (if nil
+  (if (input-pending-p)
       (run-with-idle-timer 0.01 nil
                            #'alan-startup-process-queue)
-    (if-let
+    (if-let*
         (
          (async-queue)
          (func (pop (cdr (--max-by (and (cdr it) (or (not (cdr other)) (> (car it) (car other)))) async-queue)))))

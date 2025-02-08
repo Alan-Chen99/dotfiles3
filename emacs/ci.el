@@ -25,6 +25,8 @@
 (defadvice! elpaca--log--redirect (e text &optional _verbosity _replace)
   :before #'elpaca--log
   (when ci-build-verbose
+    ;; (when (eq (elpaca<-id e) 'compat)
+    ;;   (span--backtrace))
     (span-notef "%-20s %-10s %-10s" (elpaca<-id e) (elpaca--status e) text)))
 
 (require 'alan)
@@ -42,6 +44,16 @@
   (cl-block nil
     (while t
       (let ((statuses (elpaca--count-statuses)))
+
+        (span :statuses
+          (span-notef "%s" (cl-prin1-to-string (elpaca-get 'compat)))
+          (span-dbgf statuses)
+          (cl-loop for q in elpaca--queues
+                   do (cl-loop for (_ . e) in (elpaca-q<-elpacas q)
+                               for status = (elpaca--status e)
+                               do (unless (eq status 'finished)
+                                    (span-notef "%s %s" status (elpaca<-id e))))))
+
         (if (or (alist-get 'other statuses) (alist-get 'blocked statuses))
             (sit-for 0.1)
           (cl-return statuses))))))

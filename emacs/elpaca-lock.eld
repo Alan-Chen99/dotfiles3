@@ -144,7 +144,7 @@
                        (:exclude ".git" "COPYING" "doclicense.texi"
                                  "contrast-ratios.org"))
                       :ref "03017b99c673b47957fe813b3934bcd2ae3f9557"))
- (elpaca :recipe (:ref "1b7343b335eee4968f4c2ea189fc6876c8d07d55"))
+ (elpaca :recipe (:ref "3975b8e9a1335412ffdb3b7eb038a07559b5575c"))
  (embark :recipe
          (:package "embark" :repo "oantolin/embark" :fetcher github
                    :files ("embark.el" "embark-org.el" "embark.texi")
@@ -403,7 +403,7 @@
                   ("lisp/magit*.el" "lisp/git-*.el" "docs/magit.texi"
                    "docs/AUTHORS.md" "LICENSE" "magit-pkg.el"
                    (:exclude "lisp/magit-section.el"))
-                  :ref "c8e8ae9abfa0de8c6b52b2a806cc02548ef8bbaf"))
+                  :ref "085baa2ac96df90bdb2a1bedd3598df19919d731"))
  (magit-section :recipe
                 (:package "magit-section" :fetcher github :repo
                           "magit/magit" :files
@@ -411,7 +411,7 @@
                            "docs/magit-section.texi"
                            "magit-section-pkg.el")
                           :ref
-                          "c8e8ae9abfa0de8c6b52b2a806cc02548ef8bbaf"))
+                          "085baa2ac96df90bdb2a1bedd3598df19919d731"))
  (marginalia :recipe
              (:package "marginalia" :repo "minad/marginalia" :fetcher
                        github :files

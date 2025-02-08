@@ -2,6 +2,8 @@
 FROM	ubuntu:latest
 RUN	apt-get update && apt-get install -y \
 	ca-certificates \
+	sudo \
+	fontconfig \
 	&& rm -rf /var/lib/apt/lists/*
 RUN	useradd -m -u 1000 dockeruser
 RUN	mkdir /home/dockeruser/.cache
