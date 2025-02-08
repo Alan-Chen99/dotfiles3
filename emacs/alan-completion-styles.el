@@ -83,16 +83,19 @@
 
 (eval-after-load! hotfuzz
   (eval-after-load! hotfuzz-rs
-    (hotfuzz-rs-mode)
-    ;; (hotfuzz-vertico-mode)
+    (defun hotfuzz--filter-c (needle all _)
+      (hotfuzz-rs-module-filter needle all))
     (alan-update-completion-styes)))
 
 
 (defadvice! completion--nth-completion--throw-on-input (fn &rest args)
   :around #'completion--nth-completion
-  (let ((throw-on-input (or throw-on-input 'quit)))
-    (span :completion--nth-completion
-      (apply fn args))))
+  (let ((inhibit-quit nil)
+        (non-essential t))
+    (alan-quit-on-input
+     (span :completion--nth-completion
+       :flush-on-err nil
+       (apply fn args)))))
 
 ;; (use-package hotfuzz
 ;;    :elpaca nil

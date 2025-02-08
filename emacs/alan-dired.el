@@ -17,6 +17,7 @@
 (eval-after-load! dired
   (setq dired-deletion-confirmer #'y-or-n-p)
   (setq dired-auto-revert-buffer #'dired-directory-changed-p)
+  (setq dired-movement-style 'bounded)
 
   (clear-and-backup-keymap dired-mode-map)
   ;; (add-hook 'dired-mode-hook 'evil-motion-state)
@@ -56,11 +57,11 @@
     [remap next-line] #'evil-next-visual-line)
 
   ;; (put 'dired-find-alternate-file 'disabled nil)
-  (alan-set-ignore-debug-on-error #'dired-next-dirline)
+  ;; (alan-set-ignore-debug-on-error #'dired-next-dirline)
 
   ;; premission
   ;; TODO: after dired-find-alternate-directory fails for permission, dired stuff dont work
-  (alan-set-ignore-debug-on-error #'dired-insert-directory)
+  ;; (alan-set-ignore-debug-on-error #'dired-insert-directory)
 
   )
 

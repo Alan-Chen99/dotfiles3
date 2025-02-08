@@ -35,8 +35,8 @@
             (goto-char prevpoint)))
       (evil-backward-paragraph count))))
 
-(alan-set-ignore-debug-on-error #'outline-forward-same-level)
-(alan-set-ignore-debug-on-error #'outline-backward-same-level)
+;; (alan-set-ignore-debug-on-error #'outline-forward-same-level)
+;; (alan-set-ignore-debug-on-error #'outline-backward-same-level)
 
 (evil-define-motion outline-forward-same-level-or-paragraph (count)
   :jump t
@@ -85,7 +85,8 @@
   (add-hook 'TeX-after-compilation-finished-functions
             #'TeX-revert-document-buffer)
 
-  (alan-set-ignore-debug-on-error #'TeX-error-overview))
+  ;; (alan-set-ignore-debug-on-error #'TeX-error-overview)
+  )
 
 (eval-after-load! lsp-tex
   (let ((clients (lsp--filter-clients (lambda (client)

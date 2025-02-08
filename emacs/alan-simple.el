@@ -64,8 +64,8 @@
 
 ;; those do not account for minibuffer-history-variable being t
 ;; todo: upstream?
-(alan-set-ignore-debug-on-error #'previous-matching-history-element)
-(alan-set-ignore-debug-on-error #'next-matching-history-element)
+;; (alan-set-ignore-debug-on-error #'previous-matching-history-element)
+;; (alan-set-ignore-debug-on-error #'next-matching-history-element)
 
 
 ;; Highlight matching parenthesis in normal mode

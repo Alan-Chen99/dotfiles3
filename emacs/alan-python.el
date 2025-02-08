@@ -168,7 +168,7 @@
               #'alan-python-shell-completion-at-point nil 'local)))
 
 
-(alan-set-ignore-debug-on-error #'python-indent-line)
+;; (alan-set-ignore-debug-on-error #'python-indent-line)
 
 (eval-after-load! lsp-pyright
   (add-to-list 'lsp-file-watch-ignored-directories (rx "/site-packages/"))

@@ -126,8 +126,8 @@
 ;; (alan-set-ignore-debug-on-quit #'flyspell-popup-correct)
 
 ;; (alan-set-ignore-debug-on-error #'elisp--local-variables)
-(alan-set-ignore-debug-on-error #'completion--some)
-(alan-set-ignore-debug-on-error #'company-call-backend-raw)
+;; (alan-set-ignore-debug-on-error #'completion--some)
+;; (alan-set-ignore-debug-on-error #'company-call-backend-raw)
 
 (defvar-local alan-font-lock-force-specified nil)
 
@@ -217,7 +217,7 @@
 ;; (setq debug-allow-recursive-debug nil)
 
 
-(alan-set-ignore-debug-on-error #'current-kill)
+;; (alan-set-ignore-debug-on-error #'current-kill)
 
 ;; ;; https://github.com/DarthFennec/highlight-indent-guides/issues/61
 ;; (setq auto-window-vscroll nil)
@@ -230,8 +230,8 @@
 (remove-hook 'xref-after-return-hook 'xref-pulse-momentarily)
 
 
-(alan-set-ignore-debug-on-error #'comment-region-default)
-(alan-set-ignore-debug-on-error #'revert-buffer)
+;; (alan-set-ignore-debug-on-error #'comment-region-default)
+;; (alan-set-ignore-debug-on-error #'revert-buffer)
 
 
 (span-wrap tree-sitter-langs--call (&rest args)
@@ -262,7 +262,7 @@
 
 
 
-(alan-set-ignore-debug-on-error #'xref-backend-definitions)
+;; (alan-set-ignore-debug-on-error #'xref-backend-definitions)
 
 ;; (debug)
 ;; (setq quit-flag t)

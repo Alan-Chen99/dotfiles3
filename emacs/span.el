@@ -195,7 +195,7 @@ designed to be created at compile time and used as constant"
   (defun span--handle-dbg-args (args)
     (let ((argss (span--format-dbg-args args))
           (forms (mapcar
-                  (lambda (x) (span--macro-comma `(:unsafe (cl-prin1-to-string ,x))))
+                  (lambda (x) (span--macro-comma `(:ts ,x)))
                   args)))
       (span--macro-backquote
        `(span--format-dbg-rt
@@ -217,7 +217,7 @@ designed to be created at compile time and used as constant"
   (if span--blocking-time
       (progn
         (let ((time (float-time (time-subtract (span--time) span--blocking-time))))
-          (when (> time 0.1)
+          (when (> time 0.05)
             ;; (span-fmt-parse '("blocking: %.3f" time))
             (span-notef "blocking: %.3f" time)))
         (setq span--blocking-time nil))
@@ -225,7 +225,8 @@ designed to be created at compile time and used as constant"
 
 (defun span--unsafe-on-err (flush)
   (span-note :tag "!" "%s" (span-s<-tag (caar span--stack)))
-  (when (or flush (eq span--cur-context :redisplay))
+  ;; (when (or flush (eq span--cur-context :redisplay))
+  (when flush
     (span--unsafe-flush-stack)))
 
 ;; dynamic vars are faster in unwind protect
@@ -394,22 +395,22 @@ designed to be created at compile time and used as constant"
             (condition-case-unless-debug err
                 (funcall (span-s<-fmt-fn s) obj)
               (error
-               (format-message
+               (format
                 "error (span-format-one): %S\n%s\n%s"
                 err
                 (span-fmt-to-string (span-s<-fmt-fn s))
                 (span-fmt-to-string obj)))))
            (lines (split-string msg "\n"))
            (prefix
-            (format-message
+            (format
              "%.3f %s%s"
              (float-time (time-subtract time before-init-time))
              (make-string (* depth 2) (eval-when-compile (string-to-char " ")))
              (or (span-s<-tag s) "%"))))
-      (apply #'concat (format-message "%s %s\n" prefix (car lines))
+      (apply #'concat (format "%s %s\n" prefix (car lines))
              (mapcar
               (lambda (x)
-                (format-message
+                (format
                  "%s> %s\n"
                  (make-string (1- (length prefix)) (eval-when-compile (string-to-char " ")))
                  x))
@@ -460,7 +461,9 @@ designed to be created at compile time and used as constant"
 
             (debugger ,(if is-redisp '#'span--debug '#'debug))
             (non-essential ,is-redisp)
-            ,@(when is-redisp '((signal-hook-function nil)))
+            ;; (signal-hook-function ,(if is-redisp '#'span--signal-hook-function nil))
+            ;; ,@(when is-redisp '((signal-hook-function nil)))
+            (signal-hook-function nil)
             ;; (inhibit-debugger nil)
             (debug-on-error t)
             (debug-on-quit t)
@@ -597,7 +600,7 @@ designed to be created at compile time and used as constant"
 (defun span--wrap-message (orig-fun format-string &rest args)
   (if span--handles-message
       (if (and format-string (not (string-empty-p format-string)))
-          (let ((msg (apply #'format-message format-string args)))
+          (let ((msg (apply #'format format-string args)))
             (when message-log-max
               (span-notef :tag "%%" "%s" msg))
             ;; (unless (and (eq clear-message-function #'span--dont-clear-message)
@@ -800,6 +803,13 @@ designed to be created at compile time and used as constant"
         (apply #'span--debug type args)
       (apply orig-fn type args))))
 
+(defun span--backtrace--to-string (frames)
+  (let* ((time-start (span--time))
+         (backtrace-line-length 100)
+         (bt-fmt (backtrace--to-string frames)))
+    (format "backtrace(%.3fs):\n%s"
+            (float-time (time-subtract (span--time) time-start))
+            bt-fmt)))
 
 (defvar span--is-in-backtrace nil)
 (defun span--backtrace (&optional base eager)
@@ -816,16 +826,12 @@ designed to be created at compile time and used as constant"
             (span-notef "too many backtraces; ommiting")
           (if eager
               (span-notef
-                "backtrace:\n%s"
                 (:unsafe
-                 (let ((backtrace-line-length 100))
-                   (backtrace--to-string
-                    (cdr (backtrace-get-frames base))))))
+                 (span--backtrace--to-string
+                  (cdr (backtrace-get-frames base)))))
             (span-notef
-              "backtrace:\n%s"
-              `(let ((backtrace-line-length 100))
-                 (backtrace--to-string
-                  ,(:unsafe (cdr (backtrace-get-frames base))))))))))))
+              `(span--backtrace--to-string
+                ,(:unsafe (cdr (backtrace-get-frames base)))))))))))
 
 (defun span--debug (type &rest args)
   (if (eq type 'error)
@@ -834,7 +840,7 @@ designed to be created at compile time and used as constant"
              (data (cdr-safe signal-args)))
         (span (:span--debug "error: %S" `(list ,(:unsafe err-sym) ,(:unsafe data)))
           (span-flush)
-          (span--backtrace)
+          (span--backtrace #'span--debug)
           (let ((inhibit-debugger t))
             (signal err-sym data))))
     (span-notef "debug: %S %S" type (:unsafe args))
@@ -846,7 +852,7 @@ designed to be created at compile time and used as constant"
   (let ((signal-hook-function nil))
     (span (:span--signal-hook-function "%s %s" error-symbol (:ts data))
       (span-flush)
-      (span--backtrace)
+      (span--backtrace #'span--signal-hook-function)
       (signal error-symbol data))))
 
 (advice-add #'tramp-file-name-handler :around #'span--wrap-tramp-file-name-handler)

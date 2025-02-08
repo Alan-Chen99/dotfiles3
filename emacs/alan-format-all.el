@@ -9,7 +9,7 @@
 (general-def [remap evil-indent] #'format-all-region-or-buffer)
 
 (eval-after-load! format-all
-  (alan-set-ignore-debug-on-error #'format-all--prompt-for-formatter)
+  ;; (alan-set-ignore-debug-on-error #'format-all--prompt-for-formatter)
 
 
   (defadvice! alan-format-all--language-id-buffer ()

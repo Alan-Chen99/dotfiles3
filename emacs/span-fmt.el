@@ -119,7 +119,7 @@
 
    ((and (listp form) (length> form 1))
     (let ((args (mapcar (lambda (x) (span-fmt--parse-obj x state)) form)))
-      `(format-message ,@args)))
+      `(format ,@args)))
 
    ((and (listp form) (length= form 1))
     `(span--ensure-str ,(span-fmt--parse-obj (car form) state)))

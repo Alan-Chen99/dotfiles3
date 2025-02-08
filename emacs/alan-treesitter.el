@@ -75,7 +75,7 @@
     "f" (evil-textobj-tree-sitter-get-textobj "function.outer")
     "a" (evil-textobj-tree-sitter-get-textobj ("conditional.outer" "loop.outer")))
 
-  (alan-set-ignore-debug-on-error #'evil-textobj-tree-sitter--message-not-found)
+  ;; (alan-set-ignore-debug-on-error #'evil-textobj-tree-sitter--message-not-found)
 
   )
 

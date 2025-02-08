@@ -142,15 +142,15 @@
 (evil-set-command-property 'evil-append-line :jump t)
 
 
-(alan-set-ignore-debug-on-error #'evil-window-delete)
+;; (alan-set-ignore-debug-on-error #'evil-window-delete)
 
 ;; TODO: needed since this "rethrows" errors, but maybe not the best idea
-(alan-set-ignore-debug-on-error #'evil-motion-range)
+;; (alan-set-ignore-debug-on-error #'evil-motion-range)
 
 (alan-set-ignore-debug-on-quit #'evil-operator-range)
 
 (alan-set-ignore-debug-on-quit #'evil-ex-start-search)
-(alan-set-ignore-debug-on-error #'evil-ex-start-search)
+;; (alan-set-ignore-debug-on-error #'evil-ex-start-search)
 
 (eval-after-load! evil-collection
   (setq evil-collection-key-blacklist '("s")))

@@ -79,7 +79,7 @@
    ;; lsp-signature-render-documentation t
    )
 
-  (alan-set-ignore-debug-on-error #'lsp--server-binary-present?)
+  ;; (alan-set-ignore-debug-on-error #'lsp--server-binary-present?)
 
   (add-to-list 'debug-ignored-errors 'lsp-no-code-actions))
 

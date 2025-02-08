@@ -84,7 +84,7 @@
       (setq-local mwheel-scroll-up-function #'pdf-view-next-line-or-next-page)
       (setq-local mwheel-scroll-down-function #'pdf-view-previous-line-or-previous-page)))
 
-  (alan-set-ignore-debug-on-error #'pdf-view-goto-page)
+  ;; (alan-set-ignore-debug-on-error #'pdf-view-goto-page)
   ;; (alan-set-ignore-debug-on-error #'image-roll-goto-page)
   ;; pdf-view-scroll-down-or-previous-page
 

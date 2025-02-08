@@ -25,11 +25,11 @@
 
   (vertico-mode))
 
-(span-wrap vertico--exhibit (&rest args)
-  (_)
-  (span-dbg
-   inhibit-quit
-   throw-on-input))
+(defadvice! vertico--exhibit--debug (fn)
+  :around #'vertico--exhibit
+  (alan-always-debug
+   (span :vertico--exhibit
+     (funcall fn))))
 
 (defadvice! span--wrap-vertico--update (fn &optional interruptible)
   :around #'vertico--update
@@ -39,8 +39,14 @@
     ;; so do we still need this?
     (let ((non-essential t))
       (if interruptible
-          (while-no-input
-            (funcall fn interruptible))
+          (progn
+            (while-no-input
+              (funcall fn interruptible))
+            ;; (when (input-pending-p)
+            ;;   (span :redisp!
+            ;;     (redisplay)
+            ;;     (span-notef "ok")))
+            )
         (funcall fn)))))
 
 (defadvice! span--wrap-vertico--affixate (fn cands)
@@ -50,15 +56,11 @@
      inhibit-quit
      throw-on-input
      (vertico--metadata-get 'affixation-function))
-    (let ((inhibit-quit nil)
-          (ans nil)
+    (let ((ans nil)
           (suc nil))
-      (catch 'input
-        (let
-            ((throw-on-input 'input))
-          (ignore-errors
-            (setq ans (funcall fn cands))
-            (setq suc t))))
+      (while-no-input
+        (setq ans (funcall fn cands))
+        (setq suc t))
       (if suc
           ans
         (cl-loop for cand in cands collect (list cand "" ""))))))

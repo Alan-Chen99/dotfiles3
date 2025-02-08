@@ -125,4 +125,36 @@
       `(progn ,@form)
     `(eval '(progn ,@form) t)))
 
+(defmacro alan-always-debug (&rest form)
+  (let ((err-sym (make-symbol "err")))
+    `(condition-case-unless-debug ,err-sym
+         (progn ,@form)
+       (t (signal (car ,err-sym) (cdr ,err-sym))))))
+
+(defmacro alan-with-demoted-errors (&rest form)
+  (let ((err-sym (make-symbol "err")))
+    `(condition-case-unless-debug ,err-sym
+         (let ((debugger #'span--debug)
+               (inhibit-debugger nil)
+               (debug-on-error t)
+               (debug-on-quit t))
+           ,@form)
+       (t (span-notef "error: %s" (error-message-string ,err-sym))))))
+
+;; TODO: this duplicates form
+(defmacro alan-quit-on-input (&rest form)
+  (let ((success-sym (make-symbol "success"))
+        (ans-sym (make-symbol "ans")))
+    `(if throw-on-input
+         (progn ,@form)
+       (let (,success-sym ,ans-sym)
+         (while-no-input
+           (setq ,ans-sym (progn ,@form))
+           (setq ,success-sym t))
+         (if ,success-sym
+             ,ans-sym
+           (let ((debug-on-quit nil))
+             (signal 'quit nil)))))))
+
+
 (provide 'alan-utils2)
