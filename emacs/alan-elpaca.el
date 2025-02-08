@@ -81,9 +81,10 @@
     (error
      (elpaca--continue-build e))))
 
-(defadvice! alan-elpaca-inject-deps (orig-fun e)
+(defadvice! alan-elpaca-inject-deps (orig-fun e &optional recache)
   :around #'elpaca--dependencies
-  (let ((ans (funcall orig-fun e)))
+  ;; (span--backtrace)
+  (let ((ans (funcall orig-fun e recache)))
     (append (plist-get (cdr-safe (elpaca<-order e)) :alan-extra-deps) ans)))
 
 (add-hook 'alan-end-of-init-hook #'elpaca-process-queues)

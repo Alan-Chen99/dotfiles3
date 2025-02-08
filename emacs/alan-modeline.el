@@ -24,17 +24,26 @@
                              (frame-char-width))
                           rhs-width)))))
 
+(defun doom-modeline-string-pixel-width (str)
+  "Return the width of STR in pixels."
+  (if (fboundp 'string-pixel-width)
+      (string-pixel-width str)
+    (* (string-width str) (window-font-width nil 'mode-line)
+       (if (display-graphic-p) 1.05 1.0))))
+
 (defun alan-format-modeline ()
   (span :alan-format-modeline
-    ;; (span-msg "%s" (current-buffer))
-    ;; (span--backtrace)
-    (let* ((lhs (format-mode-line alan-modeline-lhs))
-           (rhs (format-mode-line alan-modeline-rhs))
-           (rhs-width (string-pixel-width rhs)))
-      (concat
-       lhs
-       (alan-right-align-space rhs-width)
-       rhs))))
+    (with-demoted-errors "error in alan-format-modeline: %S"
+      ;; (with-demoted-errors
+      ;; (span-msg "%s" (current-buffer))
+      ;; (span--backtrace)
+      (let* ((lhs (format-mode-line alan-modeline-lhs))
+             (rhs (format-mode-line alan-modeline-rhs))
+             (rhs-width (doom-modeline-string-pixel-width rhs)))
+        (concat
+         lhs
+         (alan-right-align-space rhs-width)
+         rhs)))))
 
 
 (defvar-local alan-formatted-modeline nil)
@@ -540,7 +549,7 @@
         (setq lhs (substring lhs 0 lhs-limit)))
       (concat
        lhs
-       (alan-right-align-space (string-pixel-width rhs) t)
+       (alan-right-align-space (doom-modeline-string-pixel-width rhs) t)
        rhs
        ))))
 

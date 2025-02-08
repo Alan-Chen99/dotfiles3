@@ -450,6 +450,14 @@ designed to be created at compile time and used as constant"
 (setq-default debugger #'span--debug)
 (setq-default non-essential nil)
 
+(defmacro span--always-debug (&rest form)
+  (let ((err-sym (make-symbol "err")))
+    `(condition-case-unless-debug ,err-sym
+         (progn ,@form)
+       (t
+        (let ((inhibit-debugger t))
+          (signal (car ,err-sym) (cdr ,err-sym)))))))
+
 (defmacro span--context (context &rest body)
   (declare (indent 1))
   (cl-assert (keywordp context))
@@ -479,7 +487,8 @@ designed to be created at compile time and used as constant"
 
             (span--context-locals nil)
             (span--handles-message t))
-       ,@body)))
+       (span--always-debug
+        ,@body))))
 
 (defun span-flush-log ()
   (when (and span--pending-log-list (not span--is-flushing))
