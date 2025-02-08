@@ -66,6 +66,7 @@
                    (metadata-url . "https://elpa.nongnu.org/nongnu/")
                    (remote       . "https://github.com/emacsmirror/nongnu_elpa.git")
                    (branch-prefix . "elpa")))))
+(setq elpaca-lock-file (when load-file-name (expand-file-name "../elpaca-lock.eld" load-file-name)))
 
 (when (eq system-type 'windows-nt)
   (elpaca-no-symlink-mode))
