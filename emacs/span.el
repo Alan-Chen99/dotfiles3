@@ -454,7 +454,9 @@ designed to be created at compile time and used as constant"
   (let ((err-sym (make-symbol "err")))
     `(condition-case-unless-debug ,err-sym
          (progn ,@form)
-       (t (signal (car ,err-sym) (cdr ,err-sym))))))
+       (t
+        (let ((inhibit-debugger t))
+          (signal (car ,err-sym) (cdr ,err-sym)))))))
 
 (defmacro span--context (context &rest body)
   (declare (indent 1))

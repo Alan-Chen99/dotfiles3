@@ -144,7 +144,7 @@
                        (:exclude ".git" "COPYING" "doclicense.texi"
                                  "contrast-ratios.org"))
                       :ref "03017b99c673b47957fe813b3934bcd2ae3f9557"))
- (elpaca :recipe (:ref "3975b8e9a1335412ffdb3b7eb038a07559b5575c"))
+ (elpaca :recipe (:ref "97004fb91ae2d7fe9296da019595641145ed28c7"))
  (embark :recipe
          (:package "embark" :repo "oantolin/embark" :fetcher github
                    :files ("embark.el" "embark-org.el" "embark.texi")

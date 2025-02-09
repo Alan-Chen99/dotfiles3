@@ -40,6 +40,9 @@
            (span-notef "%-20s %-10s %-10s" (elpaca<-id e) status info))
   (span-notef))
 
+(span-instrument elpaca--queue-dependencies :verbose t)
+;; (span-instrument elpaca--continue-build :verbose t)
+
 (cl-defun ci-wait-for-pkgs-build ()
   (cl-block nil
     (while t
@@ -58,26 +61,24 @@
             (sit-for 0.1)
           (cl-return statuses))))))
 
-(defvar ci-pkgs-statuses)
-(setq ci-pkgs-statuses (ci-wait-for-pkgs-build))
-(span-dbgf ci-pkgs-statuses)
-
 (defun ci-show-build-errs ()
-  (span-flush-log)
-  (span-notef)
-  (span-notef)
-  (span-notef)
-  (span-notef)
-  (span-notef)
-  (span-msg "%s" ci-pkgs-statuses)
-  (span-notef)
-  (cl-loop for q in elpaca--queues
-           do (cl-loop for (_ . e) in (elpaca-q<-elpacas q)
-                       for status = (elpaca--status e)
-                       do (unless (eq status 'finished) (ci-write-failed e))))
-  (kill-emacs
-   (if (and (version<= "29" emacs-version) (alist-get 'failed ci-pkgs-statuses))
-       1 0)))
+  (let ((ci-pkgs-statuses (ci-wait-for-pkgs-build)))
+    (span-dbgf ci-pkgs-statuses)
+    (span-flush-log)
+    (span-notef)
+    (span-notef)
+    (span-notef)
+    (span-notef)
+    (span-notef)
+    (span-msg "%s" ci-pkgs-statuses)
+    (span-notef)
+    (cl-loop for q in elpaca--queues
+             do (cl-loop for (_ . e) in (elpaca-q<-elpacas q)
+                         for status = (elpaca--status e)
+                         do (unless (eq status 'finished) (ci-write-failed e))))
+    (kill-emacs
+     (if (and (version<= "29" emacs-version) (alist-get 'failed ci-pkgs-statuses))
+         1 0))))
 
 (defun ci-load-packages ()
   (while process-queue-thread-exist
@@ -95,6 +96,15 @@
                              level
                              byte-compile-current-file (line-number-at-pos) (current-column)
                              string)))))
+
+(defun ci-byte-compile-core ()
+  (let ((byte-compile-log-warning-function #'ci-emit-bytecomp-warning))
+    (span-with-no-minibuffer-message
+     (dolist (x '("span-fmt.el" "span.el" "alan-utils.el" "alan-elpaca.el"))
+       (byte-compile-file (expand-file-name x alan-dotemacs-dir)))))
+  (kill-emacs
+   (if (and (version<= "29" emacs-version) ci-bytecomp-did-error)
+       1 0)))
 
 (defun ci-byte-compile ()
   ;; TODO: some error seems to be missing (they can be seen in *Async-native-compile-log*)
