@@ -39,6 +39,15 @@
   (general-def alan-comint-output-map
     [remap comint-send-input] #'undefined)
 
+  (general-def comint-mode-map
+    [remap forward-paragraph] #'evil-comint-next-prompt
+    [remap backward-paragraph] #'evil-comint-previous-prompt
+
+    [remap alan-move-up-screen] #'evil-backward-paragraph
+    [remap alan-move-down-screen] #'evil-forward-paragraph
+
+    )
+
   (general-define-key
    :states 'insert
    :keymaps '(comint-mode-map)
@@ -53,9 +62,6 @@
   (general-define-key
    :states 'motion
    :keymaps '(comint-mode-map)
-
-   "<down>" #'evil-comint-next-prompt
-   "<up>" 'evil-comint-previous-prompt
 
    "SPC c" #'comint-interrupt-subjob
    "SPC e" #'comint-send-eof

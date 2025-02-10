@@ -4,6 +4,13 @@
 (require 'evil)
 (require 'evil-visualstar)
 
+(defun alan-move-up-screen ()
+  (interactive)
+  (evil-previous-visual-line (- (window-height) 5)))
+(defun alan-move-down-screen ()
+  (interactive)
+  (evil-next-visual-line (- (window-height) 5)))
+
 (defun alan-kill-current-buffer ()
   (interactive)
   (kill-buffer))

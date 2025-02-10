@@ -88,8 +88,8 @@
   [remap move-beginning-of-line] #'evil-beginning-of-line
   [remap move-end-of-line] #'evil-end-of-line ;;evil-last-non-blank-or-eol
 
-  [remap forward-paragraph] #'evil-forward-paragraph
   [remap backward-paragraph] #'evil-backward-paragraph
+  [remap forward-paragraph] #'evil-forward-paragraph
   )
 
 (general-def
@@ -131,17 +131,19 @@
 
   "<left>" #'evil-backward-word-begin
   "<right>" #'evil-forward-word-end
-  "<down>" #'forward-paragraph
   "<up>" #'backward-paragraph
+  "<down>" #'forward-paragraph
 
   ;; "H" #'move-beginning-of-line
   ;; "L" #'move-end-of-line
   "a h" #'move-beginning-of-line
   "a l" #'move-end-of-line
-  "K" #'evil-jump-backward
 
-  "a k" (lambda () (interactive) (evil-previous-visual-line (- (window-height) 5)))
-  "a j" (lambda () (interactive) (evil-next-visual-line (- (window-height) 5)))
+  "K" #'evil-jump-backward
+  "J" #'evil-jump-forward
+
+  "a k" #'alan-move-up-screen
+  "a j" #'alan-move-down-screen
 
   ;; mode changing
 

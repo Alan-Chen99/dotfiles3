@@ -51,6 +51,7 @@
 (pkg! 'undo-fu-session)
 (pkg! '(format-all :repo "Alan-Chen99/emacs-format-all-the-code"))
 (pkg! 'hydra)
+(pkg! 'compat)
 
 ;; todo: builtin seq is too old, how to deal with this?
 ;; note: seq is already loaded, should we reload it?

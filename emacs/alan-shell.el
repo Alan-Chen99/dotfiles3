@@ -74,6 +74,8 @@
   (add-hook! 'shell-mode-hook
     (defun alan-shell-setup ()
       ;; (setq-local font-lock-fontify-syntactically-function nil)
+      (kill-local-variable 'paragraph-separate)
+      (kill-local-variable 'paragraph-start)
       (when (alan-use-prompt-dirtrack)
         (shell-dirtrack-mode -1))
       )))
