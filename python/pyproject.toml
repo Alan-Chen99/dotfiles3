@@ -46,6 +46,8 @@ pulp = "^2.9.0"
 pygit2 = "^1.17.0"
 PyMuPDF = "^1.25.3"
 sympy = "^1.13.3"
+Pygments = "^2.19.1"
+weasyprint = "==62.3" # sync with nixpkgs due to patch
 
 # misc
 meson = "^1.7.0"

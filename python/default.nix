@@ -90,6 +90,9 @@
           nativeBuildInputs = (old.nativeBuildInputs or []) ++ [final.setuptools];
         });
 
+        weasyprint = assert prev.weasyprint.version == python.pkgs.weasyprint.version;
+          prev.weasyprint.override {preferWheel = false;};
+
         # this is bc defaultPoetryOverrides says poetry = poetry_core
         _poetry = prev.poetry;
       })

@@ -59,7 +59,7 @@
 
 (setq-default backward-delete-char-untabify-method "all")
 
-(modify-syntax-entry (string-to-char "-") "w" (standard-syntax-table))
+;; (modify-syntax-entry (string-to-char "-") "w" (standard-syntax-table))
 (modify-syntax-entry (string-to-char "_") "w" (standard-syntax-table))
 
 ;; those do not account for minibuffer-history-variable being t
