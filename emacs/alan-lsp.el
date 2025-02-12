@@ -63,7 +63,7 @@
 
    lsp-completion-show-detail nil
    lsp-completion-show-kind nil
-   lsp-completion-show-label-description nil
+   ;; lsp-completion-show-label-description nil
    lsp-completion-enable-additional-text-edit nil
    ;; lsp-completion-filter-on-incomplete nil
    lsp-completion-use-last-result nil

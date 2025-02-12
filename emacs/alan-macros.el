@@ -54,11 +54,11 @@
                  ((symbolp sym)   (remove-hook sym ',fn))))
          (unintern ',fn nil))
        (cond ((functionp sym)
-              (advice-add ,hook-or-function ,(if append-p :after :before) #',fn))
+              (advice-add ,hook-or-function ,(if append-p :after :before) ',fn))
              ((symbolp sym)
               ;; TODO: why this?
               ;; (put ',fn 'permanent-local-hook t)
-              (add-hook sym #',fn ,(or depth append-p) ,local-p))))))
+              (add-hook sym ',fn ,(or depth append-p) ,local-p))))))
 
 (defmacro add-hook! (hooks &rest rest)
   "A convenience macro for adding N functions to M hooks.
