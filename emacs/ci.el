@@ -84,36 +84,18 @@
   (while process-queue-thread-exist
     (sit-for 0.1)))
 
-(defvar ci-bytecomp-did-error nil)
-(defun ci-emit-bytecomp-warning (string position &optional _fill level)
-  (when (eq level :error)
-    (setq ci-bytecomp-did-error t))
-  (with-temp-buffer
-    (insert-file-contents byte-compile-current-file)
-    (goto-char position)
-    (let ((standard-output t))
-      (princ (format-message "\n:%s file=%s,line=%s,col=%s::%s\n"
-                             level
-                             byte-compile-current-file (line-number-at-pos) (current-column)
-                             string)))))
-
 (defun ci-byte-compile-core ()
-  (let ((byte-compile-log-warning-function #'ci-emit-bytecomp-warning))
-    (span-with-no-minibuffer-message
-     (dolist (x '("span-fmt.el" "span.el" "alan-utils.el" "alan-elpaca.el"))
-       (byte-compile-file (expand-file-name x alan-dotemacs-dir)))))
-  (kill-emacs
-   (if (and (version<= "29" emacs-version) ci-bytecomp-did-error)
-       1 0)))
+  (let* ((default-directory alan-dotemacs-dir)
+         (did-error
+          (alan-byte-compile-files
+           '("span-fmt.el" "span.el" "alan-macros.el" "alan-utils.el" "alan-utils2.el" "alan-elpaca.el"))))
+    (span-dbgf did-error)
+    (kill-emacs
+     (if (and (version<= "29" emacs-version) did-error)
+         1 0))))
 
 (defun ci-byte-compile ()
-  ;; TODO: some error seems to be missing (they can be seen in *Async-native-compile-log*)
-  (let ((byte-compile-log-warning-function #'ci-emit-bytecomp-warning))
-    (span-with-no-minibuffer-message
-     (byte-recompile-directory alan-dotemacs-dir 0 'force))
-    ;; (with-current-buffer "*Compile-Log*"
-    ;;   (span-msg "%s" (buffer-string)))
-    )
-  (kill-emacs
-   (if (and (version<= "29" emacs-version) ci-bytecomp-did-error)
-       1 0)))
+  (let* ((did-error (alan-byte-compile-dotemacs-dir)))
+    (kill-emacs
+     (if (and (version<= "29" emacs-version) did-error)
+         1 0))))

@@ -83,6 +83,7 @@
 
 (defadvice! alan-elpaca-inject-deps (orig-fun e &optional recache)
   :around #'elpaca--dependencies
+  ;; (span-dbgf debugger debug-on-error inhibit-debugger)
   ;; (span--backtrace)
   (let ((ans (funcall orig-fun e recache)))
     (append (plist-get (cdr-safe (elpaca<-order e)) :alan-extra-deps) ans)))

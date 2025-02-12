@@ -1,8 +1,12 @@
 ;; -*- lexical-binding: t -*-
 
 (require 'alan-core)
+(require 'alan-lsp)
 
 (require-if-is-bytecompile lsp-completion)
+
+(eval-after-load! lsp-eslint
+  (setq lsp-eslint-server-command '("eslint-lsp" "--stdio")))
 
 (add-to-list 'major-mode-remap-alist (cons #'javascript-mode #'typescript-ts-mode))
 (add-to-list 'major-mode-remap-alist (cons #'js-json-mode #'json-ts-mode))
@@ -12,7 +16,9 @@
 
 (defun alan-setup-typescript ()
   (setq-local format-all-formatters '(("TypeScript" prettierd)))
-  (alan-lsp-deferred 'lsp-javascript
+  ;; (alan-lsp-deferred 'lsp-javascript
+  ;; (setq lsp-eslint-server-command '("eslint-lsp" "--stdio"))
+  (alan-lsp-deferred '(lsp-javascript lsp-eslint)
     (lsp-completion-mode)
     (setq-local completion-at-point-functions (list #'lsp-completion-at-point))))
 

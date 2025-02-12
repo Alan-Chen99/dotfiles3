@@ -2,6 +2,7 @@
 
 (require 'alan-core)
 (require 'alan-evil)
+(require 'alan-lsp)
 
 (pkg! 'csharp-mode)
 

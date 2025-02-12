@@ -4,8 +4,6 @@
 
 (cl-assert (= (minibuffer-depth) 0))
 
-(defvar alan-dotemacs-dir nil)
-
 ;; simple async loop
 (defvar async-queue nil)
 (defvar process-queue-thread-exist nil)
@@ -120,33 +118,6 @@
 
 (add-to-list 'debug-ignored-errors 'minibuffer-quit)
 (add-to-list 'debug-ignored-errors 'search-failed)
-
-
-
-
-(make-lazy lsp-deferred-lazy 'lsp-mode 'lsp-deferred)
-
-(defun alan--lsp-deferred (client &optional callback)
-  (unless (local-variable-p 'header-line-format)
-    (setq-local header-line-format ""))
-  (startup-queue-package client 100)
-  (let ((buf (current-buffer)))
-    (alan-eval-after-load client
-      (lambda ()
-        (run-with-idle-timer
-         0.05 nil
-         (lambda ()
-           (when (buffer-live-p buf)
-             (with-current-buffer buf
-               (when (< (buffer-size) 100000)
-                 (lsp-deferred-lazy)
-                 (when callback
-                   (funcall callback)))))))))))
-
-(defmacro alan-lsp-deferred (client &rest body)
-  (declare (indent 1))
-  `(alan--lsp-deferred ,client (lambda () ,@body)))
-
 
 
 (make-lazy tree-sitter-hl-mode-lazy 'tree-sitter 'tree-sitter-hl-mode)

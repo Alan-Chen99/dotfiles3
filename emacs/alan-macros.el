@@ -50,8 +50,8 @@
          ,(format "Transient hook for %S" (doom-unquote hook-or-function))
          ,@forms
          (let ((sym ,hook-or-function))
-           (cond ((functionp sym) (advice-remove sym #',fn))
-                 ((symbolp sym)   (remove-hook sym #',fn))))
+           (cond ((functionp sym) (advice-remove sym ',fn))
+                 ((symbolp sym)   (remove-hook sym ',fn))))
          (unintern ',fn nil))
        (cond ((functionp sym)
               (advice-add ,hook-or-function ,(if append-p :after :before) #',fn))

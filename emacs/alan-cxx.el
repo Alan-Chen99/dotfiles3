@@ -2,6 +2,7 @@
 
 (require 'alan-core)
 (require 'alan-evil)
+(require 'alan-lsp)
 
 (pkg! '(cmake-mode
         :repo ("https://gitlab.kitware.com/cmake/cmake.git" . "cmake")

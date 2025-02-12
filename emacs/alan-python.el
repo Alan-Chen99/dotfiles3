@@ -2,7 +2,7 @@
 
 (require 'alan-core)
 (require 'alan-treesitter)
-
+(require 'alan-lsp)
 (require 'alan-format-all)
 
 (pkg! 'lsp-pyright)

@@ -7,6 +7,8 @@
 (require 'alan-utils)
 (require 'alan-elpaca)
 
+(defvar alan-dotemacs-dir nil)
+
 (defun alan-eval-after-load (file form)
   (declare (indent 1))
   (eval-after-load file
@@ -156,5 +158,54 @@
            (let ((debug-on-quit nil))
              (signal 'quit nil)))))))
 
+
+(defun alan-byte-compile-make-prog (file)
+  `(let ((gc-cons-percentage 1.0)
+         (load-path ',load-path)
+         (load-prefer-newer t)
+         (default-directory ',default-directory)
+         bytecomp-did-fail)
+
+     (setq-default
+      byte-compile-log-warning-function
+      (lambda (string position &optional fill level)
+        (when (eq level :error)
+          (setq bytecomp-did-fail t))
+        (with-temp-buffer
+          (insert-file-contents byte-compile-current-file)
+          (goto-char position)
+          (message "\n:%s file=%s,line=%s,col=%s::%s\n"
+                   level
+                   byte-compile-current-file (line-number-at-pos) (current-column)
+                   string))))
+
+     (require 'bytecomp)
+     (message "compiling: %s" ',file)
+     (byte-compile-file ',file)
+     (kill-emacs (if bytecomp-did-fail 1 0))))
+
+;; (alan-byte-compile-one "/home/alan/dotfiles_new/emacs/alan-cxx.el")
+(defun alan-byte-compile-one (file)
+  (cl-assert (file-exists-p file))
+  (cl-destructuring-bind (exitcode stdout stderr)
+      (elpaca-process-call (elpaca--emacs-path) "--batch" "--eval"
+                           (let ((print-escape-newlines t) (print-level nil) (print-circle nil))
+                             (prin1-to-string (alan-byte-compile-make-prog file))))
+    (when stdout
+      (message "%s" stdout))
+    (when stderr
+      (message "%s" stderr))
+    exitcode))
+
+(defun alan-byte-compile-files (files)
+  (let (bytecomp-did-fail)
+    (dolist (file files)
+      (let ((exitcode (alan-byte-compile-one file)))
+        (setq bytecomp-did-fail (or bytecomp-did-fail (not (= exitcode 0))))))
+    bytecomp-did-fail))
+
+(defun alan-byte-compile-dotemacs-dir ()
+  (alan-byte-compile-files
+   (directory-files alan-dotemacs-dir t (rx ".el" eos))))
 
 (provide 'alan-utils2)

@@ -1,6 +1,7 @@
 ;; -*- lexical-binding: t -*-
 
 (require 'alan-core)
+(require 'alan-lsp)
 
 (pkg! 'lsp-scheme)
 

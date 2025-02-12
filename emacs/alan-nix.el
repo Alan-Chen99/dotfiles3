@@ -1,6 +1,7 @@
 ;; -*- lexical-binding: t -*-
 
 (require 'alan-core)
+(require 'alan-lsp)
 
 (pkg! 'nix-ts-mode
   (add-to-list 'auto-mode-alist '("\\.nix\\'" . nix-ts-mode)))
@@ -86,8 +87,8 @@
       :major-modes '(nix-ts-mode)
       :initialized-fn (lambda (workspace)
                         (with-lsp-workspace workspace
-                          (lsp--set-configuration
-                           (lsp-configuration-section "nixd"))))
+                                            (lsp--set-configuration
+                                             (lsp-configuration-section "nixd"))))
       :synchronize-sections '("nixd")
       :server-id 'nix-nixd)))
 

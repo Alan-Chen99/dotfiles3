@@ -2,6 +2,7 @@
 
 (require 'alan-core)
 (require 'alan-format-all)
+(require 'alan-lsp)
 
 (pkg! '(boogie-friends
         :repo "https://github.com/Alan-Chen99/boogie-friends.git"))

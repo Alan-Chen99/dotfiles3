@@ -2,6 +2,7 @@
 
 (require 'alan-core)
 (require 'alan-evil)
+(require 'alan-lsp)
 
 (require-if-is-bytecompile outline)
 (pkg! 'auctex)

@@ -110,4 +110,33 @@
       ;; :error-list-face face
       )))
 
+(defun alan--lsp-deferred (clients &optional callback)
+  (unless (local-variable-p 'header-line-format)
+    (setq-local header-line-format ""))
+  (when (symbolp clients)
+    (setq clients (list clients)))
+  (dolist (c clients)
+    (startup-queue-package c 100))
+  (let ((buf (current-buffer))
+        (count 0))
+    (dolist (c clients)
+      (alan-eval-after-load c
+        (lambda ()
+          (cl-incf count)
+          (when (length= clients count)
+            (run-with-idle-timer
+             0.05 nil
+             (lambda ()
+               (when (buffer-live-p buf)
+                 (with-current-buffer buf
+                   (when (< (buffer-size) 100000)
+                     (lsp-deferred)
+                     (when callback
+                       (funcall callback)))))))))))))
+
+(defmacro alan-lsp-deferred (client &rest body)
+  (declare (indent 1))
+  `(alan--lsp-deferred ,client (lambda () ,@body)))
+
+
 (provide 'alan-lsp)
