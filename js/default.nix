@@ -40,6 +40,8 @@
 
     publishBinsFor = [
       "@fsouza/prettierd"
+      "eslint"
+      "eslint-lsp"
       "prettier"
       "ts-node"
       "tsx"

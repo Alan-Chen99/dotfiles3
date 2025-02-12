@@ -6,6 +6,8 @@
   "dependencies": {
     "@fsouza/prettierd": "^0.26.0",
     "basedpyright": "^1.24.0",
+    "eslint": "^9.20.1",
+    "eslint-lsp": "^0.1.2",
     "prettier": "^3.4.2",
     "pyright": "^1.1.393",
     "scmindent": "^1.0.4",

@@ -48,7 +48,7 @@
                 (26373 65472) :url
                 "https://github.com/gilbertw1/better-jumper")
  (boogie-friends :source "MELPA" :recipe
-                 (:ref "e4ffb45641fcefd0a0c0a89071060b842a656369"
+                 (:ref "bd12c6cf162fa4d90aa2a2b8dcd4b45049830bfd"
                        :package "boogie-friends" :fetcher github :repo
                        "boogie-org/boogie-friends" :files
                        ("emacs/*.el" "emacs/etc"))
@@ -642,6 +642,10 @@
                      "*-tests.el" "LICENSE" "README*" "*-pkg.el")))
     :description "The long lost Emacs string manipulation library"
     :date (25361 32704) :url "https://github.com/magnars/s.el")
+ (sclang :recipe
+         (:ref "d8296a9af54d145703726328e22b9e89a08476af" :package
+               "sclang")
+         :source "Init file")
  (seq :source "GNU ELPA" :url "https://elpa.gnu.org/packages/seq.html"
       :description "Sequence manipulation functions" :recipe
       (:ref "27a90793a13f149121180e864fa53d68b9eac0b3" :package "seq"

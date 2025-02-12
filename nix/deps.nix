@@ -114,6 +114,7 @@
     nix = flakes.nix.packages.${system}.default.overrideAttrs {allowSubstitutes = true;};
     nix-stable = pkgs.nix;
     nixd = flakes.nixd.packages.${system}.default;
+    nix-gl = flakes.nix-gl.packages.${system}.default;
 
     mcc-env = (pkgs.callPackage mini-compile-commands {}).wrap self.std.stdenv;
     mcc-hook = (pkgs.callPackage mini-compile-commands {}).hook;

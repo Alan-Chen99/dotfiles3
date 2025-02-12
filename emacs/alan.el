@@ -122,6 +122,8 @@
     [remap evil-ret] #'archive-view))
 
 
+(require-noerr 'alan-experimental)
+
 ;; (alan-set-ignore-debug-on-quit #'flyspell-emacs-popup)
 ;; (alan-set-ignore-debug-on-quit #'flyspell-popup-correct)
 
