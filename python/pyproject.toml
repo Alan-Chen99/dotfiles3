@@ -47,7 +47,17 @@ pygit2 = "^1.17.0"
 PyMuPDF = "^1.25.3"
 sympy = "^1.13.3"
 Pygments = "^2.19.1"
-weasyprint = "==62.3" # sync with nixpkgs due to patch
+# sync with nixpkgs due to patch
+weasyprint = "==62.3"
+python-magic = "^0.4.27"
+uncompyle6 = "^3.9.2"
+decompyle3 = "^3.9.2"
+xdis = { git = "https://github.com/rocky/python-xdis.git" }
+# https://github.com/extremecoders-re/pyinstxtractor
+
+# FIXME 2/12/2025: latest does not build, these are from poetry2nix tests
+pyqt6 = "==6.5.2"
+pyqt6-qt6 = "==6.5.2"
 
 # misc
 meson = "^1.7.0"

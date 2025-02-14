@@ -82,6 +82,9 @@
             };
         };
 
+        # qt6 = prev.qt6.override {preferWheel = false;};
+        pyqt6-qt6 = prev.pyqt6-qt6.override {preferWheel = false;};
+
         nixpkgs = prev.nixpkgs.overridePythonAttrs (old: {
           propagatedBuildInputs = (old.propagatedBuildInputs or []) ++ [final.pythonix final.ninja];
         });
@@ -127,7 +130,6 @@
     inherit
       (poetrypython.pkgs)
       _poetry
-      pip
       ipython
       black
       isort

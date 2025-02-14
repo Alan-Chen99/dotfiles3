@@ -63,6 +63,11 @@
     ];
     SSL_CERT_FILE = "${legacypkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
     # FONTCONFIG_FILE = "$HOME/.nix-profile/etc/fonts/fonts.conf";
+
+    XCURSOR_PATH = [
+      "$HOME/.nix-profile/share/icons"
+      "$XCURSOR_PATH"
+    ];
   };
 
   profile-text = let
@@ -139,12 +144,14 @@
   pkgs-small_ = {
     inherit
       (legacypkgs)
+      adwaita-icon-theme
       cachix
       cmake
       cmake-format
       dockfmt
       ffmpeg
       git-lfs
+      gnome-icon-theme
       graphviz
       html-tidy
       hyperfine

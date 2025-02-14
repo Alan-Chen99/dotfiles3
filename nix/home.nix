@@ -34,7 +34,7 @@
       (
         {
           config,
-          pkgs,
+          _pkgs,
           ...
         }: {
           # Home Manager needs a bit of information about you and the paths it should
@@ -100,6 +100,51 @@
 
           # Let Home Manager install and manage itself.
           # programs.home-manager.enable = true;
+
+          gtk = {
+            enable = true;
+
+            # iconTheme = {
+            #   name = "Adwaita";
+            #   # package = pkgs.papirus-icon-theme;
+            # };
+
+            # font = {
+            #   name = "Hack Nerd Font";
+            #   size = 14;
+            # };
+
+            # theme = {
+            #   name = "palenight";
+            #   package = pkgs.palenight-theme;
+            # };
+
+            # cursorTheme = {
+            #   # name = "Hackneyed";
+            #   name = "Adwaita";
+            #   # package = legacypkgs.numix-cursor-theme;
+            # };
+          };
+
+          # dconf dump /
+          # gsettings list-recursively
+          dconf.settings = {
+            # "org/gnome/shell" = {
+            # };
+            "org/gnome/desktop/interface" = {
+              cursor-theme = "Adwaita";
+              # cursor-theme = "Hackneyed";
+
+              document-font-name = "Cantarell 14";
+              font-name = "Cantarell 14";
+              monospace-font-name = "Hack Nerd Font 20";
+            };
+            # TODO: dont work
+            "org/gnome/desktop/wm/preferences" = {
+              titlebar-font = "Cantarell Bold 10";
+              titlebar-uses-system-font = false;
+            };
+          };
         }
       )
     ];
