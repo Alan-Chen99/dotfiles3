@@ -74,7 +74,6 @@
           deps
           emacs
           fonts
-          # home-manager-bin-wrapped
           legacypkgs
           lib
           nixconf-file
@@ -89,6 +88,7 @@
           source-ver
           src
           std
+          yaru-theme
           ;
         flakes-self = flakes.self;
         super = self;
@@ -132,6 +132,10 @@
       pyright
       scmindent
       ;
+  }));
+
+  mod.misc = callpackage ./misc.nix {} (reexport (prev: {
+    inherit (prev) yaru-theme;
   }));
 
   mod.nixtools = callpackage ./nixtools.nix {} (reexport (prev: {

@@ -138,5 +138,11 @@
   (declare (indent 1))
   `(alan--lsp-deferred ,client (lambda () ,@body)))
 
+(defadvice! lsp--send-request-async--donot-err-unsupported (fn body &rest args)
+  :around #'lsp--send-request-async
+  (if (lsp--find-workspaces-for body)
+      (apply fn body args)
+    (let ((debug-on-error nil))
+      (apply fn body args))))
 
 (provide 'alan-lsp)

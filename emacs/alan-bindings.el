@@ -10,14 +10,15 @@
  magit
  vertico
 
- alan-theme
- alan-minibuffer
- alan-font
  alan-commands
  alan-consult
+ alan-elisp
+ alan-font
+ alan-gpt
  alan-iflipb
-
- alan-elisp)
+ alan-minibuffer
+ alan-theme
+ )
 
 (general-def
   "C-," #'help-command
@@ -209,7 +210,8 @@
 
   "g e" #'flycheck-list-errors
 
-  "a s" #'shell
+  "a d" #'shell-this-remote
+  "a g" #'gpt
 
   "S-SPC" #'embark-act
 

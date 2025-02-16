@@ -43,6 +43,7 @@
       bash
       cmake
       cpp
+      css
       dockerfile
       json
       latex

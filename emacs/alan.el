@@ -467,8 +467,8 @@
 ;; (setq lsp-completion--no-reordering t)
 
 ;; (span-instrument pgtk-get-selection-internal)
-(span-instrument TeX-revert-document-buffer)
-(span-instrument revert-buffer-insert-file-contents--default-function)
+;; (span-instrument TeX-revert-document-buffer)
+;; (span-instrument revert-buffer-insert-file-contents--default-function)
 ;; (setq file-notify-debug t)
 
 ;; (span-instrument transient-init-value)

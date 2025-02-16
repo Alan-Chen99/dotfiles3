@@ -10,6 +10,7 @@
 
 (add-to-list 'major-mode-remap-alist (cons #'javascript-mode #'typescript-ts-mode))
 (add-to-list 'major-mode-remap-alist (cons #'js-json-mode #'json-ts-mode))
+(add-to-list 'major-mode-remap-alist (cons #'css-mode #'css-ts-mode))
 
 (add-to-list 'auto-mode-alist '("\\.ts\\'" . typescript-ts-mode))
 (add-to-list 'auto-mode-alist '("\\.tsx\\'" . tsx-ts-mode))
@@ -29,6 +30,10 @@
 (add-hook! 'json-ts-mode-hook
   (defun alan-setup-json ()
     (setq-local format-all-formatters '(("JSON" prettierd)))))
+
+(add-hook! 'css-ts-mode-hook
+  (defun alan-setup-css ()
+    (setq-local format-all-formatters '(("CSS" prettierd)))))
 
 (eval-after-load! typescript-ts-mode
   (seq-doseq (p "_#")

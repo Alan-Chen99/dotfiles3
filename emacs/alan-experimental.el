@@ -7,6 +7,8 @@
                :files ("el/*.el")
                ))
 
+(require-if-is-bytecompile format-all)
+
 (eval-after-load! image-mode
   (clear-and-backup-keymap image-mode-map))
 
@@ -24,5 +26,13 @@
 
 (alan-donot-debug-foreground #'current-kill)
 (alan-donot-debug-foreground #'revert-buffer)
+(alan-donot-debug-foreground #'format-all--prompt-for-formatter)
+
+(defadvice! previous-matching-history-element--check-nohist (fn regexp n)
+  :around #'previous-matching-history-element
+  (let ((history (minibuffer-history-value)))
+    (if (eq history t)
+        (user-error "no history")
+      (funcall fn regexp n))))
 
 (provide 'alan-experimental)

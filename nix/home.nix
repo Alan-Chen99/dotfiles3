@@ -131,8 +131,13 @@
           dconf.settings = {
             # "org/gnome/shell" = {
             # };
-            "org/gnome/desktop/interface" = {
-              cursor-theme = "Adwaita";
+            "org/gnome/desktop/interface" = let
+              theme = "Yaru";
+            in {
+              gtk-theme = theme;
+              icon-theme = theme;
+              cursor-theme = theme;
+              # cursor-theme = "Adwaita";
               # cursor-theme = "Hackneyed";
 
               document-font-name = "Cantarell 14";

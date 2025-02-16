@@ -126,6 +126,12 @@
 ;;   (let ((non-essential t))
 ;;     (apply fn args))))
 
+(defadvice! company-call-backend-raw--donot-wrap (&rest args)
+  :override #'company-call-backend-raw
+  (if (functionp company-backend)
+      (apply company-backend args)
+    (apply #'company--multi-backend-adapter company-backend args)))
+
 (eval-after-load! company-dabbrev
   (setq company-dabbrev-ignore-case t)
   (setq company-dabbrev-downcase nil))

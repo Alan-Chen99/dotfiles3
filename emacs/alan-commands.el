@@ -301,14 +301,14 @@
     (kill-new v)))
 
 ;; (defalias 'sh 'shell)
-(cl-defun sh ()
+(cl-defun shell-this-remote ()
   (interactive)
   (let ((remote (file-remote-p default-directory)))
     (dolist (b (append (bound-and-true-p my-iflipb-buffer-list) (buffer-list)))
       (when (and (eq (buffer-local-value 'major-mode b) 'shell-mode)
                  (equal (file-remote-p (buffer-local-value 'default-directory b)) remote))
         (shell b)
-        (cl-return-from sh))))
+        (cl-return-from shell-this-remote))))
   (shell (generate-new-buffer-name "*shell*")))
 
 (defun shn ()

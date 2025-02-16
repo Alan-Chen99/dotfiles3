@@ -34,6 +34,7 @@
   tree-sitter,
   tzdata,
   which,
+  yaru-theme,
 }: rec {
   # TODO: add indirect deps, possibly from lock file, to prevent them from being garbage collected
   cmds-attrs = builtins.mapAttrs (name: val: "ln -s ${val} ${name}") (removeAttrs flakes ["self" "nixpkgs-lib"]);
@@ -142,9 +143,12 @@
   };
 
   pkgs-small_ = {
+    # yaru-theme = yaru-theme;
+
     inherit
       (legacypkgs)
-      adwaita-icon-theme
+      yaru-theme
+      # adwaita-icon-theme
       cachix
       cmake
       cmake-format

@@ -57,7 +57,7 @@
    "RET" #'comint-send-input
    )
 
-  (setf (get 'comint-send-input 'company-abort) t)
+  (setf (get #'comint-send-input 'company-abort) t)
 
   (general-define-key
    :states 'motion

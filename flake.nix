@@ -5,6 +5,17 @@
   # cachix use cuda-maintainers
 
   inputs = {
+    # newadwaita-slim = {
+    #   # url = "git+https://github.com/ManFridayy/NewAdwaita-slim.git";
+    #   url = "https://github.com/ManFridayy/NewAdwaita-slim/releases/download/0.1/NewAdwaita-slim.tar.xz";
+    #   flake = false;
+    # };
+
+    # yaru = {
+    #   url = "git+file:///home/alan/yaru";
+    #   flake = false;
+    # };
+
     crane = {
       url = "github:ipetkov/crane";
     };
@@ -218,6 +229,7 @@
                 scmindent
                 test
                 test2
+                yaru-theme
                 ;
 
               nix-stable = prev.deps.nix-stable;
