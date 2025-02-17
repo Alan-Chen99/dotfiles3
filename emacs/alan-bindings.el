@@ -410,7 +410,7 @@
   "S-0" "0")
 
 (general-def evil-outer-text-objects-map
-  "l" #'evil-a-line
+  ;; "l" #'evil-a-line
   "e" #'evil-entire-entire-buffer)
 
 (general-def evil-inner-text-objects-map

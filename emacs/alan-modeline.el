@@ -116,8 +116,10 @@
 
 (modeline-defface modeline-selection-info :weight bold)
 
+;; (get 'mode-line 'face-defface-spec)
+;; (get 'mode-line 'face-override-spec)
+;; (get 'mode-line 'theme-face)
 
-(face-spec-set 'mode-line '((t :box unspecified :foreground unspecified)))
 (face-spec-set 'mode-line-active '((t :box unspecified :foreground unspecified)))
 (face-spec-set 'mode-line-inactive '((t :box unspecified :foreground unspecified)))
 
@@ -132,9 +134,11 @@
      'mode-line
      (alan-map-spec-from-face-for 'mode-line-buffer-id
        (lambda (p)
-         (unless (plist-get p :distant-foreground)
-           (when (plist-get p :foreground)
-             `(:distant-foreground ,(plist-get p :foreground)))))))))
+         (let ((ans '(:box unspecified :foreground unspecified)))
+           (unless (plist-get p :distant-foreground)
+             (when (plist-get p :foreground)
+               (setf (plist-get ans :distant-foreground) (plist-get p :foreground))))
+           ans))))))
 
 (modeline-set-faces-spec)
 

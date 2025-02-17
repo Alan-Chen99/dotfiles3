@@ -208,13 +208,7 @@
 
 ;; (pkg! 'atom-one-dark-theme)
 
-;; ;; (use-package solarized-theme)
-
-;; ;; (use-package sublime-themes)
-
-;; ;; (use-package github-theme)
-
-;; ;; (use-package kaolin-themes)
+(pkg! 'modus-themes)
 
 (face-spec-set 'font-lock-operator-face '((t :weight bold)))
 (face-spec-set 'font-lock-bracket-face '((t :weight bold)))
@@ -224,27 +218,37 @@
 (setq-default face-near-same-color-threshold 30000)
 ;; (clear-face-cache)
 
+(defun alan-normalize-facespec-attrs (attrs)
+  ;; see `face-spec-choose'
+  (if (null (cdr attrs)) ;; was (listp (car attrs))
+	  ;; Old-style entry, the attribute list is the
+	  ;; first element.
+	  (car attrs)
+	attrs))
+
 (defun alan-map-spec-from-face-for (face fn)
   (declare (indent 1))
   ;; see `face-spec-choose' and `face-spec-recalc'
-  (let ((default-spec (cadar (get 'default 'theme-face))))
+  (let* ((default-spec (cadar (get 'default 'theme-face)))
+         (face-spec (copy-alist (cadar (get face 'theme-face)))))
+    (setf (alist-get t face-spec) (alist-get t face-spec))
     (mapcar
      (lambda (entry)
        (let* ((display (car entry))
-	          (attrs (cdr entry))
-              (default-attrs (alist-get display default-spec nil nil #'equal))
-              ans-attrs
+	          (attrs
+               (alan-normalize-facespec-attrs (cdr entry)))
+              (default-attrs
+               (alan-normalize-facespec-attrs
+                (alist-get display default-spec nil nil #'equal)))
+              (ans-attrs (copy-sequence default-attrs))
               key val)
-	     (setq attrs (if (null (cdr attrs)) (car attrs) attrs))
-	     (setq default-attrs (if (null (cdr default-attrs)) (car default-attrs) default-attrs))
-
-         (setq ans-attrs (copy-sequence default-attrs))
          (while attrs
            (setq key (pop attrs))
            (setq val (pop attrs))
-           (plist-put ans-attrs key val))
+           (setf (plist-get ans-attrs key) val))
          (cons display (funcall fn ans-attrs))))
-     (cadar (get face 'theme-face)))))
+     face-spec)))
+
 
 (add-hook! 'after-load-theme-hook
   (defun set-standard-faces-spec ()
@@ -256,14 +260,16 @@
      (alan-map-spec-from-face-for 'default
        (lambda (p)
          (unless (plist-get p :distant-foreground)
-           `(:distant-foreground ,(plist-get p :foreground))))))
+           (when (plist-get p :foreground)
+             `(:distant-foreground ,(plist-get p :foreground)))))))
 
     ;; make vertical-border always same color
     (face-spec-set
      'vertical-border
      (alan-map-spec-from-face-for 'vertical-border
        (lambda (p)
-         `(:distant-foreground ,(plist-get p :foreground)))))
+         (when (plist-get p :foreground)
+           `(:distant-foreground ,(plist-get p :foreground))))))
 
     ))
 

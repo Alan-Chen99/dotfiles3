@@ -117,7 +117,7 @@
   :around #'company-post-command
   (when (ignore-errors (get this-command 'company-abort))
     (company-abort))
-  (span :company-post-command
+  (span (:company-post-command "%S %S" (buffer-name (current-buffer)) (point))
     (alan-with-demoted-errors
      (funcall fn))))
 
