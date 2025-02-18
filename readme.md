@@ -87,7 +87,7 @@ nix profile install .#emacs
 nix profile install .#less-build.emacs
 
 cd ~
-ln -s dotfiles/emacs/.emacs ~/.emacs
+ln -s $(pwd)/emacs/.emacs ~/.emacs
 ln -s ../dotfiles/emacs/early-init.el ~/.emacs.d/early-init.el
 
 (byte-recompile-directory alan-dotemacs-dir 0 'force)

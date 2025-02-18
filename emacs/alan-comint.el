@@ -85,12 +85,11 @@
 (advice-add #'comint-output-filter :override 'alan-comint-output-filter)
 (defun alan-comint-output-filter (process string)
   (span :alan-comint-output-filter
+    ;; (span-notef "raw output:\n%s" string)
     (let ((oprocbuf (process-buffer process)))
       ;; First check for killed buffer or no input.
       (when (and string oprocbuf (buffer-name oprocbuf))
         (with-current-buffer oprocbuf
-
-          ;; (span-notef "alan-comint-output-filter: %s" (length string))
 
           (setq-local buffer-undo-list nil)
 
@@ -108,7 +107,11 @@
 
 	      (let ((inhibit-read-only t)
                 (buffer-undo-list t)
-                (saved-point (copy-marker (point) t)))
+                (saved-point
+                 (if (<= (process-mark process) (point))
+                     (copy-marker (point) t)
+                   (point))))
+
 	        (save-restriction
 	          (widen)
 
@@ -136,16 +139,96 @@
 
 	          (run-hook-with-args 'comint-output-filter-functions string)
 
+              (let ((pm (point-marker)))
+                (setq comint-last-prompt (cons pm pm)))
+
               (goto-char saved-point))))))))
 
-(defadvice! comint-send-input-advice (&rest _args)
-  :after #'comint-send-input
-  (add-text-properties
-   comint-last-input-start comint-last-input-end
-   '(
-     read-only t
-     front-sticky (read-only)
-     rear-nonsticky (read-only))))
+(advice-add #'comint-exec-1 :around #'alan-comint-exec-1)
+(defun alan-comint-exec-1 (fn name buffer command switches)
+  ;; see `term-exec-1'
+  ;; (span-dbgf :alan-comint-exec-1 name buffer command switches)
+
+  ;; (funcall fn name buffer command switches)
+  (let* ((proc (funcall
+                fn name buffer
+                "bash"
+                `("-c"
+                  "stty echo; exec \"$@\""
+                  ;; "stty echo onlcr; exec \"$@\""
+                  ".."
+                  ,command ,@switches)))
+         ;; (code (call-process "stty" nil nil nil "-F" (process-tty-name proc) "echo"))
+         )
+    ;; (unless (= code 0)
+    ;;   (error "stty failed"))
+    proc)
+  )
+
+(defun alan-comint-mark-prompt ()
+  (with-silent-modifications
+    (add-text-properties
+     (pos-bol) (point)
+     '(field prompt))))
+
+(advice-add #'comint-send-input :override #'alan-comint-send-input)
+(defun alan-comint-send-input (&optional no-newline artificial)
+  (interactive nil comint-mode)
+  (ignore artificial)
+
+  (when completion-in-region-mode
+    (completion-in-region-mode -1))
+
+  ;; Note that the input string does not include its terminal newline.
+  (let ((proc (get-buffer-process (current-buffer))))
+    (if (not proc) (user-error "Current buffer has no process")
+      (widen)
+      (let* ((pmark (process-mark proc))
+             (intxt (if (>= (point) (marker-position pmark))
+                        (progn (if comint-eol-on-send
+				                   (goto-char (field-end)))
+                               (buffer-substring pmark (point)))
+                      (user-error "not in input"))))
+
+        (let ((inhibit-read-only t))
+          (delete-region pmark (point)))
+
+        (comint-add-to-input-history intxt)
+
+        (alan-comint-mark-prompt)
+
+        (run-hook-with-args 'comint-input-filter-functions
+                            (if no-newline intxt
+                              (concat intxt "\n")))
+
+        (comint-snapshot-last-prompt)
+
+        (setq comint-save-input-ring-index comint-input-ring-index)
+        (setq comint-input-ring-index nil)
+
+        ;; Update the markers before we send the input
+        ;; in case we get output amidst sending the input.
+        (set-marker comint-last-input-start pmark)
+        (set-marker comint-last-input-end (point))
+        (set-marker pmark (point))
+        ;; clear the "accumulation" marker
+        (set-marker comint-accum-marker nil)
+        (let ((comint-input-sender-no-newline no-newline))
+          (funcall comint-input-sender proc intxt))
+
+        ;; This used to call comint-output-filter-functions,
+        ;; but that scrolled the buffer in undesirable ways.
+        (set-marker comint-last-output-start pmark)
+        (run-hook-with-args 'comint-output-filter-functions "")))))
+
+;; (defadvice! comint-send-input-advice (&rest _args)
+;;   :after #'comint-send-input
+;;   (add-text-properties
+;;    comint-last-input-start comint-last-input-end
+;;    '(
+;;      read-only t
+;;      front-sticky (read-only)
+;;      rear-nonsticky (read-only))))
 
 (defun comint-clear-buffer-no-undo ()
   (interactive)
@@ -159,6 +242,29 @@
 ;; make shell not print control c on kill
 (advice-add #'comint-skip-input :override #'ignore)
 
+(advice-add #'comint-next-prompt :override #'alan-comint-next-prompt)
+(defun alan-comint-next-prompt (n)
+  (interactive "^p" comint-mode)
+  (let ((pos (point))
+	    (input-pos nil)
+	    prev-pos)
+    (while (/= n 0)
+	  (setq prev-pos pos)
+	  (setq pos
+	        (if (> n 0)
+		        (next-single-char-property-change pos 'field)
+		      (previous-single-char-property-change pos 'field)))
+	  (cond ((= pos prev-pos)
+	         (when (> n 0)
+		       (setq input-pos (point-max)))
+	         (setq n 0))
+	        ((eq (get-char-property pos 'field) 'output)
+	         (setq n (if (< n 0) (1+ n) (1- n)))
+	         (setq input-pos pos))))
+    (when input-pos
+	  (goto-char input-pos))))
+
+
 (evil-define-motion evil-comint-next-prompt (count)
   :jump t
   :type exclusive
@@ -167,7 +273,6 @@
   :jump t
   :type exclusive
   (comint-previous-prompt (or count 1)))
-
 
 
 ;; disable wrapping of comint-next-input and comint-previous-input
@@ -191,6 +296,8 @@
     (when (fboundp 'company-mode)
       (company-mode +1))
     (setq-local company-idle-delay nil)
+
+    (kill-local-variable 'indent-line-function)
 
     ;; (when (file-remote-p default-directory)
     ;;   ;; (setq-local shell-dirtrackp nil)

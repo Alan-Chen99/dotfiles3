@@ -1,6 +1,7 @@
 ;; -*- lexical-binding: t -*-
 
 (require 'alan-core)
+(require 'alan-comint)
 
 (require-if-is-bytecompile comint)
 
@@ -50,7 +51,8 @@
          ans alan-bash-fns-env-vars
          (list
           ;; TODO: append instead
-          "PROMPT_COMMAND=vterm_prompt_command")))
+          "PROMPT_COMMAND=vterm_prompt_command"
+          "INSIDE_EMACS=")))
     (funcall fn)))
 
 
@@ -58,7 +60,8 @@
   ;; https://emacs.stackexchange.com/questions/62418/how-to-change-tramp-default-remote-shell-or-any-of-its-descendants
   ;; TODO: tramp?
   (unless (eq system-type 'windows-nt)
-    (setq explicit-shell-file-name "/bin/bash"))
+    (setq explicit-shell-file-name "/bin/bash")
+    (setq explicit-bash-args '("-i")))
 
   (setq-default shell-font-lock-keywords nil)
   ;; (setq-default company-global-modes '(not shell-mode))
@@ -87,6 +90,7 @@
         (cmd (substring text 1)))
     ;; (span-dbgf subcmd cmd)
     (when (= subcmd (eval-when-compile (string-to-char "A")))
+      (alan-comint-mark-prompt)
       (let ((remote (file-remote-p default-directory)))
         (if remote
             (setq default-directory

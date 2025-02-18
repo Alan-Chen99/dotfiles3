@@ -7,7 +7,7 @@
                :files ("el/*.el")
                ))
 
-(require-if-is-bytecompile format-all arc-mode sclang)
+(require-if-is-bytecompile format-all arc-mode comint python)
 
 (eval-after-load! image-mode
   (clear-and-backup-keymap image-mode-map))
@@ -27,6 +27,7 @@
 (alan-donot-debug-foreground #'current-kill)
 (alan-donot-debug-foreground #'revert-buffer)
 (alan-donot-debug-foreground #'format-all--prompt-for-formatter)
+(alan-donot-debug-foreground #'elisp--local-variables)
 
 (defadvice! previous-matching-history-element--check-nohist (fn regexp n)
   :around #'previous-matching-history-element
@@ -45,12 +46,22 @@
 ;; (span-instrument sclang-process-filter)
 ;; (span-instrument sclang-eval-string)
 
-(span-wrap sclang-eval-string (string &optional print-p)
-  (:sclang-eval-string "%s" (if print-p "print" ""))
-  (span-notef "string:\n%s" (:unsafe  string)))
+;; (span-wrap sclang-eval-string (string &optional print-p)
+;;   (:sclang-eval-string "%s" (if print-p "print" ""))
+;;   (span-notef "string:\n%s" (:unsafe  string)))
 
 (add-hook! 'sclang-mode-hook
   (defun alan-setup-sclang ()
     (kill-local-variable 'mode-line-format)))
+
+(span-instrument comint-send-string)
+(span-instrument comint-send-region)
+(span-instrument process-send-string)
+(span-instrument comint-redirect-filter)
+
+(span-instrument python-shell-completion-native-turn-on-maybe)
+(span-instrument python-shell-completion-native-setup)
+(span-instrument python-shell-completion-native-try)
+(span-instrument python-shell-accept-process-output)
 
 (provide 'alan-experimental)
