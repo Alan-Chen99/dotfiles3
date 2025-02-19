@@ -54,14 +54,14 @@
   (defun alan-setup-sclang ()
     (kill-local-variable 'mode-line-format)))
 
-(span-instrument comint-send-string)
-(span-instrument comint-send-region)
-(span-instrument process-send-string)
-(span-instrument comint-redirect-filter)
+;; (span-instrument comint-send-string)
+;; (span-instrument comint-send-region)
+;; (span-instrument process-send-string)
+;; (span-instrument comint-redirect-filter)
 
-(span-instrument python-shell-completion-native-turn-on-maybe)
-(span-instrument python-shell-completion-native-setup)
-(span-instrument python-shell-completion-native-try)
-(span-instrument python-shell-accept-process-output)
+;; (span-instrument python-shell-completion-native-turn-on-maybe)
+;; (span-instrument python-shell-completion-native-setup)
+;; (span-instrument python-shell-completion-native-try)
+;; (span-instrument python-shell-accept-process-output)
 
 (provide 'alan-experimental)

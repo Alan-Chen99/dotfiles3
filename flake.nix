@@ -235,6 +235,10 @@
               nix-stable = prev.deps.nix-stable;
               python = prev.poetrypython.python;
 
+              # https://nixos.wiki/wiki/DotNET
+              # on update:
+              # (1) nix build .#dafny.fetch-deps
+              # (2) edit out localtion to dafny_deps.json
               dafny =
                 (final.legacypkgs.dafny.override (prev_: {
                   buildDotnetModule = args:
@@ -245,6 +249,7 @@
                 }))
                 .overrideAttrs {
                   src = inputs.dafny;
+                  nugetDeps = ./dafny_deps.json;
                 };
 
               # poetry2nix/tests/pyqt6/default.nix
