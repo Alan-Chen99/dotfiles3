@@ -15,6 +15,10 @@
     #   url = "git+file:///home/alan/yaru";
     #   flake = false;
     # };
+    basedpyright = {
+      url = "git+https://github.com/DetachHead/basedpyright.git";
+      flake = false;
+    };
 
     crane = {
       url = "github:ipetkov/crane";
@@ -114,7 +118,8 @@
 
     nix-ros-overlay = {
       url = "github:lopsided98/nix-ros-overlay/master";
-      inputs.nixpkgs.follows = "empty";
+      # inputs.nixpkgs.follows = "empty";
+      inputs.nixpkgs.follows = "nixpkgs";
       inputs.flake-utils.follows = "flake-utils";
     };
 

@@ -70,6 +70,12 @@ jobs:
           drv: .#js
           CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
 
+      - if: success() || failure()
+        uses: ./.github/actions/build_nix
+        with:
+          drv: .#p.rosPackages.humble.rclpy
+          CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
+
   emacs:
     needs: setup
     runs-on: ubuntu-latest

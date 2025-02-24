@@ -9,7 +9,6 @@
   gitignore-lib,
   mini-compile-commands,
   nix-filter,
-  nix-ros-overlay,
   nixpkgs-flakes,
   nixpkgs-unstable,
   poetry2nix,
@@ -26,7 +25,7 @@
     };
     overlays = [
       rust-overlay
-      nix-ros-overlay
+      flakes.nix-ros-overlay.overlays.default
       # emacs-overlay.overlays.emacs
     ];
   };

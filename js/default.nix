@@ -1,9 +1,10 @@
 {
   self,
+  cleansrc,
+  flakes,
   legacypkgs,
   nix-filter,
   nodejs,
-  cleansrc,
   std,
 }: rec {
   # legacyPackages.x86_64-linux._mods.js.x
@@ -51,6 +52,20 @@
 
     doDist = false;
   };
+
+  # pkgs_ = pkgs.extend (final: prev: {
+  #   nodejs = nodejs;
+  # });
+  # export.basedpyright = pkgs_.basedpyright.overrideAttrs (final: prev: {
+  #   version = flakes.basedpyright.shortRev;
+  #   src = flakes.basedpyright;
+  #   npmDepsHash = "sha256-4yc53xonguaPIem5/iWDw1g9D4DwuIBOTTny0UmhPB0=";
+  #   npmDeps = pkgs.fetchNpmDeps {
+  #     inherit (final) src;
+  #     name = "${final.pname}-${final.version}-npm-deps";
+  #     hash = final.npmDepsHash;
+  #   };
+  # });
 
   export.js = std.buildEnv {
     name = "js";

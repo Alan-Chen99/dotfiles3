@@ -14,19 +14,19 @@ typeCheckingMode = "standard"
 [tool.poetry.dependencies]
 python = ">=3.10,<3.14"
 
-pip = "^25.0"
+pip = "^25.0.1"
 pipdeptree = "^2.25.0"
-ipython = "^8.31.0"
+ipython = "^8.32.0"
 
-poetry = "^2.0.1"
+poetry = "^2.1.1"
 poetry-plugin-shell = "^1.0.1"
 poetry-plugin-up = "^0.9.0"
 
-black = { version = "^24.10.0", extras = ["d"] }
-isort = "^5.13.2"
-flake8 = "^7.1.1"
-pylint = "^3.3.3"
-mypy = "^1.14.1"
+black = { version = "^25.1.0", extras = ["d"] }
+isort = "^6.0.0"
+flake8 = "^7.1.2"
+pylint = "^3.3.4"
+mypy = "^1.15.0"
 autoflake = "^2.3.1"
 
 matplotlib = "^3.10.0"
@@ -34,7 +34,7 @@ cchardet = "^2.1.7"
 
 pytest = "^8.3.4"
 pytest-cov = "^6.0.0"
-hypothesis = "^6.124.7"
+hypothesis = "^6.126.0"
 
 # build deps
 setuptools = "^75.8.0"
@@ -56,6 +56,11 @@ uncompyle6 = "^3.9.2"
 decompyle3 = "^3.9.2"
 xdis = { git = "https://github.com/rocky/python-xdis.git" }
 # https://github.com/extremecoders-re/pyinstxtractor
+pint = "^0.24.4"
+
+jax = { version = "^0.5.0", extras = ["cuda"] }
+oryx = "^0.2.9"
+equinox = "^0.11.11"
 
 # FIXME 2/12/2025: latest does not build, these are from poetry2nix tests
 pyqt6 = "==6.5.2"
@@ -65,7 +70,7 @@ pyqt6-qt6 = "==6.5.2"
 meson = "^1.7.0"
 nixpkgs = "^0.2.4"
 
-yt-dlp = "^2025.1.26"
+yt-dlp = "^2025.2.19"
 # youtube_dl = { git = "https://github.com/ytdl-org/youtube-dl.git" }
 
 factorio-draftsman = "^2.0.0"
