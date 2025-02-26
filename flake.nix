@@ -249,12 +249,13 @@
                   buildDotnetModule = args:
                     prev_.buildDotnetModule (args
                       // {
+                        nugetDeps = ./dafny_deps.json;
                         dotnet-runtime = final.legacypkgs.dotnet-sdk;
                       });
+                  dafny = final.dafny;
                 }))
                 .overrideAttrs {
                   src = inputs.dafny;
-                  nugetDeps = ./dafny_deps.json;
                 };
 
               # poetry2nix/tests/pyqt6/default.nix
