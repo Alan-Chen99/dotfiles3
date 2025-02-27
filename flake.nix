@@ -249,14 +249,26 @@
                   buildDotnetModule = args:
                     prev_.buildDotnetModule (args
                       // {
-                        nugetDeps = ./dafny_deps.json;
-                        dotnet-runtime = final.legacypkgs.dotnet-sdk;
+                        # nugetDeps = ./dafny_deps.json;
+                        # dotnet-runtime = final.legacypkgs.dotnet-sdk;
                       });
                   dafny = final.dafny;
                 }))
-                .overrideAttrs {
+                .overrideAttrs (prev_: {
                   src = inputs.dafny;
-                };
+                  postPatch =
+                    prev_.postPatch
+                    # this will no longer be needed with dafny 4.10.0
+                    # it has been removed since nixpkgs 4391342df7be (2/10/2025)
+                    + ''
+                      for f in Source/**/*.csproj ; do
+                        [[ "$f" == "Source/DafnyRuntime/DafnyRuntime.csproj" ]] && continue;
+
+                        substituteInPlace $f \
+                          --replace-fail net6.0 net8.0
+                      done
+                    '';
+                });
 
               # poetry2nix/tests/pyqt6/default.nix
 
