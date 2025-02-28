@@ -23,27 +23,27 @@ poetry-plugin-shell = "^1.0.1"
 poetry-plugin-up = "^0.9.0"
 
 black = { version = "^25.1.0", extras = ["d"] }
-isort = "^6.0.0"
+isort = "^6.0.1"
 flake8 = "^7.1.2"
 pylint = "^3.3.4"
 mypy = "^1.15.0"
 autoflake = "^2.3.1"
 
-matplotlib = "^3.10.0"
+matplotlib = "^3.10.1"
 cchardet = "^2.1.7"
 
 pytest = "^8.3.4"
 pytest-cov = "^6.0.0"
-hypothesis = "^6.126.0"
+hypothesis = "^6.127.3"
 
 # build deps
-setuptools = "^75.8.0"
+setuptools = "^75.8.2"
 pytest-mock = "^3.14.0"
 pybind11 = "^2.13.6"
 
 # libraries
 pyparsing = "^3.2.1"
-pulp = "^2.9.0"
+pulp = "^3.0.2"
 pygit2 = "^1.17.0"
 git-filter-repo = "^2.47.0"
 PyMuPDF = "^1.25.3"
@@ -58,9 +58,9 @@ xdis = { git = "https://github.com/rocky/python-xdis.git" }
 # https://github.com/extremecoders-re/pyinstxtractor
 pint = "^0.24.4"
 
-jax = { version = "^0.5.0", extras = ["cuda"] }
+jax = { version = "^0.5.1", extras = ["cuda"] }
 oryx = "^0.2.9"
-equinox = "^0.11.11"
+equinox = "^0.11.12"
 
 # FIXME 2/12/2025: latest does not build, these are from poetry2nix tests
 pyqt6 = "==6.5.2"
