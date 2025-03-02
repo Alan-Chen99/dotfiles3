@@ -9,6 +9,9 @@ inputs:
 runs:
   using: "composite"
   steps:
+    # https://github.com/orgs/community/discussions/25678#discussioncomment-5242449
+    - run: rm -rf /opt/hostedtoolcache
+      shell: bash
     - uses: cachix/install-nix-action@v27
     - run: nix --version
       shell: bash
