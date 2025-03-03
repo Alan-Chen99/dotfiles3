@@ -228,6 +228,7 @@
                 basedpyright
                 emacs
                 nixwrapper
+                password-generator
                 pdf-tools-epdfinfo
                 pyright
                 python-all

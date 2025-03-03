@@ -127,6 +127,7 @@
       (prev)
       basedpyright
       js
+      password-generator
       prettier
       pyright
       scmindent

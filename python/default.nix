@@ -129,7 +129,6 @@
   defaultdeps = {
     inherit
       (poetrypython.pkgs)
-      _poetry
       ipython
       black
       isort

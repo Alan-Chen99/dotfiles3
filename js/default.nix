@@ -33,6 +33,7 @@
   export.basedpyright = jspkg "basedpyright";
   export.scmindent = jspkg "scmindent";
   export.prettier = jspkg "prettier";
+  export.password-generator = jspkg "@sebastienrousseau/password-generator";
 
   deps = pkgs.mkYarnPackage {
     nodejs = nodejs;

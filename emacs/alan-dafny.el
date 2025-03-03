@@ -25,7 +25,14 @@
 
 (defadvice! lsp-dafny--server-command--overwrite ()
   :override #'lsp-dafny--server-command
-  `("dafny" "server"
+  `(
+    "taskset" "-c" "0,1"
+    "dafny" "server"
+    ;; "--verbose"
+    ;; "--project-mode"
+    ;; "--analyze-proofs"
+    ;; "--extract-counterexample"
+    ;; "--warn-shadowing"
     ,(pcase lsp-dafny-server-automatic-verification-policy
        ((and policy (or `never `onchange `onsave))
         (format "--documents:verify=%S" policy))
