@@ -212,6 +212,7 @@
 
   "a d" #'shell-this-remote
   "a g" #'gpt
+  "a t" #'toggle-truncate-lines
 
   "S-SPC" #'embark-act
 

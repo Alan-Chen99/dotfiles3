@@ -23,6 +23,8 @@
         \.m$|
         ^TAGS$
       '';
+
+      dontStrip = true;
     });
 
   pdf-tools = (legacypkgs.emacsPackagesFor self.emacs).pdf-tools;

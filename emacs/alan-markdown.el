@@ -19,6 +19,7 @@
 
   (add-hook! 'markdown-mode-hook
     (defun alan-setup-markdown ()
+      (setq-local evil-shift-width 2)
       (setq-local format-all-formatters '(("Markdown" prettierd))))))
 
 

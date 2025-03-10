@@ -57,6 +57,10 @@ decompyle3 = "^3.9.2"
 xdis = { git = "https://github.com/rocky/python-xdis.git" }
 # https://github.com/extremecoders-re/pyinstxtractor
 pint = "^0.24.4"
+pandas = "^2.2.3"
+colorama = "^0.4.6"
+beartype = "^0.20.0"
+jaxtyping = "^0.2.38"
 
 jax = { version = "^0.5.0", extras = ["cuda"] }
 oryx = "^0.2.9"

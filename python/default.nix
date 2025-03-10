@@ -129,8 +129,9 @@
   defaultdeps = {
     inherit
       (poetrypython.pkgs)
-      ipython
+      autoflake
       black
+      ipython
       isort
       pybind11
       ;
