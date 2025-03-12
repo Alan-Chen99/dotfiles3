@@ -28,6 +28,7 @@
 (alan-donot-debug-foreground #'revert-buffer)
 (alan-donot-debug-foreground #'format-all--prompt-for-formatter)
 (alan-donot-debug-foreground #'elisp--local-variables)
+(alan-donot-debug-foreground #'dafny-docs-open)
 
 (defadvice! previous-matching-history-element--check-nohist (fn regexp n)
   :around #'previous-matching-history-element
