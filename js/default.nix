@@ -3,6 +3,7 @@
   cleansrc,
   flakes,
   legacypkgs,
+  lib,
   nix-filter,
   nodejs,
   std,
@@ -13,27 +14,41 @@
 
   corepack = pkgs.corepack.override {nodejs = nodejs;};
 
-  jspkg = name:
+  postInstall = ''
+    wrapProgram $out/bin/yarn2nix --prefix PATH : "${pkgs.nix-prefetch-git}/bin"
+  '';
+
+  jspkg = {
+    name,
+    publishBinsFor ? [name],
+    ...
+  } @ attrs:
     std.buildEnv {
       name = name;
       paths = [
-        (pkgs.mkYarnPackage {
-          nodejs = nodejs;
-          src = cleansrc ./.;
-          publishBinsFor = [
-            name
-          ];
-          doDist = false;
-        })
+        (pkgs.mkYarnPackage ({
+            nodejs = nodejs;
+            src = cleansrc ./.;
+            publishBinsFor = publishBinsFor;
+            doDist = false;
+          }
+          // (builtins.removeAttrs attrs ["name" "publishBinsFor"])))
       ];
       pathsToLink = ["/bin"];
     };
 
-  export.pyright = jspkg "pyright";
-  export.basedpyright = jspkg "basedpyright";
-  export.scmindent = jspkg "scmindent";
-  export.prettier = jspkg "prettier";
-  export.password-generator = jspkg "@sebastienrousseau/password-generator";
+  export.basedpyright = jspkg {name = "basedpyright";};
+  export.password-generator = jspkg {name = "@sebastienrousseau/password-generator";};
+  export.prettier = jspkg {
+    name = "prettier";
+    publishBinsFor = ["prettier" "@fsouza/prettierd"];
+    postInstall = ''
+      wrapProgram $out/bin/prettierd --prefix PATH : "${nodejs}/bin"
+    '';
+    nativeBuildInputs = [pkgs.makeWrapper];
+  };
+  export.pyright = jspkg {name = "pyright";};
+  export.scmindent = jspkg {name = "scmindent";};
 
   deps = pkgs.mkYarnPackage {
     nodejs = nodejs;

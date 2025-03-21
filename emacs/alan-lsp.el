@@ -20,6 +20,8 @@
   (add-to-list 'lsp-file-watch-ignored-directories (rx ".hypothesis"))
   ;; (add-to-list 'lsp-file-watch-ignored (rx ".hypothesis"))
 
+  (add-to-list 'lsp-file-watch-ignored-directories (rx ".cache"))
+
   (defvar lsp-client-packages-original lsp-client-packages)
   (setq lsp-client-packages nil)
 

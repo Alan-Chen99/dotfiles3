@@ -145,7 +145,8 @@
     nixpkgs24-05.url = "github:nixos/nixpkgs/797f7dc49e0bc7fab4b57c021cdf68f595e47841";
 
     poetry2nix = {
-      url = "github:nix-community/poetry2nix";
+      url = "git+https://github.com/Alan-Chen99/poetry2nix.git";
+      # url = "git+file:///home/alan/poetry2nix";
       inputs = {
         flake-utils.follows = "flake-utils";
         nix-github-actions.follows = "empty";
@@ -213,6 +214,7 @@
                 flake-registry-file
                 fonts
                 js
+                latexenv
                 nixtools
                 pkgs-big
                 pkgs-small
@@ -230,6 +232,8 @@
                 nixwrapper
                 password-generator
                 pdf-tools-epdfinfo
+                poetry
+                prettier
                 pyright
                 python-all
                 scmindent

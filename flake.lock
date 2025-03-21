@@ -688,17 +688,17 @@
         ]
       },
       "locked": {
-        "lastModified": 1738741221,
-        "narHash": "sha256-UiTOA89yQV5YNlO1ZAp4IqJUGWOnTyBC83netvt8rQE=",
-        "owner": "nix-community",
-        "repo": "poetry2nix",
-        "rev": "be1fe795035d3d36359ca9135b26dcc5321b31fb",
-        "type": "github"
+        "lastModified": 1742326402,
+        "narHash": "sha256-l0NFHpnH4dAzXIcr1XfCrSjdGUSO0lzG+EabGgtblas=",
+        "ref": "refs/heads/master",
+        "rev": "84c497cfbe3d6157410296c60b5b351c64be91ae",
+        "revCount": 3469,
+        "type": "git",
+        "url": "https://github.com/Alan-Chen99/poetry2nix.git"
       },
       "original": {
-        "owner": "nix-community",
-        "repo": "poetry2nix",
-        "type": "github"
+        "type": "git",
+        "url": "https://github.com/Alan-Chen99/poetry2nix.git"
       }
     },
     "pre-commit-hooks": {

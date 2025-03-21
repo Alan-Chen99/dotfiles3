@@ -134,6 +134,10 @@
       ;
   }));
 
+  mod.latex = callpackage ./latex.nix {} (reexport (prev: {
+    inherit (prev) latexenv;
+  }));
+
   mod.misc = callpackage ./misc.nix {} (reexport (prev: {
     inherit (prev) yaru-theme;
   }));
@@ -156,6 +160,7 @@
     inherit
       (prev)
       env-scripts
+      poetry
       poetrypython
       pypkgs-bins
       python-all

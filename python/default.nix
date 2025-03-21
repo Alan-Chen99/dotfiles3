@@ -161,12 +161,19 @@
       vcstool2
       yt-dlp
       ;
-    poetry = poetrypython.withPackages (ps: [
-      ps._poetry
-      ps.poetry-plugin-shell
-      ps.poetry-plugin-up
-    ]);
   };
+
+  _poetry = poetrypython.withPackages (ps: [
+    ps._poetry
+    ps.poetry-plugin-shell
+    ps.poetry-plugin-up
+  ]);
+  export.poetry =
+    std.runCommandLocal "poetry" {}
+    ''
+      mkdir -p $out/bin
+      ln -s ${_poetry}/bin/poetry $out/bin/poetry
+    '';
 
   export.pypkgs-bins = builtins.mapAttrs (n: e:
     std.buildEnv {

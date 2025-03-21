@@ -130,8 +130,11 @@
          (buffer-file-name)
          (string-equal (file-name-extension (buffer-file-name)) "pyi"))
         ;; TODO: isort here
-        (setq-local format-all-formatters '(("Python" blackd)))
-      (setq-local format-all-formatters '(("Python" blackd isort-black))))
+        (setq-local format-all-formatters '(("Python" black)))
+      (setq-local format-all-formatters '(("Python" black isort-black))))
+
+    ;; (setq-local format-all-formatters '(("Python" blackd)))
+    ;; (setq-local format-all-formatters '(("Python" blackd isort-black)))
 
     (alan-lsp-deferred 'lsp-pyright
       (lsp-completion-mode)

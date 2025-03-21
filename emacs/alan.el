@@ -78,9 +78,11 @@
 (require-noerr 'alan-info)
 (require-noerr 'alan-flyspell)
 
+;; langs
 (require-noerr 'alan-csharp)
 (require-noerr 'alan-cxx)
 (require-noerr 'alan-dafny)
+(require-noerr 'alan-docker)
 (require-noerr 'alan-elisp)
 (require-noerr 'alan-js)
 (require-noerr 'alan-latex)
@@ -92,8 +94,6 @@
 (require-noerr 'alan-rust)
 (require-noerr 'alan-scheme)
 (require-noerr 'alan-shell)
-;; langs
-(pkg! 'dockerfile-mode)
 (pkg! 'lua-mode)
 (pkg! 'php-mode)
 
@@ -514,3 +514,76 @@
 ;; (span-instrument transient-init-value :verbose t)
 
 ;; (setq byte-compile-warnings '(not docstrings))
+
+;; (elpaca<-main (elpaca-get 'boogie-friends))
+;; (elpaca<-dependencies (elpaca-get 'boogie-friends))
+
+;; (alan-set-ignore-debug-on-error 'company-auto-begin)
+;; (span-instrument prettify-symbols-mode)
+
+;; (span-instrument hotfuzz-rs-module-filter)
+;; (span-instrument hotfuzz-all-completions)
+;; (span-instrument all-completions)
+;; (span-instrument completion-file-name-table
+;;   (span-dbg throw-on-input inhibit-quit))
+;; (span-instrument file-name-all-completions
+;;   (span-dbg throw-on-input inhibit-quit))
+
+
+;; (span-instrument self-insert-command
+;;   (span-dbgf (this-command-keys)))
+;; (span-instrument redisplay--pre-redisplay-functions)
+
+;; (span-instrument company-call-backend-raw
+;;   :verbose t
+;;   ;; :backtrace t
+;;   (span-dbgf company-backend))
+
+;; (span-instrument company-call-frontends
+;;   :verbose t
+;;   ;; (span-dbgf company-candidates)
+;;   )
+
+;; #'company-pseudo-tooltip-frontend
+;; (e
+;; (e
+;; (efe
+
+;; (let ((company-backend 'company-capf)) (company-call-backend-raw 'prefix))
+
+;; (elpaca<-recipe (elpaca-get 'tablist))
+;; (elpaca-menu-item 'tablist)
+;; (elpaca-recipe 'tablist)
+;; (elpaca--lock-file-init-p (elpaca-get 'tablist))
+;; (run-hook-with-args-until-failure 'elpaca-lock-file-functions (elpaca-get 'tablist))
+
+;; (advice-add #'elpaca-info--source-buttons :override #'ignore)
+
+;; (elpaca-test
+;;   ;; :ref "0c43289"
+;;   ;; :keep t
+;;   :buffer "*elpaca-test*"
+;;   :init
+;;   (add-to-list 'load-path "/home/alan/dotfiles_new/emacs/")
+
+;;   (defun ci--redirect-to-stdout (msg)
+;;     (message "%s" msg))
+;;   (defvar span-log-handler #'ci--redirect-to-stdout)
+
+;;   (require 'span)
+
+;;   (advice-add #'elpaca--log :before #'elpaca--log--redirect)
+;;   (defun elpaca--log--redirect (e text &optional _verbosity _replace)
+;;     (span-notef "%-20s %-10s %-10s" (elpaca<-id e) (elpaca--status e) text))
+
+;;   (elpaca '(testlib :repo "/home/alan/tmp7/testlib/" :wait t))
+;;   ;; (elpaca (general :wait t :vars ((byte-compile-warnings '(not docstrings)))))
+;;   (princ (elpaca-log ".*"))
+;;   )
+
+;; (alan-set-ignore-debug-on-error #'boogie-friends-backend-index)
+
+;; (setq python-shell-readline-completer-delims t)
+;; (advice-add #'python-shell-completion-native-try :override #'always)
+
+;; setsid bash -c bash

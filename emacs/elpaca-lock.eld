@@ -534,6 +534,21 @@
                 :description "Major mode for Markdown-formatted text"
                 :date (26503 16592) :url
                 "https://jblevins.org/projects/markdown-mode/")
+ (modus-themes :source "MELPA" :recipe
+               (:ref "ab56e2888b2fc77af2824afcc7b77d5dd854fd05"
+                     :package "modus-themes" :fetcher github :repo
+                     "protesilaos/modus-themes" :files
+                     ("*.el" "*.el.in" "dir" "*.info" "*.texi"
+                      "*.texinfo" "doc/dir" "doc/*.info" "doc/*.texi"
+                      "doc/*.texinfo" "lisp/*.el" "docs/dir"
+                      "docs/*.info" "docs/*.texi" "docs/*.texinfo"
+                      (:exclude ".dir-locals.el" "test.el" "tests.el"
+                                "*-test.el" "*-tests.el" "LICENSE"
+                                "README*" "*-pkg.el")))
+               :description
+               "Elegant, highly legible and customizable themes" :date
+               (26534 58576) :url
+               "https://github.com/protesilaos/modus-themes")
  (nix-ts-mode :source "MELPA" :recipe
               (:ref "cea932fd683bfab84234205f5f1d161e29a5adf6"
                     :package "nix-ts-mode" :fetcher github :repo

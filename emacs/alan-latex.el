@@ -58,6 +58,7 @@
 
     ;; (setq-local format-all-formatters '(("LaTeX" prettier-latex)))
     (setq-local format-all-formatters '(("LaTeX" latexindent)))
+    (setq-local TeX-command-extra-options "-shell-escape")
 
     (alan-lsp-deferred 'lsp-tex)))
 
@@ -80,7 +81,19 @@
   (setq TeX-debug-warnings t)
   ;; if nil, and first error is bad box, then previous error on first error crashes
   (setq TeX-debug-bad-boxes t)
-  (setq TeX-view-program-selection '((output-pdf "PDF Tools")))
+  ;; (setq TeX-view-program-selection '((output-pdf "PDF Tools")))
+  (setq TeX-view-program-selection '((output-pdf "Sumatra PDF")))
+
+  ;; sumatrapdf inverse search command:
+  ;; C:\Windows\System32\wsl.exe /home/alan/emacs29/bin/emacsclient -n +%l "$(wslpath '%f')"
+  ;; "\\wsl.localhost\ubuntu\nix\store\g9273bqby6yb7jy90bskc43068qyldl1-emacs-pgtk-30.1\bin\emacsclient" -n +%l "%f"
+  (setq TeX-view-program-list
+        '(("Sumatra PDF"
+           ("/mnt/c/SumatraPDF/SumatraPDF.exe -reuse-instance"
+            (mode-io-correlate " -forward-search %b %n ")
+            ;; (mode-io-correlate " -forward-search \"%b\" %n ")
+            " %o"))))
+
 
   ;; Update PDF buffers after successful LaTeX runs
   (add-hook 'TeX-after-compilation-finished-functions

@@ -23,6 +23,7 @@
       super.fonts
       super.home.activationPackage
       super.js
+      super.latexenv
       super.nixtools
       super.pdf-tools-epdfinfo
       super.pkgs-big

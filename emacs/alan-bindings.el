@@ -211,6 +211,7 @@
   "g e" #'flycheck-list-errors
 
   "a d" #'shell-this-remote
+  "a v" #'vterm
   "a g" #'gpt
   "a t" #'toggle-truncate-lines
 

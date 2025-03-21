@@ -147,5 +147,7 @@
       ];
     };
     # craneLib = (crane.mkLib pkgs).overrideToolchain rust;
+
+    texlive = pkgs.texliveSmall;
   };
 }
