@@ -30,7 +30,7 @@
       legacypkgs.noto-fonts
       legacypkgs.noto-fonts-color-emoji
       # legacypkgs.noto-fonts-cjk
-      # legacypkgs.noto-fonts-cjk-sans
+      legacypkgs.noto-fonts-cjk-sans
       # legacypkgs.noto-fonts-cjk-serif
       legacypkgs.noto-fonts-extra
     ];

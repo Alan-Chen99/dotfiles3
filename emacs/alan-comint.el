@@ -171,6 +171,8 @@
      (pos-bol) (point)
      '(field prompt))))
 
+(defvar alan-comint-keep-inputs nil)
+
 (advice-add #'comint-send-input :override #'alan-comint-send-input)
 (defun alan-comint-send-input (&optional no-newline artificial)
   (interactive nil comint-mode)
@@ -190,12 +192,28 @@
                                (buffer-substring pmark (point)))
                       (user-error "not in input"))))
 
-        (let ((inhibit-read-only t))
-          (delete-region pmark (point)))
+        (if alan-comint-keep-inputs
+            (let ((inhibit-read-only t))
+              ;; see original function for this delete-region
+              ;; (delete-region pmark (point))
+              ;; (insert intxt)
+              (unless no-newline
+                (insert ?\n))
+              (add-text-properties
+               pmark (point)
+               '(
+                 read-only t
+                 front-sticky (read-only)
+                 rear-nonsticky (read-only))))
+
+          (let ((inhibit-read-only t))
+            (delete-region pmark (point))))
 
         (comint-add-to-input-history intxt)
 
-        (alan-comint-mark-prompt)
+        (save-excursion
+          (goto-char pmark)
+          (alan-comint-mark-prompt))
 
         (run-hook-with-args 'comint-input-filter-functions
                             (if no-newline intxt
@@ -258,7 +276,7 @@
 	         (when (> n 0)
 		       (setq input-pos (point-max)))
 	         (setq n 0))
-	        ((eq (get-char-property pos 'field) 'output)
+	        ((eq (get-char-property (if (> pos 1) (1- pos) pos) 'field) 'prompt)
 	         (setq n (if (< n 0) (1+ n) (1- n)))
 	         (setq input-pos pos))))
     (when input-pos

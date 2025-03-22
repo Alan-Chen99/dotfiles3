@@ -45,12 +45,12 @@
 
   (setq python-shell-font-lock-enable nil)
 
-  (add-hook! 'python-shell-first-prompt-hook
-    :depth 100
-    (defun python-shell-enable-echo ()
-      (with-temp-buffer
-        (insert-file-contents (expand-file-name "python_setup_tty.py" alan-dotemacs-dir))
-        (python-shell-send-string-no-output (buffer-string)))))
+  ;; (add-hook! 'python-shell-first-prompt-hook
+  ;;   :depth 100
+  ;;   (defun python-shell-enable-echo ()
+  ;;     (with-temp-buffer
+  ;;       (insert-file-contents (expand-file-name "python_setup_tty.py" alan-dotemacs-dir))
+  ;;       (python-shell-send-string-no-output (buffer-string)))))
 
   ;; TODO: remote
   (if (executable-find "ipython")
@@ -148,26 +148,26 @@
 
 (setq python-shell-completion-native-output-timeout 0.1)
 
-(defun alan-python-shell-completion-at-point ()
-  (let* ((line-start (line-beginning-position))
-         (start (save-excursion
-                  (if (not (re-search-backward
-                            (python-rx
-                             (or whitespace open-paren close-paren
-                                 string-delimiter simple-operator))
-                            line-start
-                            t 1))
-                      line-start
-                    (forward-char (length (match-string-no-properties 0)))
-                    (point))))
-         (end (point))
-         (process (python-shell-get-process)))
-    (when process
-      (list
-       start end
-       (python-shell-completion-native-get-completions
-        process
-        (buffer-substring-no-properties start end))))))
+;; (defun alan-python-shell-completion-at-point ()
+;;   (let* ((line-start (line-beginning-position))
+;;          (start (save-excursion
+;;                   (if (not (re-search-backward
+;;                             (python-rx
+;;                              (or whitespace open-paren close-paren
+;;                                  string-delimiter simple-operator))
+;;                             line-start
+;;                             t 1))
+;;                       line-start
+;;                     (forward-char (length (match-string-no-properties 0)))
+;;                     (point))))
+;;          (end (point))
+;;          (process (python-shell-get-process)))
+;;     (when process
+;;       (list
+;;        start end
+;;        (python-shell-completion-native-get-completions
+;;         process
+;;         (buffer-substring-no-properties start end))))))
 
 (defadvice! python-shell-accept-process-output--change-regex (fn process &optional timeout regexp)
   :around #'python-shell-accept-process-output
@@ -182,10 +182,15 @@
                   ansi-color-process-output
                   python-shell-comint-watch-for-first-prompt-output-filter
                   comint-watch-for-password-prompt))
-    ;; note: the modification in #'inferior-python-mode got overriden
-    ;; in our comint hook
-    (add-hook 'completion-at-point-functions
-              #'alan-python-shell-completion-at-point nil 'local)))
+
+    ;; ;; note: the modification in #'inferior-python-mode got overriden
+    ;; ;; in our comint hook
+    ;; (add-hook 'completion-at-point-functions
+    ;;           #'alan-python-shell-completion-at-point nil 'local)
+
+    (setq-local alan-comint-keep-inputs t)
+
+    ))
 
 
 ;; (alan-set-ignore-debug-on-error #'python-indent-line)
