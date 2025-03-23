@@ -54,27 +54,39 @@ jobs:
       - if: success() || failure()
         run: nix path-info --derivation .#py310.ci-instantiate
 
-      # python
-      - if: success() || failure()
-        uses: ./.github/actions/build_nix
+  python:
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - uses: ./.github/actions/build_nix
         with:
           drv: .#python-all
           CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
-      # test "inject"
-      - if: success() || failure()
-        run: nix build .#python.inject.pygit2.regexfactory
+      - run: nix build .#python.inject.pygit2.regexfactory
 
-      - if: success() || failure()
-        uses: ./.github/actions/build_nix
+  js:
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - uses: ./.github/actions/build_nix
         with:
           drv: .#js
           CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
 
-      # - if: success() || failure()
-      #   uses: ./.github/actions/build_nix
-      #   with:
-      #     drv: .#p.rosPackages.humble.rclpy
-      #     CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
+  nixd:
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - uses: ./.github/actions/build_nix
+        with:
+          drv: .#nixtools
+          CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
 
   emacs:
     needs: setup
