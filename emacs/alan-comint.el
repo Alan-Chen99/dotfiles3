@@ -148,22 +148,22 @@
 (defun alan-comint-exec-1 (fn name buffer command switches)
   ;; see `term-exec-1'
   ;; (span-dbgf :alan-comint-exec-1 name buffer command switches)
-
-  ;; (funcall fn name buffer command switches)
-  (let* ((proc (funcall
-                fn name buffer
-                "bash"
-                `("-c"
-                  "stty echo; exec \"$@\""
-                  ;; "stty echo onlcr; exec \"$@\""
-                  ".."
-                  ,command ,@switches)))
-         ;; (code (call-process "stty" nil nil nil "-F" (process-tty-name proc) "echo"))
-         )
-    ;; (unless (= code 0)
-    ;;   (error "stty failed"))
-    proc)
-  )
+  (if (eq system-type 'windows-nt)
+      (funcall fn name buffer command switches)
+    (let* ((proc (funcall
+                  fn name buffer
+                  "bash"
+                  `("-c"
+                    "stty echo; exec \"$@\""
+                    ;; "stty echo onlcr; exec \"$@\""
+                    ".."
+                    ,command ,@switches)))
+           ;; (code (call-process "stty" nil nil nil "-F" (process-tty-name proc) "echo"))
+           )
+      ;; (unless (= code 0)
+      ;;   (error "stty failed"))
+      proc)
+    ))
 
 (defun alan-comint-mark-prompt ()
   (with-silent-modifications

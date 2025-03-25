@@ -10,6 +10,7 @@
 
 import ctypes
 import os
+import shutil
 import subprocess
 import sys
 import winreg
@@ -47,12 +48,17 @@ def refresh_path():
     env_key = open_env_registry_key()
     current_path: str
     current_path, _ = winreg.QueryValueEx(env_key, "Path")
+    path_list = os.environ["PATH"].split(";")
     for x in current_path.split(";"):
-        if x not in sys.path:
-            sys.path.append(x)
+        x = os.path.expandvars(x)
+        if x not in path_list:
+            print(f"adding {x} to PATH", flush=True)
+            path_list.append(f";{x}")
+    os.environ["PATH"] = ";".join(path_list)
 
 
 def runcmd(args: list[str]):
+    print("++ runcmd:", repr(args), flush=True)
     ans = subprocess.run(args, check=True)
     refresh_path()
     return ans
@@ -77,7 +83,8 @@ def main():
     refresh_path()
 
     runcmd(["scoop.cmd", "install", "nodejs"])
-    runcmd(["npm.cmd", "install", "pyright"])
+    if shutil.which("pyright") is None:
+        runcmd(["npm.cmd", "install", "-g", "pyright"])
 
     scripts_dir = Path(sys.executable).parent / "Scripts"
     scripts_dir = scripts_dir.resolve()
@@ -87,21 +94,29 @@ def main():
     runcmd(["python3", "-m", "pip", "install", "isort"])
     runcmd(["python3", "-m", "pip", "install", "ipython"])
 
-    # TODO: elevate and test
+    # # TODO: elevate and test
+    # TODO: did it work?
     # https://answers.microsoft.com/en-us/windows/forum/all/how-to-disable-search-the-web-completley-in/ea22410a-3031-487f-b5de-5a0113d656c5
-    # create_key(r"Software\Policies\Microsoft\Windows", "Explorer")
-    # set_dword_value(
-    #     r"Software\Policies\Microsoft\Windows\Explorer",
-    #     "DisableSearchBoxSuggestions",
-    #     1,
-    # )
+    create_key(r"Software\Policies\Microsoft\Windows", "Explorer")
+    set_dword_value(
+        r"Software\Policies\Microsoft\Windows\Explorer",
+        "DisableSearchBoxSuggestions",
+        1,
+    )
 
+    # (25/3: dont work)
     # https://answers.microsoft.com/en-us/windows/forum/all/windows-11-right-click-explorer-menu-show-more-as/ba8dafe4-306a-403b-af0d-10a6d1ca0a9a
-    with winreg.CreateKey(
-        winreg.HKEY_CURRENT_USER,
-        r"Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32",
-    ) as registry_key:
-        winreg.SetValueEx(registry_key, "", 0, winreg.REG_SZ, "")
+    # with winreg.CreateKey(
+    #     winreg.HKEY_CURRENT_USER,
+    #     r"Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32",
+    # ) as registry_key:
+    #     winreg.SetValueEx(registry_key, "", 0, winreg.REG_SZ, "")
+
+    # TODO: `Microsoft Defender Disable.bat`
+    # https://github.com/TairikuOokami/Windows.git
+
+    # TODO
+    # https://learn.microsoft.com/en-us/visualstudio/install/modify-visual-studio?view=vs-2022#change-workloads-or-individual-components
 
 
 if __name__ == "__main__":
