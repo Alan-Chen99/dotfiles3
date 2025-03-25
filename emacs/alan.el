@@ -30,53 +30,54 @@
 (require-noerr 'alan-minibuffer)
 
 ;; visual
-(require-noerr 'alan-theme)
-(require-noerr 'alan-modeline)
 (require-noerr 'alan-font)
 (require-noerr 'alan-hl-line)
+(require-noerr 'alan-modeline)
 (require-noerr 'alan-terminal)
+(require-noerr 'alan-theme)
 (pkg! '(rainbow-mode :inherit nil :host github :repo "emacsmirror/rainbow-mode")
   (startup-queue-package 'rainbow-mode -10))
 
 ;; global stuff
 (require-noerr 'alan-commands)
+(require-noerr 'alan-embark)
+(require-noerr 'alan-evil-surround)
 (require-noerr 'alan-iflipb)
-(require-noerr 'alan-undo-fu)
-(require-noerr 'alan-vundo)
+(require-noerr 'alan-jump)
 (require-noerr 'alan-persistent-undo)
 (require-noerr 'alan-simple)
-(require-noerr 'alan-evil-surround)
-(require-noerr 'alan-jump)
-(require-noerr 'alan-embark)
 (require-noerr 'alan-tramp)
+(require-noerr 'alan-undo-fu)
+(require-noerr 'alan-vundo)
 
 
 ;; completion ui
-(require-noerr 'alan-vertico)
-(require-noerr 'alan-consult)
-(require-noerr 'alan-completion-styles)
 (require-noerr 'alan-company)
+(require-noerr 'alan-completion-styles)
+(require-noerr 'alan-consult)
 (require-noerr 'alan-marginalia)
 (require-noerr 'alan-popup)
+(require-noerr 'alan-vertico)
 
 ;; tools
+(require-noerr 'alan-eldoc)
 (require-noerr 'alan-flycheck)
 (require-noerr 'alan-format-all)
-(require-noerr 'alan-eldoc)
 (require-noerr 'alan-lsp)
 (require-noerr 'alan-treesitter)
 
 ;; utilities
-(require-noerr 'alan-comint)
-(require-noerr 'alan-transient)
-(require-noerr 'alan-dired)
-(require-noerr 'alan-with-editor)
-(require-noerr 'alan-magit)
-(require-noerr 'alan-gpt)
-(require-noerr 'alan-vterm)
 (require-noerr 'alan-codeium)
-(require-noerr 'alan-info)
+(require-noerr 'alan-comint)
+(require-noerr 'alan-dired)
 (require-noerr 'alan-flyspell)
+(require-noerr 'alan-gpt)
+(require-noerr 'alan-info)
+(require-noerr 'alan-magit)
+(require-noerr 'alan-transient)
+(require-noerr 'alan-with-editor)
+(unless (eq system-type 'windows-nt)
+  (require-noerr 'alan-vterm))
 
 ;; langs
 (require-noerr 'alan-csharp)
