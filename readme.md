@@ -70,6 +70,12 @@ If the elisp debugger pops up, you usually press `c` to ignore it and continue.
 ### start on new machine
 
 ```
+curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install
+
+nix profile install .#p.cachix
+
+cachix use alan-chen-public
+
 nix flake show --option allow-import-from-derivation true
 
 nix build .#profile --print-build-logs --option allow-import-from-derivation true
@@ -90,5 +96,5 @@ cd ~
 ln -s $(pwd)/emacs/.emacs ~/.emacs
 ln -s ../dotfiles/emacs/early-init.el ~/.emacs.d/early-init.el
 
-(byte-recompile-directory alan-dotemacs-dir 0 'force)
+emacs --batch -l emacs/ci.el --eval "(ci-byte-compile)"
 ```
