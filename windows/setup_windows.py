@@ -3,6 +3,12 @@
 # Get-Service -Name ssh-agent | Set-Service -StartupType Manual
 # Start-Service ssh-agent
 
+# TODO: `Microsoft Defender Disable.bat`
+# https://github.com/TairikuOokami/Windows.git
+
+# TODO
+# https://github.com/dechamps/laplock
+
 import ctypes
 import os
 import shutil
@@ -14,15 +20,8 @@ import winreg as winreg
 from pathlib import Path
 from typing import Iterable, Sequence
 
-# https://github.com/ryanoasis/nerd-fonts?tab=readme-ov-file#option-3-unofficial-chocolatey-or-scoop-repositories
-# scoop bucket add nerd-fonts
-# scoop install Hack-NF
-# select and install on .ttf files
-
-
 # https://stackoverflow.com/questions/38516044/setting-windows-system-path-in-registry-via-python-winreg
 
-# HKEY_CURRENT_USER\
 USR_ENV_SUBPATH = r"Environment"
 
 HOME = Path(os.environ["USERPROFILE"])
@@ -160,23 +159,6 @@ def main():
     # # if shutil.which("link") is None:
     # #     runcmd(["scoop.cmd", "shim", "rm", "link"])
 
-    # neccessary to build rust
-    # https://github.com/ScoopInstaller/Extras/issues/1861#issuecomment-1320653215
-    # https://learn.microsoft.com/en-us/visualstudio/install/workload-component-id-vs-build-tools?view=vs-2022
-    temp_dir = os.environ["TEMP"]
-    tmp_buildtools_exe = Path(temp_dir) / "vs_BuildTools.exe"
-    urllib.request.urlretrieve(
-        "https://aka.ms/vs/17/release/vs_BuildTools.exe", tmp_buildtools_exe
-    )
-    runcmd(
-        tmp_buildtools_exe,
-        "--passive",
-        "--wait",
-        ["--add", "Microsoft.VisualStudio.Workload.VCTools"],
-        "--includeRecommended",
-        ["--remove", "Microsoft.VisualStudio.Component.VC.CMake.Project"],
-    )
-
     # https://answers.microsoft.com/en-us/windows/forum/all/how-to-disable-search-the-web-completley-in/ea22410a-3031-487f-b5de-5a0113d656c5
     create_key(r"Software\Policies\Microsoft\Windows", "Explorer")
     set_dword_value(
@@ -193,8 +175,75 @@ def main():
     ) as registry_key:
         winreg.SetValueEx(registry_key, "", 0, winreg.REG_SZ, "")
 
-    # TODO: `Microsoft Defender Disable.bat`
-    # https://github.com/TairikuOokami/Windows.git
+    #################### ELEVATED ####################
+
+    # disable "smartscreen", i.e. slience "windows protected your pc"
+    # untested; was disabled manually
+    with winreg.CreateKey(
+        winreg.HKEY_LOCAL_MACHINE,
+        r"SOFTWARE\Policies\Microsoft\Windows\System",
+    ) as registry_key:
+        winreg.SetValueEx(registry_key, "EnableSmartScreen", 0, winreg.REG_DWORD, 0)
+
+    # https://superuser.com/questions/1587025/windows-10-how-to-disable-the-publisher-couldn-t-be-verified-message
+    # also need to change Internet Options
+    # TODO: do these reg actually do anything?
+    with winreg.CreateKey(
+        winreg.HKEY_CURRENT_USER,
+        r"Software\Microsoft\Windows\CurrentVersion\Policies\Attachments",
+    ) as registry_key:
+        winreg.SetValueEx(registry_key, "SaveZoneInformation", 0, winreg.REG_DWORD, 1)
+    with winreg.CreateKey(
+        winreg.HKEY_CURRENT_USER,
+        r"Software\Microsoft\Windows\CurrentVersion\Policies\Associations",
+    ) as registry_key:
+        winreg.SetValueEx(
+            registry_key,
+            "LowRiskFileTypes",
+            0,
+            winreg.REG_MULTI_SZ,
+            [
+                ".avi",
+                ".bat",
+                ".bmp",
+                ".cmd",
+                ".com",
+                ".exe",
+                ".gif",
+                ".htm",
+                ".html",
+                ".jpg",
+                ".m3u",
+                ".mov",
+                ".mp3",
+                ".mpeg",
+                ".mpg",
+                ".msi",
+                ".nfo",
+                ".rar",
+                ".reg",
+                ".txt",
+                ".wav",
+                ".zip",
+            ],
+        )
+
+    # neccessary to build rust
+    # https://github.com/ScoopInstaller/Extras/issues/1861#issuecomment-1320653215
+    # https://learn.microsoft.com/en-us/visualstudio/install/workload-component-id-vs-build-tools?view=vs-2022
+    temp_dir = os.environ["TEMP"]
+    tmp_buildtools_exe = Path(temp_dir) / "vs_BuildTools.exe"
+    urllib.request.urlretrieve(
+        "https://aka.ms/vs/17/release/vs_BuildTools.exe", tmp_buildtools_exe
+    )
+    runcmd(
+        tmp_buildtools_exe,
+        "--passive",
+        "--wait",
+        ["--add", "Microsoft.VisualStudio.Workload.VCTools"],
+        "--includeRecommended",
+        ["--remove", "Microsoft.VisualStudio.Component.VC.CMake.Project"],
+    )
 
 
 if __name__ == "__main__":
