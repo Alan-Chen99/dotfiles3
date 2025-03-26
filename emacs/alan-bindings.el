@@ -227,6 +227,7 @@
   "z =" #'magit-fetch
   "z m" #'magit-merge
   "z s" #'magit-branch-reset
+  "z h" #'magit-reflog-head
   )
 
 

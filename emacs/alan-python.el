@@ -185,8 +185,8 @@
 
     ;; ;; note: the modification in #'inferior-python-mode got overriden
     ;; ;; in our comint hook
-    ;; (add-hook 'completion-at-point-functions
-    ;;           #'alan-python-shell-completion-at-point nil 'local)
+    (add-hook 'completion-at-point-functions
+              #'python-shell-completion-at-point nil 'local)
 
     (setq-local alan-comint-keep-inputs t)
 

@@ -15,9 +15,11 @@
   (defadvice! alan-format-all--language-id-buffer ()
     :before-until #'format-all--language-id-buffer
     (or
-     (and (eq major-mode 'LilyPond-mode) "_lilypond")
      (and (eq major-mode 'nix-ts-mode) "Nix")
-     (and (eq major-mode 'dafny-mode) "_dafny")))
+
+     (and (eq major-mode 'LilyPond-mode) "_lilypond")
+     (and (eq major-mode 'dafny-mode) "_dafny")
+     (and (eq major-mode 'rst-mode) "_rst")))
 
   (define-format-all-formatter python-ly
     (:executable "ly")

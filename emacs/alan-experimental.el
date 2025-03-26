@@ -29,6 +29,13 @@
 (alan-donot-debug-foreground #'format-all--prompt-for-formatter)
 (alan-donot-debug-foreground #'elisp--local-variables)
 (alan-donot-debug-foreground #'dafny-docs-open)
+;; (alan-donot-debug-foreground #'lsp--on-idle)
+
+(defadvice! lsp--on-idle--quiet (fn &rest args)
+  :around #'lsp--on-idle
+  (alan-with-demoted-errors
+   (apply fn args)))
+;; (advice-add #'lsp--on-idle :around #'with-no-minibuffer-message-advice)
 
 (defadvice! previous-matching-history-element--check-nohist (fn regexp n)
   :around #'previous-matching-history-element

@@ -92,6 +92,7 @@
 (require-noerr 'alan-nix)
 (require-noerr 'alan-pdf)
 (require-noerr 'alan-python)
+(require-noerr 'alan-rst)
 (require-noerr 'alan-rust)
 (require-noerr 'alan-scheme)
 (require-noerr 'alan-shell)
