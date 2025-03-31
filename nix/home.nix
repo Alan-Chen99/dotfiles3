@@ -47,6 +47,11 @@
             enable = true;
             userName = "Alan Chen";
             userEmail = "chenxinyang99@gmail.com";
+            extraConfig = {
+              "core" = {
+                "quotepath" = false;
+              };
+            };
           };
 
           fonts.fontconfig.enable = true;
