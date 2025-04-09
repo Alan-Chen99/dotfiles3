@@ -34,7 +34,8 @@
     };
 
     dafny = {
-      url = "github:Alan-Chen99/dafny";
+      # url = "github:Alan-Chen99/dafny";
+      url = "git+https://github.com/dafny-lang/dafny.git?ref=4.10.0";
       flake = false;
     };
 
@@ -261,35 +262,7 @@
                 }))
                 .overrideAttrs (final_: prev_: {
                   src = inputs.dafny;
-                  version = "4.9.1";
-                  # for dafny 4.9.1
-                  # postPatch before nixpkgs 4391342df7be (2/10/2025)
-                  postPatch = let
-                    # runtimeJarVersion = "4.9.1";
-                    runtimeJarVersion = final_.version;
-                  in ''
-                    cp ${final.legacypkgs.writeScript "fake-gradlew-for-dafny" ''
-                      mkdir -p build/libs/
-                      javac $(find -name "*.java" | grep "^./src/main") -d classes
-                      jar cf build/libs/DafnyRuntime-${runtimeJarVersion}.jar -C classes dafny
-                    ''} Source/DafnyRuntime/DafnyRuntimeJava/gradlew
-
-                    # Needed to fix
-                    # "error NETSDK1129: The 'Publish' target is not supported without
-                    # specifying a target framework. The current project targets multiple
-                    # frameworks, you must specify the framework for the published
-                    # application."
-                    substituteInPlace Source/DafnyRuntime/DafnyRuntime.csproj \
-                      --replace-fail TargetFrameworks TargetFramework \
-                      --replace-fail "netstandard2.0;net452" net8.0
-
-                    for f in Source/**/*.csproj ; do
-                      [[ "$f" == "Source/DafnyRuntime/DafnyRuntime.csproj" ]] && continue;
-
-                      substituteInPlace $f \
-                        --replace-fail net6.0 net8.0
-                    done
-                  '';
+                  version = "4.10.0";
                 });
 
               # poetry2nix/tests/pyqt6/default.nix

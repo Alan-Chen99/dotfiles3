@@ -69,17 +69,18 @@
     "dafny": {
       "flake": false,
       "locked": {
-        "lastModified": 1738890919,
-        "narHash": "sha256-Y++HBd9kbUf43r04lb8RQfp8eCi+WbvhhS21pZnhpIk=",
-        "owner": "Alan-Chen99",
-        "repo": "dafny",
-        "rev": "22221ceb2c7c79ffe85d1064c31933c3619611f8",
-        "type": "github"
+        "lastModified": 1738683282,
+        "narHash": "sha256-xvRrW/BlNHnlH3y3x3Xz02wyKj3sNTO27xxqhb9EmJY=",
+        "ref": "4.10.0",
+        "rev": "6cb34c1e708ab5aa2078b8ac13bded3033d97c13",
+        "revCount": 6774,
+        "type": "git",
+        "url": "https://github.com/dafny-lang/dafny.git"
       },
       "original": {
-        "owner": "Alan-Chen99",
-        "repo": "dafny",
-        "type": "github"
+        "ref": "4.10.0",
+        "type": "git",
+        "url": "https://github.com/dafny-lang/dafny.git"
       }
     },
     "devshell": {
