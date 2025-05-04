@@ -28,7 +28,7 @@
  (auctex :source "GNU ELPA" :url
          "https://elpa.gnu.org/packages/auctex.html" :description
          "Integrated environment for *TeX*" :recipe
-         (:ref "efc1355ca3cea1b48c08bda2759bfb6030146d73" :package
+         (:ref "d85316fdb0a95fdd11ea863c8defa2260110c945" :package
                "auctex" :repo
                ("https://git.savannah.gnu.org/git/auctex.git"
                 . "auctex")
@@ -350,7 +350,7 @@
            :description "Go to last change" :date (26130 6720) :url
            "https://github.com/emacs-evil/goto-chg")
  (gptel :source "MELPA" :recipe
-        (:ref "6090687150e4781e93c1d736e2b8d1e6be60054f" :package
+        (:ref "55355bdead3d19d520157236f4420241cdb89e63" :package
               "gptel" :repo "karthink/gptel" :fetcher github :files
               ("*.el" "*.el.in" "dir" "*.info" "*.texi" "*.texinfo"
                "doc/dir" "doc/*.info" "doc/*.texi" "doc/*.texinfo"

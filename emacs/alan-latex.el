@@ -5,7 +5,7 @@
 (require 'alan-lsp)
 
 (require-if-is-bytecompile outline)
-(pkg! 'auctex)
+(pkg! '(auctex :repo "https://github.com/emacsmirror/auctex.git" :branch "master"))
 
 (eval-after-load! format-all
   (define-format-all-formatter latexindent
