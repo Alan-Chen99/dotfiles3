@@ -150,7 +150,7 @@
       yaru-theme
       # adwaita-icon-theme
       cachix
-      cmake
+      # cmake
       cmake-format
       dockfmt
       ffmpeg

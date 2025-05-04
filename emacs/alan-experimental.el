@@ -29,10 +29,14 @@
 (alan-donot-debug-foreground #'format-all--prompt-for-formatter)
 (alan-donot-debug-foreground #'elisp--local-variables)
 (alan-donot-debug-foreground #'dafny-docs-open)
+(alan-donot-debug-foreground #'outline-forward-same-level)
+(alan-donot-debug-foreground #'outline-backward-same-level)
+(alan-donot-debug-foreground #'line-move)
+
 ;; (alan-donot-debug-foreground #'lsp--on-idle)
 
 (defadvice! lsp--on-idle--quiet (fn &rest args)
-  :around #'lsp--on-idle
+  :around (list #'lsp--on-idle #'lsp-request-while-no-input)
   (alan-with-demoted-errors
    (apply fn args)))
 ;; (advice-add #'lsp--on-idle :around #'with-no-minibuffer-message-advice)

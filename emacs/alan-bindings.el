@@ -20,6 +20,10 @@
  alan-theme
  )
 
+(eval-when-compile
+  (unless (eq system-type 'windows-nt)
+    (require-if-is-bytecompile vterm)))
+
 (general-def
   "C-," #'help-command
   "<ignore>" #'ignore
@@ -105,10 +109,15 @@
   "w <T>" #'alan-switch-theme
   "g h" #'consult-history
   "g l" #'consult-line
+
   "g <right>" #'consult-line-multi
-  "g m" #'consult-mark
-  "g SPC" #'consult-ripgrep
-  "g r" (lambda () (interactive) (consult-ripgrep default-directory))
+  "g m" (lambda () (interactive) (consult-line-multi t))
+
+  ;; "g m" #'consult-mark
+
+  "g r" #'consult-ripgrep
+  "g SPC" (lambda () (interactive) (consult-ripgrep default-directory))
+
   "g f" (lambda () (interactive) (consult-fd default-directory))
 
   "s" #'execute-extended-command
@@ -206,7 +215,7 @@
   "g c" #'copy-cur-filename
   "g C" #'copy-wsl-windows-filename
   "g x" #'copy-cur-filename-last
-  "g d" #'copy-default-directory
+  ;; "g d" #'copy-default-directory
 
   "g e" #'flycheck-list-errors
 

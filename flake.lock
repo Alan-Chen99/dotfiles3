@@ -800,7 +800,8 @@
         "systems": [
           "flake-utils",
           "systems"
-        ]
+        ],
+        "z3": "z3"
       }
     },
     "rust-overlay": {
@@ -867,6 +868,23 @@
         "owner": "nix-systems",
         "repo": "default",
         "type": "github"
+      }
+    },
+    "z3": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1674011426,
+        "narHash": "sha256-7cuUf29TMpX62PwO1ab3ZuzmzlcrRjTKB1CyXnYgYus=",
+        "ref": "refs/tags/z3-4.12.1",
+        "rev": "3012293c35eadbfd73e5b94adbe50b0cc44ffb83",
+        "revCount": 17484,
+        "type": "git",
+        "url": "https://github.com/Z3Prover/z3.git"
+      },
+      "original": {
+        "ref": "refs/tags/z3-4.12.1",
+        "type": "git",
+        "url": "https://github.com/Z3Prover/z3.git"
       }
     }
   },

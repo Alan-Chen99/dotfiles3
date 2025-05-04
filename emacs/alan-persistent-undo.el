@@ -5,6 +5,9 @@
 (require 'undo-fu-session-autoloads)
 (startup-queue-package 'undo-fu-session 80)
 
+(setq undo-limit 10000000)
+(setq undo-strong-limit undo-limit)
+
 (autoload 'undo-fu-session--recover-safe "undo-fu-session")
 (autoload 'undo-fu-session--save-safe "undo-fu-session")
 

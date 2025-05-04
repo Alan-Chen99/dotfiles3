@@ -183,6 +183,11 @@
     };
 
     systems.follows = "flake-utils/systems";
+
+    z3 = {
+      url = "git+https://github.com/Z3Prover/z3.git?ref=refs/tags/z3-4.12.1";
+      flake = false;
+    };
   };
 
   outputs = inputs @ {
@@ -250,6 +255,7 @@
               # on update:
               # (1) nix build .#dafny.fetch-deps
               # (2) edit out localtion to dafny_deps.json
+              zz = final.legacypkgs.dafny;
               dafny =
                 (final.legacypkgs.dafny.override (prev_: {
                   buildDotnetModule = args:
@@ -259,6 +265,10 @@
                         dotnet-runtime = final.legacypkgs.dotnet-sdk;
                       });
                   dafny = final.dafny;
+                  z3 = final.legacypkgs.z3_4_12.overrideAttrs (final_: prev_: {
+                    src = inputs.z3;
+                    version = "4.12.1";
+                  });
                 }))
                 .overrideAttrs (final_: prev_: {
                   src = inputs.dafny;

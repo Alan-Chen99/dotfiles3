@@ -410,9 +410,9 @@ balanced-match@^1.0.0:
   integrity sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw==
 
 basedpyright@^1.24.0:
-  version "1.27.1"
-  resolved "https://registry.yarnpkg.com/basedpyright/-/basedpyright-1.27.1.tgz#941b4a6de126882b29089301668bad6d800fb43f"
-  integrity sha512-OaMZnGFjUtaUxRH7Zn+dOUCwkJnrPjBis5q4JZBwaRzjADuuz/lLX7vNgxNiL//GYScNUjwvq3wHKoV4ZPECOw==
+  version "1.28.5"
+  resolved "https://registry.yarnpkg.com/basedpyright/-/basedpyright-1.28.5.tgz#1ab7574e8ef0d9690841188b86af9b4ea9f0cf2b"
+  integrity sha512-RCQiUpG53EVI8nW7bECUhZW3rcghJWWoshZTR/YeHGu89f71uEGCfmbE7c5ufMgSqCRFhyBGBaZi96/169rkZw==
   optionalDependencies:
     fsevents "~2.3.3"
 
@@ -1055,9 +1055,9 @@ punycode@^2.1.0:
   integrity sha512-vYt7UD1U9Wg6138shLtLOvdAu+8DsC/ilFtEVHcH+wydcSpNE20AfSOduf6MkRFahL5FY7X1oU7nKVZFtfq8Fg==
 
 pyright@^1.1.393:
-  version "1.1.394"
-  resolved "https://registry.yarnpkg.com/pyright/-/pyright-1.1.394.tgz#6c7a3ba4df54803dcb3778ae4df1210e2f723c0a"
-  integrity sha512-6xUUlOLW1As5cbltkEFkskGfM35YeNH+mpnCyaHxiYlu3GLIq43RTgmctm6Qacxer2q7TUliaE0yIqAmecl6Tw==
+  version "1.1.399"
+  resolved "https://registry.yarnpkg.com/pyright/-/pyright-1.1.399.tgz#09edca8d3022bdcbb8ed2ec85574d81cbb568d29"
+  integrity sha512-roYApcOUEraOc2gTZX052/cw/AZ5rQGkdG/2DtU1/KyhfP+C5zHDlvOT24qRgPXDDkh76AvFwq5quZ1SMahq7w==
   optionalDependencies:
     fsevents "~2.3.3"
 

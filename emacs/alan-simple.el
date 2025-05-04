@@ -100,12 +100,28 @@
  delete-old-versions t             ; delete excess backup files silently
  delete-by-moving-to-trash t
  kept-old-versions 6               ; oldest versions to keep when a new numbered backup is made (default: 2)
- kept-new-versions 9               ; newest versions to keep when a new numbered backup is made (default: 2)
+ kept-new-versions 100               ; newest versions to keep when a new numbered backup is made (default: 2)
  auto-save-default t               ; auto-save every buffer that visits a file
  auto-save-timeout 30              ; number of seconds idle time before auto-save (default: 30)
  auto-save-interval 100            ; number of keystrokes between auto-saves (default: 300)
  )
 
+;; https://www.emacswiki.org/emacs/ForceBackups
+(defun force-backup-of-buffer ()
+  ;; Make a special "per session" backup at the first save of each
+  ;; emacs session.
+  (when (not buffer-backed-up)
+    ;; Override the default parameters for per-session backups.
+    (let ((backup-directory-alist '(("" . "~/.emacs.d/backup/per-session")))
+          (kept-new-versions 3))
+      (backup-buffer)))
+  ;; Make a "per save" backup on each save.  The first save results in
+  ;; both a per-session and a per-save backup, to keep the numbering
+  ;; of per-save backups consistent.
+  (let ((buffer-backed-up nil))
+    (backup-buffer)))
+
+(add-hook 'before-save-hook #'force-backup-of-buffer)
 
 ;;; ui
 ;; on windows (window-width) reports 95 but should be 126
