@@ -114,6 +114,9 @@
     inherit (prev) nixwrapper flake-registry-file nixconf-file less-download-flakes;
   }));
 
+  mod.experimental = callpackage ./experimental.nix {};
+  pub.experimental = mod.experimental;
+
   mod.fonts = callpackage ./fonts.nix {} (reexport (prev: {
     inherit (prev) fonts;
   }));

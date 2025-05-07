@@ -48,9 +48,18 @@
       };
     };
 
+    emacs30 = {
+      url = "git+https://github.com/emacs-mirror/emacs.git?ref=emacs-30.1";
+      flake = false;
+    };
+
+    emacs31 = {
+      url = "git+https://github.com/emacs-mirror/emacs.git?ref=master";
+      flake = false;
+    };
+
     emacs-overlay = {
       url = "github:nix-community/emacs-overlay";
-      inputs.flake-utils.follows = "flake-utils";
       inputs.nixpkgs.follows = "empty";
       inputs.nixpkgs-stable.follows = "empty";
     };
@@ -194,158 +203,14 @@
     self,
     flake-utils,
     ...
-  }: let
-    get-default = system: let
-      package = import ./nix/package-bootstrap.nix {};
-
-      default =
-        package.import-package ./nix/default.nix {
-          flakes = inputs;
-          self = default;
+  }:
+    flake-utils.lib.eachDefaultSystem (
+      system: rec {
+        legacyPackages = import ./nix/flake-attrs.nix {
+          inputs = inputs;
           system = system;
-        } (
-          final: prev: let
-            appendversion = deriv:
-              deriv.overrideAttrs (old: {
-                version = "${old.version or ""}" + final.version;
-                name = "${old.name}-${final.version}";
-              });
-            pkgs-versioned = {
-              inherit
-                (prev)
-                ci-deps
-                ci-instantiate
-                cxxtools
-                env-scripts
-                flake-registry-file
-                fonts
-                js
-                latexenv
-                nixtools
-                pkgs-big
-                pkgs-small
-                profile
-                profile-root
-                pythonlibs
-                pythontools
-                ;
-            };
-            pkgs-other = {
-              inherit
-                (prev)
-                basedpyright
-                emacs
-                nixwrapper
-                password-generator
-                pdf-tools-epdfinfo
-                poetry
-                prettier
-                pyright
-                python-all
-                scmindent
-                test
-                test2
-                yaru-theme
-                ;
-
-              nix-stable = prev.deps.nix-stable;
-              python = prev.poetrypython.python;
-
-              # https://nixos.wiki/wiki/DotNET
-              # on update:
-              # (1) nix build .#dafny.fetch-deps
-              # (2) edit out localtion to dafny_deps.json
-              zz = final.legacypkgs.dafny;
-              dafny =
-                (final.legacypkgs.dafny.override (prev_: {
-                  buildDotnetModule = args:
-                    prev_.buildDotnetModule (args
-                      // {
-                        nugetDeps = ./dafny_deps.json;
-                        dotnet-runtime = final.legacypkgs.dotnet-sdk;
-                      });
-                  dafny = final.dafny;
-                  z3 = final.legacypkgs.z3_4_12.overrideAttrs (final_: prev_: {
-                    src = inputs.z3;
-                    version = "4.12.1";
-                  });
-                }))
-                .overrideAttrs (final_: prev_: {
-                  src = inputs.dafny;
-                  version = "4.10.0";
-                });
-
-              # poetry2nix/tests/pyqt6/default.nix
-
-              # rackt-test = final.deps.racket2nix;
-              # racket-fmt = final.deps.racket2nix.buildRacketPackage inputs.racket-fmt;
-            };
-            pkgs = (builtins.mapAttrs (name: pkg: appendversion pkg) pkgs-versioned) // pkgs-other;
-          in
-            pkgs
-            // {
-              pkgs = final.pypkgs-bins // (builtins.mapAttrs (name: _: final."${name}") pkgs);
-            }
-        );
-    in
-      default;
-
-    _inputs = inputs;
-
-    from-default = default:
-      default
-      // {
-        default = default;
+        };
+        packages = legacyPackages.packages;
       }
-      // rec {
-        packages = default.pkgs;
-
-        homeConfigurations."alan" = default.home;
-
-        inputs = _inputs;
-
-        p = default.legacypkgs;
-        d = default.deps;
-
-        pypkgs = packages.python.pkgs;
-
-        py310 = from-default (default (final: prev: {
-          deps =
-            prev.deps
-            // {
-              python = prev.legacypkgs.python310;
-            };
-        }));
-
-        with_emacs-gtk = from-default (default (final: prev: {
-          deps =
-            prev.deps
-            // {
-              emacs-base = prev.legacypkgs.emacs30-gtk3;
-            };
-        }));
-        emacs-gtk = with_emacs-gtk.emacs;
-
-        less-download-flakes = from-default (default (final: prev: {
-          less-download-flakes = true;
-        }));
-
-        less-build = from-default (default (final: prev: {
-          emacs = prev.deps.emacs-base;
-          deps =
-            prev.deps
-            // {
-              nix = prev.deps.nix-stable;
-            };
-        }));
-
-        nix-gl = default.deps.nix-gl;
-      };
-
-    forsystem = system: rec {
-      legacyPackages = from-default (get-default system);
-      packages = legacyPackages.packages;
-    };
-  in
-    flake-utils.lib.eachDefaultSystem forsystem;
+    );
 }

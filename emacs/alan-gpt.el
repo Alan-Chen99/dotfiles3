@@ -5,7 +5,10 @@
 
 (pkg! '(gptel :host github :repo "karthink/gptel"))
 
-(require-if-is-bytecompile gptel gptel-transient)
+(require-if-is-bytecompile gptel gptel-transient gptel-anthropic)
+
+(defvar gpt-api-key "sk-**************************************************************************")
+(defvar anthropic-api-key "sk-ant-*****************************************************************************************************")
 
 (defun gpt (name)
   (interactive
@@ -28,14 +31,19 @@
   (setq current-prefix-arg '(1))
   (call-interactively #'gpt))
 
-(defvar gpt-api-key "*****************************************************************************")
-
-
 (startup-queue-package 'gptel-transient 50)
+
+(defvar gptel--anthropic)
 
 (eval-after-load! gptel
   (setq gptel-api-key gpt-api-key)
-  (setq gptel-model "gpt-4o")
+  (setq gptel--anthropic (gptel-make-anthropic "Claude" :stream t :key anthropic-api-key))
+
+  ;; (setq-default gptel-backend gptel--openai)
+
+  (setq-default gptel-backend gptel--anthropic)
+  (setq-default gptel-model "Claude:claude-3-7-sonnet-20250219")
+
   (clear-and-backup-keymap gptel-mode-map)
   (general-def gptel-mode-map
     :states 'motion

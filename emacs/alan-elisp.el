@@ -4,6 +4,8 @@
 (require 'alan-flycheck)
 (require 'evil)
 
+(pkg! 'xr)
+
 ;; (setq print-circle t)
 (setq print-circle nil)
 ;; (setq print-level 10)

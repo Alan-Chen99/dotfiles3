@@ -23,13 +23,14 @@
   (setq LilyPond-fancy-comments nil)
   (advice-add #'LilyPond-mode-context-set-syntax-table :override #'ignore)
   (advice-add #'LilyPond-mode-set-syntax-table :override #'ignore)
-  ;; (setq LilyPond-mode-syntax-table scheme-mode-syntax-table)
 
-  ;; (modify-syntax-entry (string-to-char "-") "w" LilyPond-mode-syntax-table)
-  ;; (modify-syntax-entry (string-to-char "_") "w" LilyPond-mode-syntax-table)
+  (seq-doseq (p ".-")
+    (modify-syntax-entry p "w" LilyPond-mode-syntax-table))
 
   (add-hook! 'LilyPond-mode-hook
     (defun alan-LilyPond-mode-setup ()
+      ;; TODO: why isnt it the syntax table by default?
+      (set-syntax-table LilyPond-mode-syntax-table)
 
       ;; (setq-local font-lock-defaults nil)
       ;; (setq-local syntax-propertize-function nil)

@@ -121,7 +121,12 @@
     home-manager = flakes.home-manager;
     home-manager-bin = self.deps.home-manager.packages.${system}.home-manager;
     coreutils = pkgs.coreutils-full;
-    emacs-base = pkgs.emacs30-pgtk;
+    emacs-base = pkgs.emacs30-pgtk.overrideAttrs {
+      # nix build .#inputs.emacs30.outPath
+      # ==> look in README
+      version = "30.1";
+      src = flakes.emacs30;
+    };
 
     gcc = pkgs.gcc_latest;
 

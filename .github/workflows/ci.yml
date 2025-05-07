@@ -50,7 +50,7 @@ jobs:
       - if: success() || failure()
         run: nix path-info --derivation .#less-build.less-download-flakes.ci-instantiate
       - if: success() || failure()
-        run: nix path-info --derivation .#with_emacs-gtk.ci-instantiate
+        run: nix path-info --derivation .#with-emacs-gtk.ci-instantiate
       - if: success() || failure()
         run: nix path-info --derivation .#py310.ci-instantiate
 

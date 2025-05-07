@@ -808,6 +808,11 @@
                     "*-tests.el" "LICENSE" "README*" "*-pkg.el")))
    :description "Use the Emacsclient as $EDITOR" :date (26443 60752)
    :url "https://github.com/magit/with-editor")
+ (xr :source "GNU ELPA" :url "https://elpa.gnu.org/packages/xr.html"
+     :description "Convert string regexp to rx notation" :recipe
+     (:ref "31cd397f54591e3692bf88d6e1995236928e3561" :package "xr"
+           :repo ("https://github.com/mattiase/xr" . "xr") :files
+           ("*" (:exclude ".git" "Makefile" ".github" "*-test.el*"))))
  (yasnippet :source "MELPA" :recipe
             (:ref "5b315f1753480ebe669b157b8242448b5eafcfea" :package
                   "yasnippet" :repo "joaotavora/yasnippet" :fetcher

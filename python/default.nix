@@ -177,7 +177,7 @@
 
   export.pypkgs-bins = builtins.mapAttrs (n: e:
     std.buildEnv {
-      name = n;
+      name = e.name;
       paths = [e];
       pathsToLink = ["/bin" "/etc" "/share"];
     })
