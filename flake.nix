@@ -4,6 +4,8 @@
 
   # cachix use cuda-maintainers
 
+  # nix run p#nix-stable -- flake metadata
+
   inputs = {
     # newadwaita-slim = {
     #   # url = "git+https://github.com/ManFridayy/NewAdwaita-slim.git";
@@ -48,8 +50,13 @@
       };
     };
 
+    emacs29 = {
+      url = "git+https://github.com/emacs-mirror/emacs.git?ref=emacs-29";
+      flake = false;
+    };
+
     emacs30 = {
-      url = "git+https://github.com/emacs-mirror/emacs.git?ref=emacs-30.1";
+      url = "git+https://github.com/emacs-mirror/emacs.git?ref=emacs-30";
       flake = false;
     };
 

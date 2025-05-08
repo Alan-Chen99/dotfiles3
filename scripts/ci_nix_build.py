@@ -67,7 +67,6 @@ elif step == "load_cached":
     cache_key = sys.argv[3]
     try:
         run(f"nix copy --no-check-sigs --all --from {cache_path}")
-        run(f"rm -rf {cache_path}")
     except subprocess.CalledProcessError:
         f"::error file={__file__}::failed to load from cache entry {cache_key}"
         raise

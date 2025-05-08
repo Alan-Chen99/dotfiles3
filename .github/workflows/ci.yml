@@ -94,13 +94,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        emacs:
-          [
+        emacs: [
+            #
             ".#emacs",
             ".#emacs-gtk",
+            ".#emacs31",
             ".#p.emacs30-nox",
-            ".#p.emacs29-gtk3",
-            ".#p.emacs28-gtk3",
           ]
     steps:
       - uses: actions/checkout@v4

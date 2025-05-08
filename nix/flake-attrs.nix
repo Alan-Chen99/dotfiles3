@@ -64,6 +64,14 @@
         }
       );
 
+      with-extend-pkgs = add-overlay (
+        final: prev:
+          extend-pkgs
+          // {
+            packages = prev.packages // extend-pkgs;
+          }
+      );
+
       set-versions = add-overlay (
         final: prev: let
           appendversion = deriv:
@@ -99,6 +107,15 @@
           }
       );
 
+      extend-pkgs.emacs29 = with-emacs29.emacs;
+      with-emacs29 = add-deps-overlay (final: prev: {
+        emacs-base = prev.deps.emacs-base.overrideAttrs {
+          version = "29.4.50";
+          src = inputs.emacs29;
+        };
+      });
+
+      extend-pkgs.emacs31 = with-emacs31.emacs;
       with-emacs31 = add-deps-overlay (final: prev: {
         emacs-base = prev.deps.emacs-base.overrideAttrs {
           version = "31.0.50";
@@ -106,8 +123,12 @@
         };
       });
 
+      extend-pkgs.emacs-gtk = with-emacs-gtk.emacs;
       with-emacs-gtk = add-deps-overlay (final: prev: {
-        emacs-base = final.legacypkgs.emacs30-gtk3;
+        emacs-base = prev.deps.emacs-base.override {
+          withPgtk = false;
+          withGTK3 = true;
+        };
       });
 
       with-py310 = add-deps-overlay (final: prev: {
@@ -123,6 +144,7 @@
         deps =
           prev.deps
           // {
+            emacs-base = final.legacypkgs.emacs30-gtk3;
             nix = final.deps.nix-stable;
           };
       });
@@ -130,4 +152,4 @@
   in
     attrs // res;
 in
-  base-init.default-pkgs.set-versions
+  base-init.default-pkgs.with-extend-pkgs.set-versions
