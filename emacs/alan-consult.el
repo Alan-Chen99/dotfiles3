@@ -18,6 +18,18 @@
 
   (add-to-list 'consult-fd-args "--hidden" t)
 
+  ;; (string-split consult-ripgrep-args " ")
+  (setq consult-ripgrep-args
+        '("rg" "--null" "--line-buffered" "--color=never" "--max-columns=1000" "--path-separator" "/"
+          "--smart-case" "--no-heading" "--with-filename" "--line-number" "--search-zip"
+          ;; added
+          "--hidden"
+          ))
+
+  ;; (setq consult-ripgrep-args
+  ;;       "rg --null --line-buffered --color=never --max-columns=1000 --path-separator /\
+  ;;  --smart-case --no-heading --with-filename --line-number --search-zip")
+
   (general-def
     [remap switch-to-buffer] #'consult-buffer
     [remap switch-to-buffer-other-window] #'consult-buffer-other-window)

@@ -5,7 +5,6 @@
   crate2nix,
   dbg,
   dream2nix,
-  emacs-overlay,
   gitignore-lib,
   mini-compile-commands,
   nix-filter,
@@ -22,11 +21,14 @@
     config = {
       allowUnfree = true;
       cudaSupport = true;
+      permittedInsecurePackages = [
+        "emacs-29.4.50"
+      ];
     };
     overlays = [
-      rust-overlay
+      flakes.emacs-overlay.overlays.emacs
       flakes.nix-ros-overlay.overlays.default
-      # emacs-overlay.overlays.emacs
+      rust-overlay
     ];
   };
 

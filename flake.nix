@@ -56,7 +56,7 @@
     };
 
     emacs30 = {
-      url = "git+https://github.com/emacs-mirror/emacs.git?ref=emacs-30";
+      url = "git+https://github.com/emacs-mirror/emacs.git?ref=refs/tags/emacs-30.1";
       flake = false;
     };
 
