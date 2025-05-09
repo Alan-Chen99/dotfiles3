@@ -52,7 +52,7 @@ jobs:
       - if: success() || failure()
         run: nix path-info --derivation .#with-emacs-gtk.ci-instantiate
       - if: success() || failure()
-        run: nix path-info --derivation .#py310.ci-instantiate
+        run: nix path-info --derivation .#with-py310.ci-instantiate
 
   python:
     needs: setup
