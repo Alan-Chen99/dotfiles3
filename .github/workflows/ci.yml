@@ -97,8 +97,9 @@ jobs:
         emacs: [
             #
             ".#emacs",
-            ".#emacs-gtk",
+            ".#emacs29",
             ".#emacs31",
+            ".#emacs-gtk",
             ".#p.emacs30-nox",
           ]
     steps:

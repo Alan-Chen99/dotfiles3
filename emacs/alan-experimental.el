@@ -7,11 +7,22 @@
                :files ("el/*.el")
                ))
 
-(require-if-is-bytecompile format-all arc-mode comint python)
+(require-if-is-bytecompile
+ arc-mode
+ comint
+ dafny-mode
+ format-all
+ lsp-mode
+ outline
+ python
+ tq
+ tree-sitter-langs-build
+
+ alan-simple
+ )
 
 (eval-after-load! image-mode
   (clear-and-backup-keymap image-mode-map))
-
 
 ;; set by emacs wrapper from nix; should not propagate to subprocesses
 (setenv "GIO_EXTRA_MODULES")
@@ -75,5 +86,12 @@
 ;; (span-instrument python-shell-completion-native-setup)
 ;; (span-instrument python-shell-completion-native-try)
 ;; (span-instrument python-shell-accept-process-output)
+
+(add-to-list 'read-only-dir-exclude-list (expand-file-name "elpaca_new/repos/gptel" user-emacs-directory))
+(add-to-list 'read-only-dir-exclude-list (expand-file-name "elpaca_new/repos/tree-sitter-langs" user-emacs-directory))
+
+(span-wrap tree-sitter-langs--call (&rest args)
+  (:tree-sitter-langs--call (:seq args))
+  (span-flush))
 
 (provide 'alan-experimental)

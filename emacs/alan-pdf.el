@@ -88,13 +88,12 @@
   ;; (alan-set-ignore-debug-on-error #'image-roll-goto-page)
   ;; pdf-view-scroll-down-or-previous-page
 
-  (span-wrap pdf-info-query (&rest args)
-    (:pdf-info-query (:seq args))
-    ;; (error "no")
-    ;; (span-flush)
-    )
-
   )
 
+(span-wrap pdf-info-query (&rest args)
+  (:pdf-info-query (:seq args))
+  ;; (error "no")
+  ;; (span-flush)
+  )
 
 (provide 'alan-pdf)

@@ -30,21 +30,20 @@
 
 (defvar resize-minibuffer-hook nil)
 (defun resize-minibuffer (&rest _)
-  (when (minibuffer-window)
-    (with-selected-window (minibuffer-window)
-      (if track-mouse
-          (setf (frame-parameter nil 'minibuffer-height) (window-pixel-height))
-        (let ((minibuffer-height (frame-parameter nil 'minibuffer-height)))
-          (window-resize
-           (minibuffer-window)
-           (-
-            (if (integerp minibuffer-height)
-                minibuffer-height
-              (1+ (round (* minibuffer-height (line-pixel-height)))))
-            (window-pixel-height))
-           nil nil 'pixelwise))
-        (setq max-mini-window-height (window-height))
-        (run-hooks 'resize-minibuffer-hook)))))
+  (with-selected-window (minibuffer-window)
+    (if track-mouse
+        (setf (frame-parameter nil 'minibuffer-height) (window-pixel-height))
+      (let ((minibuffer-height (frame-parameter nil 'minibuffer-height)))
+        (window-resize
+         (minibuffer-window)
+         (-
+          (if (integerp minibuffer-height)
+              minibuffer-height
+            (1+ (round (* minibuffer-height (line-pixel-height)))))
+          (window-pixel-height))
+         nil nil 'pixelwise))
+      (setq max-mini-window-height (window-height))
+      (run-hooks 'resize-minibuffer-hook))))
 
 (defun alan-init-minibuffer-size (frame)
   (with-selected-frame frame

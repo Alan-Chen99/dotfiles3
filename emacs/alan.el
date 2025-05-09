@@ -104,10 +104,9 @@
   (setq-local evil-shift-width 2)
   (setq-local format-all-formatters '(("YAML" prettierd))))
 
-
 (pkg! '(visual-basic-mode :host github :repo "emacsmirror/visual-basic-mode")
   (autoload 'visual-basic-mode "visual-basic-mode" "Visual Basic mode." t)
-  (push '("\\.\\(?:frm\\|\\(?:ba\\|vb\\)s\\)\\'" . visual-basic-mode)
+  (push `(,(rx (seq "." (or "frm" (seq (or "ba" "vb") "s")) eos)) . visual-basic-mode)
         auto-mode-alist)
   (setq-default visual-basic-mode-indent 4)
   (general-def visual-basic-mode-map
@@ -211,10 +210,6 @@
 ;; ;; https://github.com/DarthFennec/highlight-indent-guides/issues/61
 ;; (setq auto-window-vscroll nil)
 
-(add-to-list 'read-only-dir-exclude-list (expand-file-name "elpaca_new/repos/gptel" user-emacs-directory))
-(add-to-list 'read-only-dir-exclude-list (expand-file-name "elpaca_new/repos/tree-sitter-langs" user-emacs-directory))
-
-
 
 
 
@@ -238,9 +233,6 @@
 ;; (alan-set-ignore-debug-on-error #'revert-buffer)
 
 
-(span-wrap tree-sitter-langs--call (&rest args)
-  (:tree-sitter-langs--call (:seq args))
-  (span-flush))
 
 ;; (sleep-for 1)
 ;; (throw 'quit nil)
@@ -283,11 +275,6 @@
 
 ;; (read-key nil)
 ;; (read-char)
-
-(span-wrap tq-enqueue (&rest args)
-  (:tq-enqueue (:seq args))
-  ;; (span-flush)
-  )
 
 ;; (defadvice! alan-on-debug (orig-fn &rest args)
 ;;   :around #'debug

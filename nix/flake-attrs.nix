@@ -109,7 +109,7 @@
 
       extend-pkgs.emacs29 = with-emacs29.emacs;
       with-emacs29 = add-deps-overlay (final: prev: {
-        emacs-base = prev.deps.emacs-base.overrideAttrs {
+        emacs-base = final.legacypkgs.emacs29.overrideAttrs {
           version = "29.4.50";
           src = inputs.emacs29;
         };

@@ -70,11 +70,11 @@
     (bound-and-true-p treesit-font-lock-settings))
 
   (general-def evil-inner-text-objects-map
-    "f" (evil-textobj-tree-sitter-get-textobj "function.inner"))
+    "f" (with-no-warnings (evil-textobj-tree-sitter-get-textobj "function.inner")))
 
   (general-def evil-outer-text-objects-map
-    "f" (evil-textobj-tree-sitter-get-textobj "function.outer")
-    "a" (evil-textobj-tree-sitter-get-textobj ("conditional.outer" "loop.outer")))
+    "f" (with-no-warnings (evil-textobj-tree-sitter-get-textobj "function.outer"))
+    "a" (with-no-warnings (evil-textobj-tree-sitter-get-textobj ("conditional.outer" "loop.outer"))))
 
   ;; (alan-set-ignore-debug-on-error #'evil-textobj-tree-sitter--message-not-found)
 
