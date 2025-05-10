@@ -10,9 +10,6 @@
   std,
   basedpyright,
 }: rec {
-  # pkgs = legacypkgs;
-  # outputs.legacyPackages.x86_64-linux._self.default.__mods.python.__out
-
   poetry-lib = poetry2nix.lib.mkPoetry2Nix {pkgs = legacypkgs;};
 
   poetrypython = self.poetrypython.python;
@@ -91,6 +88,16 @@
 
         regexfactory = prev.regexfactory.overridePythonAttrs (old: {
           nativeBuildInputs = (old.nativeBuildInputs or []) ++ [final.setuptools];
+        });
+
+        simple-parsing = prev.simple-parsing.overridePythonAttrs (old: {
+          UV_DYNAMIC_VERSIONING_BYPASS = old.version;
+          nativeBuildInputs =
+            (old.nativeBuildInputs or [])
+            ++ [
+              final.hatchling
+              final.uv-dynamic-versioning
+            ];
         });
 
         weasyprint = assert prev.weasyprint.version == python.pkgs.weasyprint.version;

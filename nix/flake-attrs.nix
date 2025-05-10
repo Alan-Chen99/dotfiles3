@@ -50,16 +50,21 @@
               prettier
               pyright
               python-all
+              schemat
               scmindent
-              test
-              test2
               yaru-theme
               ;
 
             nix-stable = final.deps.nix-stable;
             python = final.poetrypython.python;
+
+            # nix-index = inputs.nix-index.packages.${system}.default;
+            nix-index-database = inputs.nix-index-database.packages.${system}.default;
           };
         in {
+          # impure
+          nix-gl = inputs.nix-gl.packages.${system}.default;
+
           packages = prev.packages // pkgs // final.pypkgs-bins // final.experimental.packages;
         }
       );

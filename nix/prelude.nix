@@ -1,15 +1,14 @@
 let
   dotfiles = import ./local.nix;
-  default = dotfiles.default;
-  dbg = default.dbg;
+  dbg = dotfiles.dbg;
 in
   builtins
   // dbg.__clean
   // {
     builtins = builtins.removeAttrs builtins ["builtins"];
     df = dotfiles;
-    mods = dotfiles.__mods;
+    mods = dotfiles.mods;
     df-inputs = dotfiles.inputs;
-    inherit (default) dbg lib deps std;
-    pkgs = default.legacypkgs;
+    inherit (dotfiles) dbg lib deps std;
+    pkgs = dotfiles.legacypkgs;
   }

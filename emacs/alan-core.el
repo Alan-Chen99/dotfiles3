@@ -13,7 +13,8 @@
   (when alan-finished-early-init
     (unless process-queue-thread-exist
       (setq process-queue-thread-exist t)
-      (alan-startup-process-queue))))
+      (run-with-idle-timer 0.01 nil
+                           #'alan-startup-process-queue))))
 
 (defun alan-startup-process-queue ()
   (if (input-pending-p)

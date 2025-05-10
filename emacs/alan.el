@@ -165,7 +165,8 @@
 
 
 (span-notef "[end-of-init-hook]")
-(run-hooks 'alan-end-of-init-hook)
+(unless alan-inhibit-end-of-init-hook
+  (run-hooks 'alan-end-of-init-hook))
 
 
 ;; (defadvice! alan-require-debug (orig-fun feature &optional filename noerror)

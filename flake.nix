@@ -128,6 +128,11 @@
       inputs.flake-utils.follows = "flake-utils";
     };
 
+    nix-index = {
+      url = "git+https://github.com/nix-community/nix-index.git";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     nix-index-database = {
       url = "github:Mic92/nix-index-database";
       inputs.nixpkgs.follows = "nixpkgs";

@@ -29,36 +29,44 @@ in rec {
     src = flakes.schemat;
   };
 
-  # commonArgs = {
-  #   src = nix-filter {
-  #     root = src;
-  #     include = [
-  #       "src"
-  #       "proc_macros"
-  #       "Cargo.toml"
-  #       "Cargo.lock"
-  #     ];
-  #   };
-  #   OPENSSL_LIB_DIR = "${openssl.out}/lib";
-  #   OPENSSL_INCLUDE_DIR = "${openssl.dev}/include";
-  #   LIBCLANG_PATH = "${llvm.libclang.lib}/lib";
+  commonArgs = {
+    src = nix-filter {
+      root = src + "/rust";
+      include = [
+        "src"
+        "Cargo.toml"
+        "Cargo.lock"
+        ".cargo"
+      ];
+    };
+    # OPENSSL_LIB_DIR = "${openssl.out}/lib";
+    # OPENSSL_INCLUDE_DIR = "${openssl.dev}/include";
+    # LIBCLANG_PATH = "${llvm.libclang.lib}/lib";
 
-  #   strictDeps = true;
-  #   CARGO_PROFILE = "dev";
-  # };
-
-  # NIX_LIB_DIR = "${nix}/lib";
-
-  rust-src = rust.passthru.availableComponents.rust-src;
-
-  export.rust-src-deps = craneLib.vendorMultipleCargoDeps {
-    cargoLockList = [
-      ./rust-src-hack/Cargo.lock
-      "${rust-src}/lib/rustlib/src/rust/Cargo.lock"
-    ];
+    strictDeps = true;
+    # CARGO_PROFILE = "dev";
   };
 
-  # export.cargo-artifacts = craneLib.buildDepsOnly commonArgs;
+  export.cargoArtifacts = craneLib.buildDepsOnly commonArgs;
+  export.cargoArtifacts-static = craneLib.buildDepsOnly (commonArgs
+    // {
+      CARGO_BUILD_TARGET = "x86_64-unknown-linux-musl";
+    });
+
+  export.test_script = craneLib.buildPackage (commonArgs
+    // {
+      cargoArtifacts = self.cargoArtifacts;
+
+      cargoExtraArgs = "--bin test_script";
+    });
+
+  export.setuid = craneLib.buildPackage (commonArgs
+    // {
+      cargoArtifacts = self.cargoArtifacts-static;
+
+      cargoExtraArgs = "--bin setuid";
+      CARGO_BUILD_TARGET = "x86_64-unknown-linux-musl";
+    });
 
   # testwrapcargo = std.writeScriptBin "cargo" ''
   #   #! ${std.stdenv.shell}
@@ -72,41 +80,22 @@ in rec {
   #   inherit cargo-artifacts;
   # });
 
-  # export.rust-packages = craneLib-dbg.buildPackage (commonArgs
-  #   // {
-  #     inherit cargo-artifacts;
-  #     # nativeBuildInputs = [tree which];
-  #     unpackPhase = ''
-  #       echo "source at: ${commonArgs.src}"
-  #       export CARGO_TARGET_DIR=/build/target
-  #     '';
-  #     buildPhaseCargoCommand = ''
-  #       cd ${commonArgs.src}
-  #       # tree -a /build
-  #       cargoBuildLog=$(mktemp /build/cargoBuildLogXXXX.json)
-  #       cargoWithProfile build --message-format json-render-diagnostics --locked >"$cargoBuildLog"
-  #     '';
-  #     doNotRemoveReferencesToVendorDir = true;
-  #   });
-
-  # https://github.com/rust-lang/rust/issues/95736
-  export.rust-src-hack =
-    std.runCommandLocal "rust-src-hack" {
-      nativeBuildInputs = [rust];
-    }
-    ''
-      export dir=$out
-      mkdir $dir
-      cp -r ${rust-src}/lib/rustlib/src/rust/library $dir/library
-      cp ${./rust-src-hack/rust-src-workspace.toml} $dir/Cargo.toml
-      cp ${rust-src}/lib/rustlib/src/rust/Cargo.lock $dir/Cargo.lock
-      chmod +w $dir/Cargo.lock
-      mkdir $dir/.cargo
-      cp ${self.rust-src-deps}/config.toml $dir/.cargo/config.toml
-
-      cd $dir/library/std
-      cargo metadata --format-version 1 --offline >/dev/null
-    '';
+  export.rust-packages = craneLib.buildPackage (commonArgs
+    // {
+      inherit (self) cargo-artifacts;
+      # nativeBuildInputs = [tree which];
+      unpackPhase = ''
+        echo "source at: ${commonArgs.src}"
+        export CARGO_TARGET_DIR=/build/target
+      '';
+      buildPhaseCargoCommand = ''
+        cd ${commonArgs.src}
+        # tree -a /build
+        cargoBuildLog=$(mktemp /build/cargoBuildLogXXXX.json)
+        cargoWithProfile build --message-format json-render-diagnostics --locked >"$cargoBuildLog"
+      '';
+      doNotRemoveReferencesToVendorDir = true;
+    });
 
   # export.rust-devshell = std.mkShellNoCC (commonArgs
   #   // {

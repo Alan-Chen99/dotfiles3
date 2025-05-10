@@ -115,7 +115,6 @@
     nix = flakes.nix.packages.${system}.default.overrideAttrs {allowSubstitutes = true;};
     nix-stable = pkgs.nix;
     nixd = flakes.nixd.packages.${system}.default;
-    nix-gl = flakes.nix-gl.packages.${system}.default;
 
     mcc-env = (pkgs.callPackage mini-compile-commands {}).wrap self.std.stdenv;
     mcc-hook = (pkgs.callPackage mini-compile-commands {}).hook;
@@ -145,15 +144,15 @@
       self = self.deps.python;
     };
 
-    rust = pkgs.rust-bin.nightly."2025-01-25".default.override {
+    rust = pkgs.rust-bin.nightly.latest.default.override {
       extensions = [
         "clippy"
         "cargo"
         "rustfmt-preview"
         "rust-analyzer"
       ];
+      targets = ["x86_64-unknown-linux-musl"];
     };
-    # craneLib = (crane.mkLib pkgs).overrideToolchain rust;
 
     texlive = pkgs.texliveSmall;
   };

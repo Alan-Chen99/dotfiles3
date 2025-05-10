@@ -13,7 +13,7 @@ for x in (Path(nix_path) / "bin").iterdir():
     wrapped = [
         f"#! {bash_path} -e",
         # $HOME/.config/nix/nix.conf allows user and/or magic-nix-cache to inject stuff locally
-        f'export NIX_USER_CONF_FILES="$NIX_USER_CONF_FILES:$HOME/.config/nix/nix.conf:{nixconf_file_path}"',
+        f'export NIX_USER_CONF_FILES="{nixconf_file_path}:$NIX_USER_CONF_FILES:$HOME/.config/nix/nix.conf"',
         f'exec -a "$0" {x}{" --print-build-logs" if x.name == "nix" else ""} "$@"',
         f"",
     ]

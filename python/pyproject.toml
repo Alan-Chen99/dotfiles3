@@ -8,6 +8,8 @@ authors = []
 exclude = ["**/result*"]
 typeCheckingMode = "standard"
 
+# nix run ..#poetry -- add abc --lock
+
 # upgrade using
 # nix run ..#poetry -- lock
 # nix run ..#poetry -- up --latest --no-install
@@ -40,6 +42,8 @@ hypothesis = "^6.131.9"
 setuptools = "^80.3.1"
 pytest-mock = "^3.14.0"
 pybind11 = "^2.13.6"
+hatchling = "^1.27.0"
+uv-dynamic-versioning = "^0.7.0"
 
 # libraries
 pyparsing = "^3.2.3"
@@ -83,3 +87,5 @@ factorio-draftsman = "^2.0.2"
 vcstool2 = "^0.4.5"
 
 RegexFactory = { git = 'https://github.com/Alan-Chen99/RegexFactory.git' }
+
+simple-parsing = { git = "https://github.com/lebrice/SimpleParsing.git", rev = "refs/pull/345/head" }

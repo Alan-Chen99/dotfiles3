@@ -143,30 +143,27 @@
   };
 
   pkgs-small_ = {
-    # yaru-theme = yaru-theme;
-
     inherit
       (legacypkgs)
-      yaru-theme
-      # adwaita-icon-theme
+      buildifier
       cachix
-      # cmake
       cmake-format
+      dconf
+      dnsutils
       dockfmt
-      ffmpeg
+      expect
       git-lfs
       gnome-icon-theme
       graphviz
       html-tidy
       hyperfine
       ispell
-      kavita
-      libtool
       nixfmt-classic
       nixpkgs-fmt
       shfmt
       stylua
       unzip
+      wayland-utils
       zip
       ;
   };
@@ -176,11 +173,18 @@
   };
 
   pkgs-big_ = {
+    # yaru-theme = yaru-theme;
     inherit
       (legacypkgs)
+      bear
+      ffmpeg
       fontfinder
       jre
+      kavita
+      libtool
       racket
+      thefuck
+      yaru-theme
       ;
   };
   export.pkgs-big = std.buildEnv {

@@ -91,6 +91,7 @@
 
 ;; so that we can load the entire init file after startup and still work
 (defvar alan-end-of-init-hook nil)
+(defvar alan-inhibit-end-of-init-hook nil)
 
 (defvar alan-finished-early-init nil)
 

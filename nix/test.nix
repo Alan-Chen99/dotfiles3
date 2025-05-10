@@ -10,26 +10,6 @@
   nix,
   llvmpkgs,
 }: {
-  export.test = derivation {
-    name = "test-drv";
-    builder = std.stdenv.shell;
-    system = system;
-    args = [
-      "-c"
-      ''
-        ${coreutils}/bin/printenv
-        ${tree}/bin/tree -a /build
-        # ${coreutils}/bin/ls -la /nix/store
-
-        echo "hello" >> $out
-        echo "${std.stdenv.shell}" >> $dev
-      ''
-    ];
-    outputs = ["out" "dev"];
-    # requiredSystemFeatures = ["recursive-nix"];
-    # NIX_REMOTE_RECURSIVE_PROTOCOL_VERSION = "0x101";
-  };
-
   # test2 = std.mkDerivation {
   #   name = "test-drv";
   #   buildInputs = [nix_2_16];

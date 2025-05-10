@@ -1,13 +1,7 @@
-	
-FROM	ubuntu:latest
-RUN	apt-get update && apt-get install -y \
-	ca-certificates \
-	sudo \
-	fontconfig \
-	&& rm -rf /var/lib/apt/lists/*
-RUN	useradd -m -u 1000 dockeruser
-RUN	mkdir /home/dockeruser/.cache
-RUN	chmod 700 /home/dockeruser/.cache
-RUN	chown 1000:1000 /home/dockeruser/.cache
-RUN	echo 'dockeruser ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
-RUN	echo "export PS1='${debian_chroot:+($debian_chroot)}\u@\h:\w\$ '" >> /home/dockeruser/.bashrc
+FROM ubuntu:latest AS builder
+RUN mkdir -p /home/dockeruser
+
+# alan:x:1000:1000:,,,:/home/alan:/bin/bash
+
+FROM scratch
+COPY --from=ubuntu:latest /root /home/dockeruser

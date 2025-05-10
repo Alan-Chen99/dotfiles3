@@ -29,6 +29,7 @@
     ;;   (span--backtrace))
     (span-notef "%-20s %-10s %-10s" (elpaca<-id e) (elpaca--status e) text)))
 
+(setq alan-inhibit-end-of-init-hook t)
 (require 'alan)
 
 (defun ci-write-failed (e)
@@ -44,6 +45,7 @@
 ;; (span-instrument elpaca--continue-build :verbose t)
 
 (cl-defun ci-wait-for-pkgs-build ()
+  (elpaca-process-queues)
   (cl-block nil
     (while t
       (let ((statuses (elpaca--count-statuses)))
@@ -80,11 +82,8 @@
      (if (and (version<= "29" emacs-version) (alist-get 'failed ci-pkgs-statuses))
          1 0))))
 
-(defun ci-load-packages ()
-  (while process-queue-thread-exist
-    (sit-for 0.1)))
-
 (defun ci-byte-compile-core ()
+  (setq async-queue nil)
   (let* ((default-directory alan-dotemacs-dir)
          (did-error
           (alan-byte-compile-files
@@ -95,6 +94,7 @@
          1 0))))
 
 (defun ci-byte-compile ()
+  (ci-wait-for-pkgs-build)
   (let* ((did-error (alan-byte-compile-dotemacs-dir)))
     (kill-emacs
      (if (and (version<= "29" emacs-version) did-error)

@@ -7,7 +7,7 @@
   export = checkedjoin pub mod-reexports;
   mod-reexports = builtins.foldl' checkedjoin {} (builtins.catAttrs "reexport" (builtins.attrValues mod));
 
-  pub.__mods = mod;
+  pub.mods = mod;
 
   nixpkgs-flakes = flakes.nixpkgs;
 
@@ -185,10 +185,6 @@
 
   mod.source = callpackage ./source.nix {} (reexport (prev: {
     inherit (prev) cleansrc src;
-  }));
-
-  mod.test = callpackage ./test.nix {} (reexport (prev: {
-    inherit (prev) test test2;
   }));
 
   mod.version = callpackage ./version.nix {} (reexport (prev: {

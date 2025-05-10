@@ -60,11 +60,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
-      - uses: ./.github/actions/build_nix
-        with:
-          drv: .#python-all
-          use_restore: false
-          CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
+      - run: nix build .#python-all
       - run: nix build .#python.inject.pygit2.regexfactory
 
   js:
@@ -126,13 +122,13 @@ jobs:
         run: emacs --batch --eval "(setq ci-build-verbose t)" -l emacs/ci.el --eval "(ci-show-build-errs)"
         timeout-minutes: 5
       - if: success() || failure()
-        run: emacs --batch -l emacs/ci.el --eval "(ci-load-packages)"
+        run: emacs --batch -l emacs/ci.el --eval "(ci-show-build-errs)"
         timeout-minutes: 5
       - if: success() || failure()
         run: emacs --batch -l emacs/ci.el --eval "(ci-byte-compile)"
         timeout-minutes: 5
       - if: success() || failure()
-        run: emacs --batch -l emacs/ci.el --eval "(ci-load-packages)"
+        run: emacs --batch --eval "(setq ci-build-verbose t)" -l emacs/ci.el --eval "(ci-wait-for-pkgs-build)"
         timeout-minutes: 5
 
   update-python:
@@ -142,9 +138,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
-      - uses: ./.github/actions/build_nix
-        with:
-          drv: .#python-all
+      - run: nix build .#python-all
       - run: (cd python && nix run ..#poetry -- lock && nix run ..#poetry -- up --latest --no-install)
       - uses: peter-evans/create-pull-request@v7
         with:
@@ -182,4 +176,15 @@ jobs:
       - uses: ./.github/actions/build_nix
         with:
           drv: .#dafny
+          CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
+
+  schemat:
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - uses: ./.github/actions/build_nix
+        with:
+          drv: .#schemat
           CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
