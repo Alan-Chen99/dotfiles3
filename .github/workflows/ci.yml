@@ -106,7 +106,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
       - run: nix path-info --derivation ${{ matrix.emacs }}
-      - if: ${{ matrix.emacs == '.#emacs' || matrix.emacs == '.#emacs-gtk' }}
+      - if: ${{ matrix.emacs != '.#p.emacs30-nox' }}
         uses: ./.github/actions/build_nix
         with:
           drv: ${{ matrix.emacs }}
