@@ -117,7 +117,7 @@
 
       extend-pkgs.emacs31 = with-emacs31.emacs;
       with-emacs31 = add-deps-overlay (final: prev: {
-        emacs-base = final.legacypkgs.emacs-git.overrideAttrs {
+        emacs-base = final.legacypkgs.emacs-git-pgtk.overrideAttrs {
           version = "31.0.50";
           src = inputs.emacs31;
         };
