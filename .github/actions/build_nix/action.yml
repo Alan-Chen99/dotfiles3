@@ -11,6 +11,8 @@ inputs:
     default: "true"
   CACHIX_AUTH_TOKEN:
     required: true
+  use_restore:
+    default: "true"
 
 outputs:
   drv_path:
@@ -20,7 +22,7 @@ runs:
   using: "composite"
   steps:
     - id: instantiate
-      run: ./scripts/ci_nix_build.py instantiate ${{ inputs.drv }} ${{ inputs.cache_path_root }}
+      run: ./scripts/ci_nix_build.py instantiate ${{ inputs.drv }} ${{ inputs.cache_path_root }} ${{ inputs.use_restore }}
       shell: bash
 
     - id: cache

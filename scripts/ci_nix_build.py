@@ -50,14 +50,24 @@ step = sys.argv[1]
 if step == "instantiate":
     drv_name = sys.argv[2]
     cache_path_root = sys.argv[3]
+    use_restore = sys.argv[4]
+
     drv_path = run(
         f"nix path-info --derivation {drv_name}", stdout=subprocess.PIPE
     ).stdout.decode()
     drv_path = drv_path.removesuffix("\n")
+
+    cache_key = f"nix-{drv_name}-{drv_path}"
+    if use_restore == "true":
+        restore_key = f"nix-{drv_name}-"
+    else:
+        assert use_restore == "false"
+        restore_key = ""
+
     write_gh_out(
         drv_path=drv_path,
-        cache_key=f"nix-{drv_name}-{drv_path}",
-        restore_key=f"nix-{drv_name}-",
+        cache_key=cache_key,
+        restore_key=restore_key,
         cache_path=str(Path(cache_path_root) / drv_name),
     )
 

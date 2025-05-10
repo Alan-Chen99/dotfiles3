@@ -63,6 +63,7 @@ jobs:
       - uses: ./.github/actions/build_nix
         with:
           drv: .#python-all
+          use_restore: false
           CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
       - run: nix build .#python.inject.pygit2.regexfactory
 
