@@ -157,15 +157,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
-      - run: nix run .#nix-stable -- flake update nixpkgs
+      - run: nix run .#nix-stable -- flake update
       - uses: peter-evans/create-pull-request@v7
         with:
           token: ${{ secrets.PAT }}
           add-paths: |
             flake.lock
-          commit-message: "update nixpkgs"
-          title: "update nixpkgs"
-          branch: "update-nixpkgs"
+          commit-message: "update flakes"
+          title: "update flakes"
+          branch: "update-flakes"
 
   dafny:
     needs: setup
