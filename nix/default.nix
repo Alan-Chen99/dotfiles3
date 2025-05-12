@@ -22,9 +22,7 @@
       inherit system nixpkgs-flakes;
       flakes = flakes;
       crane = flakes.crane;
-      crate2nix = flakes.crate2nix;
       dbg = self.dbg;
-      dream2nix = flakes.dream2nix;
       gitignore-lib = flakes.gitignore.lib;
       mini-compile-commands = flakes.mini-compile-commands;
       nix-filter = flakes.nix-filter;

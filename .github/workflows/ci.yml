@@ -23,16 +23,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
-      - if: success() || failure()
-        run: nix path-info --derivation .#ci-instantiate --option eval-cache false
-      - if: success() || failure()
-        run: nix run .#p.nixVersions.nix_2_23 -- path-info --derivation .#ci-instantiate --option eval-cache false
-      - if: success() || failure()
-        run: nix run .#p.nixVersions.nix_2_24 -- path-info --derivation .#ci-instantiate --option eval-cache false
-      - if: success() || failure()
-        run: nix run .#p.nixVersions.nix_2_25 -- path-info --derivation .#ci-instantiate --option eval-cache false
-      - if: success() || failure()
-        run: nix shell .#nixwrapper -c nix path-info --derivation .#ci-instantiate --option eval-cache false
 
       # registery
       - if: success() || failure()
@@ -53,6 +43,19 @@ jobs:
         run: nix path-info --derivation .#with-emacs-gtk.ci-instantiate
       - if: success() || failure()
         run: nix path-info --derivation .#with-py310.ci-instantiate
+
+  nix-versions:
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+
+      - if: success() || failure()
+        run: |
+          ./nix/tests/nix_instantiate.py \
+            --nix n#nixVersions.nix_2_23 n#nixVersions.nix_2_24 n#nixVersions.nix_2_25 .#deps.nix .#nixwrapper \
+            --drv .#ci-instantiate p#ci-instantiate
 
   python:
     needs: setup

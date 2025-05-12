@@ -4,3 +4,7 @@ result*
 
 node_modules
 target
+
+# nix generates this
+/version
+/metadata

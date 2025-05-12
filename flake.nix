@@ -24,40 +24,32 @@
 
     crate2nix = {
       url = "github:nix-community/crate2nix";
-      inputs.cachix.follows = "empty";
-      inputs.crate2nix_stable.follows = "empty";
-      inputs.flake-compat.follows = "flake-compat";
-      inputs.flake-parts.follows = "flake-parts";
-      inputs.nix-test-runner.follows = "empty";
+      flake = false;
     };
 
     dafny = {
       # url = "github:Alan-Chen99/dafny";
-      url = "git+https://github.com/dafny-lang/dafny.git?ref=4.10.0";
+      url = "github:dafny-lang/dafny/4.10.0";
       flake = false;
     };
 
     dream2nix = {
       url = "github:nix-community/dream2nix";
-      inputs = {
-        nixpkgs.follows = "nixpkgs";
-        purescript-overlay.follows = "empty";
-        pyproject-nix.follows = "empty";
-      };
+      flake = false;
     };
 
     emacs29 = {
-      url = "git+https://github.com/emacs-mirror/emacs.git?ref=emacs-29";
+      url = "github:emacs-mirror/emacs/emacs-29";
       flake = false;
     };
 
     emacs30 = {
-      url = "git+https://github.com/emacs-mirror/emacs.git?ref=refs/tags/emacs-30.1";
+      url = "github:emacs-mirror/emacs/emacs-30.1";
       flake = false;
     };
 
     emacs31 = {
-      url = "git+https://github.com/emacs-mirror/emacs.git?ref=master";
+      url = "github:emacs-mirror/emacs/master";
       flake = false;
     };
 
@@ -125,7 +117,7 @@
     };
 
     nix-index = {
-      url = "git+https://github.com/nix-community/nix-index.git";
+      url = "github:nix-community/nix-index";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -163,7 +155,7 @@
     nixpkgs24-05.url = "github:nixos/nixpkgs/nixos-24.05";
 
     poetry2nix = {
-      url = "git+https://github.com/Alan-Chen99/poetry2nix.git";
+      url = "github:Alan-Chen99/poetry2nix";
       # url = "git+file:///home/alan/poetry2nix";
       inputs = {
         flake-utils.follows = "flake-utils";
@@ -202,7 +194,7 @@
     systems.follows = "flake-utils/systems";
 
     z3 = {
-      url = "git+https://github.com/Z3Prover/z3.git?ref=refs/tags/z3-4.12.1";
+      url = "github:Z3Prover/z3/z3-4.12.1";
       flake = false;
     };
   };

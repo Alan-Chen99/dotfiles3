@@ -101,7 +101,6 @@
       file
       findutils
       gawk
-      # gcc
       gdb
       git
       glibcLocales
@@ -109,13 +108,11 @@
       gnused
       home-manager-bin
       keychain
-      # TODO: doesnt build
-      # nix.doc
+      nix.doc
       nixmeta
       nixrepl-wrapper
       nixwrapper
       patch
-      # pdf-tools-epdfinfo
       ripgrep
       taplo
       tree

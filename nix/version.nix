@@ -60,23 +60,17 @@
     ''nix: ${nix}''
     ''nixpkgs: ${nixpkgs-ver}; ${format-date nixpkgs-flakes.sourceInfo.lastModified}''
     ''nixpkgs: ${lib.generators.toPretty {} nixpkgs-flakes.sourceInfo}''
-    ''info: ${lib.generators.toPretty {} (builtins.removeAttrs sourceInfo ["outPath"])}''
+    # behaves differently when evaluated from p# vs .#
+    # ''info: ${lib.generators.toPretty {} (builtins.removeAttrs sourceInfo ["outPath"])}''
     ""
   ];
 
-  added-version-file = std.runCommandLocal "source" {} ''
+  export.source-ver = std.runCommandLocal "source-ver" {} ''
     mkdir $out
     cp -r "${src}"/. $out
     echo "${self.version}" >> $out/version
     echo ${lib.strings.escapeShellArg metadata} >> $out/metadata
   '';
-
-  export.source-ver =
-    if version-file != null
-    then "${src}"
-    else if self.version != version-none
-    then "${added-version-file}"
-    else "${src}";
 
   export.nixmeta =
     std.writeScriptBin "nixmeta"

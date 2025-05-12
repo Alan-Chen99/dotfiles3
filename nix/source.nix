@@ -1,8 +1,9 @@
 {
   self,
-  gitignore-lib,
   flakes-self,
+  gitignore-lib,
   lib,
+  nix-filter,
 }: rec {
   sourceInfo = flakes-self.sourceInfo;
 
@@ -10,7 +11,15 @@
 
   export.cleansrc =
     if lib.strings.isStorePath self-path
-    then src: src
+    then
+      src:
+        nix-filter {
+          root = src;
+          exclude = [
+            "version"
+            "metadata"
+          ];
+        }
     else
       src:
         lib.cleanSourceWith {
@@ -18,5 +27,5 @@
           inherit src;
         };
 
-  export.src = self.cleansrc self-path;
+  export.src = self.cleansrc ../.;
 }

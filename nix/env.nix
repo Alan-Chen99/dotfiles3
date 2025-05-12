@@ -36,9 +36,9 @@
     (removeAttrs flakes ["self"]);
 
   _flake-registry = {
-    p = source-ver;
+    p = "${source-ver}";
     n = flakes-with-source.nixpkgs;
-    dotfiles = source-ver;
+    dotfiles = "${source-ver}";
   };
 
   export.flake-registry =
@@ -100,15 +100,19 @@
     (lib.concatStringsSep "\n" (builtins.attrValues
         (builtins.mapAttrs (name: value: "${name} = ${builtins.toString value}") self.nixconf)));
 
-  export.nixwrapper = derivation {
-    name = "nixwrapper";
-    builder = "${python}/bin/python";
-    system = system;
-    args = [
-      "${./make_nix_wrapper.py}"
-      "${std.stdenv.shell}"
-      "${nix}"
-      "${self.nixconf-file}"
-    ];
-  };
+  export.nixwrapper =
+    derivation {
+      name = "nixwrapper";
+      builder = "${python}/bin/python";
+      system = system;
+      args = [
+        "${./make_nix_wrapper.py}"
+        "${std.stdenv.shell}"
+        "${nix}"
+        "${self.nixconf-file}"
+      ];
+    }
+    // {
+      meta.mainProgram = "nix";
+    };
 }

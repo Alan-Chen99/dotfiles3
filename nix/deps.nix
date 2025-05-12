@@ -2,9 +2,7 @@
   self,
   flakes,
   crane,
-  crate2nix,
   dbg,
-  dream2nix,
   gitignore-lib,
   mini-compile-commands,
   nix-filter,
@@ -103,8 +101,6 @@
     # flakes
     inherit
       crane
-      crate2nix
-      dream2nix
       gitignore-lib
       # home-manager
       nix-filter
