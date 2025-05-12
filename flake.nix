@@ -17,10 +17,6 @@
     #   url = "git+file:///home/alan/yaru";
     #   flake = false;
     # };
-    basedpyright = {
-      url = "git+https://github.com/DetachHead/basedpyright.git";
-      flake = false;
-    };
 
     crane = {
       url = "github:ipetkov/crane";
@@ -164,7 +160,7 @@
     nixpkgs21-11.url = "github:nixos/nixpkgs/nixos-21.11";
     nixpkgs22-11.url = "github:nixos/nixpkgs/nixos-22.11";
     nixpkgs23-11.url = "github:nixos/nixpkgs/nixos-23.11";
-    nixpkgs24-05.url = "github:nixos/nixpkgs/797f7dc49e0bc7fab4b57c021cdf68f595e47841";
+    nixpkgs24-05.url = "github:nixos/nixpkgs/nixos-24.05";
 
     poetry2nix = {
       url = "git+https://github.com/Alan-Chen99/poetry2nix.git";
