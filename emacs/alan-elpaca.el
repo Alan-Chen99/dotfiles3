@@ -24,7 +24,7 @@
           (assert (zerop
                    (apply #'call-process
                           `("git" nil ,buffer t "clone"
-                            ,@(when-let ((depth (plist-get order :depth)))
+                            ,@(when-let* ((depth (plist-get order :depth)))
                                 (list (format "--depth=%d" depth) "--no-single-branch"))
                             ,(plist-get order :repo) ,repo))))
           (assert (zerop (call-process "git" nil buffer t "checkout"

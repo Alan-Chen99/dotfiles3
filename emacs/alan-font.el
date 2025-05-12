@@ -52,7 +52,7 @@
 
 (defun alan-get-font-size ()
   (when (display-graphic-p)
-    (when-let ((font (face-attribute 'default :font)))
+    (when-let* ((font (face-attribute 'default :font)))
       (font-get font :size))))
 
 (defun alan-set-font-size (newsz &optional silent)
@@ -63,7 +63,7 @@
     (setf (alist-get 'font tooltip-frame-parameters) (face-attribute 'default :font))
 
     (unless silent
-      (when-let
+      (when-let*
           (
            (font (face-attribute 'default :font))
            (query (and (fontp font) (query-font font))))

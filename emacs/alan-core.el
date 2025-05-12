@@ -105,7 +105,7 @@
 (defadvice! alan-internal-show-cursor-maybe-disable (args)
   :filter-args #'internal-show-cursor
   (cl-destructuring-bind (window show) args
-    (when-let ((buf (window-buffer window)))
+    (when-let* ((buf (window-buffer window)))
       (when (buffer-live-p buf)
         (with-current-buffer buf
           (list window (and alan-enable-cursor show)))))))

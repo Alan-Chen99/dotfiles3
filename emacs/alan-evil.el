@@ -100,7 +100,7 @@
     ;; find-file-at-point
     (save-excursion
       (goto-char position)
-      (when-let ((filename (ffap-guesser)))
+      (when-let* ((filename (ffap-guesser)))
         ;; should not identify remote file at all but just in case
         ;; (not (file-remote-p filename))
         ;; TODO: make this work with url
@@ -110,7 +110,7 @@
           (find-file-at-point filename))
         t)
       ;; t))
-      ;; (when-let ((url (thing-at-point 'url t)))
+      ;; (when-let* ((url (thing-at-point 'url t)))
       ;;  (browse-url url))
       )))
 

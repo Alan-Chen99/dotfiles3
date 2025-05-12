@@ -40,7 +40,7 @@
 (defvar alan-ignored-require-for nil)
 
 (defun maybe-record-dependency (feature)
-  (when-let ((parent (span-var 'current-require-or-load)))
+  (when-let* ((parent (span-var 'current-require-or-load)))
     (when (symbolp parent)
       (cl-pushnew feature (alist-get parent alan-dependency-alist-new-tmp)))))
 

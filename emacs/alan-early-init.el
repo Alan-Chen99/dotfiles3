@@ -28,7 +28,7 @@
 ;; (add-hook! 'pre-redisplay-functions
 ;;   (span-notef "pre-redisplay-functions"))
 
-;; (when-let
+;; (when-let*
 ;;     (
 ;;      (font-obj (face-attribute 'default :font))
 ;;      (font-name (and (fontp font-obj) (font-xlfd-name font-obj))))

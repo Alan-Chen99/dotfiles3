@@ -208,7 +208,7 @@
 
          (project-root
           (unless remote
-            (when-let ((project (project-current nil dirname)))
+            (when-let* ((project (project-current nil dirname)))
               (file-local-name
                (expand-file-name
                 (project-root project))))))

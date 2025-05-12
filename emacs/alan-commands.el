@@ -254,7 +254,7 @@
 
 (defun my-display-local-help ()
   (interactive)
-  (if-let ((help (help-at-pt-kbd-string)))
+  (if-let* ((help (help-at-pt-kbd-string)))
       (message "%s" (substitute-command-keys help))
     (save-excursion
       (goto-char (1+ (point)))
