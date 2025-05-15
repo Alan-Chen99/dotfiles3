@@ -2,11 +2,11 @@
   "nodes": {
     "crane": {
       "locked": {
-        "lastModified": 1746291859,
-        "narHash": "sha256-DdWJLA+D5tcmrRSg5Y7tp/qWaD05ATI4Z7h22gd1h7Q=",
+        "lastModified": 1747260204,
+        "narHash": "sha256-KUb6MFWc2DYeTCmcEkrBrrqhxAgO6NHZh5qQKwsjG6I=",
         "owner": "ipetkov",
         "repo": "crane",
-        "rev": "dfd9a8dfd09db9aad544c4d3b6c47b12562544a5",
+        "rev": "7f85510df37247c86a0c44032f49aa18292ee11f",
         "type": "github"
       },
       "original": {
@@ -35,7 +35,7 @@
       "flake": false,
       "locked": {
         "lastModified": 1738683282,
-        "narHash": "sha256-xvRrW/BlNHnlH3y3x3Xz02wyKj3sNTO27xxqhb9EmJY=",
+        "narHash": "sha256-HBeMZyJO/1vVcqEuvcQY4pgh7R3GkTdK7Xl/o8uHnvc=",
         "owner": "dafny-lang",
         "repo": "dafny",
         "rev": "6cb34c1e708ab5aa2078b8ac13bded3033d97c13",
@@ -74,11 +74,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1747070594,
-        "narHash": "sha256-Ih+HU1QFsdM6aaQctmhnsBaeufsprnMDw/XLTXZrhAs=",
+        "lastModified": 1747242425,
+        "narHash": "sha256-9Msv0xSHBlIyaP3FiWMpqLsfiGla5OhD5pjclY/o3+A=",
         "owner": "nix-community",
         "repo": "emacs-overlay",
-        "rev": "aafed657caad955a1c75dc0a2584aaf7c97e628b",
+        "rev": "43d0e73d4a34f470045ac7c13dd45e1a7653f57b",
         "type": "github"
       },
       "original": {
@@ -124,11 +124,11 @@
     "emacs31": {
       "flake": false,
       "locked": {
-        "lastModified": 1747240105,
-        "narHash": "sha256-dfIrtjqUEoHSPQDHbS7BU2NNIjecdBmEVFoNv5VD10Q=",
+        "lastModified": 1747246034,
+        "narHash": "sha256-SZZ1O7NeKZAvSBtfyQw+iw02JiGLcN2vOWjNxfCe4/k=",
         "owner": "emacs-mirror",
         "repo": "emacs",
-        "rev": "b644823443bf4b9f2257d1409024094bb5b608d2",
+        "rev": "825d64aa57801dee2d95ab5d4f7f57b656764a48",
         "type": "github"
       },
       "original": {
@@ -319,11 +319,11 @@
         "nixpkgs": "nixpkgs"
       },
       "locked": {
-        "lastModified": 1747081732,
-        "narHash": "sha256-VnR33UmH0KzvTuVg+6oYkDVpnPuHanQisNUXytCRBPQ=",
+        "lastModified": 1747225851,
+        "narHash": "sha256-4IbmZrNOdXP143kZEUzxBS5SqyxUlaSHLgdpeJfP2ZU=",
         "owner": "nix-community",
         "repo": "home-manager",
-        "rev": "f0a7db5ec1d369721e770a45e4d19f8e48186a69",
+        "rev": "6bf057fc8326e83bda05a669fc08d106547679fb",
         "type": "github"
       },
       "original": {
@@ -559,11 +559,11 @@
     },
     "nixpkgs-unstable": {
       "locked": {
-        "lastModified": 1746576598,
-        "narHash": "sha256-FshoQvr6Aor5SnORVvh/ZdJ1Sa2U4ZrIMwKBX5k2wu0=",
+        "lastModified": 1747060738,
+        "narHash": "sha256-ByfPRQuqj+nhtVV0koinEpmJw0KLzNbgcgi9EF+NVow=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "b3582c75c7f21ce0b429898980eddbbf05c68e55",
+        "rev": "eaeed9530c76ce5f1d2d8232e08bec5e26f18ec1",
         "type": "github"
       },
       "original": {
@@ -767,11 +767,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1747017456,
-        "narHash": "sha256-C/U12fcO+HEF071b5mK65lt4XtAIZyJSSJAg9hdlvTk=",
+        "lastModified": 1747190175,
+        "narHash": "sha256-s33mQ2s5L/2nyllhRTywgECNZyCqyF4MJeM3vG/GaRo=",
         "owner": "oxalica",
         "repo": "rust-overlay",
-        "rev": "5b07506ae89b025b14de91f697eba23b48654c52",
+        "rev": "58160be7abad81f6f8cb53120d5b88c16e01c06d",
         "type": "github"
       },
       "original": {
@@ -783,11 +783,11 @@
     "schemat": {
       "flake": false,
       "locked": {
-        "lastModified": 1746574949,
-        "narHash": "sha256-PTjfOFOHNiMR3+qCWUHtTJi2mcFbZGb1rggJLEPOtNw=",
+        "lastModified": 1747092308,
+        "narHash": "sha256-SC834mV653FKscpTB93ksMvp7XIkw/O38k+f2LhSrj0=",
         "owner": "raviqqe",
         "repo": "schemat",
-        "rev": "a4cb2accbec2eedc4578745740d152f80d13fa0c",
+        "rev": "f90ceb45985ac2971185343b0134835cc72b9a4c",
         "type": "github"
       },
       "original": {
