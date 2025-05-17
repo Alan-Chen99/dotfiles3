@@ -35,8 +35,8 @@ pylint = "^3.3.7"
 hatchling = "^1.27.0"
 pybind11 = "^2.13.6"
 pytest-mock = "^3.14.0"
-setuptools = "^80.3.1"
-uv-dynamic-versioning = "^0.7.0"
+setuptools = "^80.7.1"
+uv-dynamic-versioning = "^0.8.2"
 
 # libraries
 PyMuPDF = "^1.25.5"
@@ -46,7 +46,7 @@ cchardet = "^2.1.7"
 colorama = "^0.4.6"
 decompyle3 = "^3.9.2"
 git-filter-repo = "^2.47.0"
-matplotlib = "^3.10.1"
+matplotlib = "^3.10.3"
 pandas = "^2.2.3"
 pint = "^0.24.4"
 pulp = "^3.1.1"
@@ -74,7 +74,7 @@ pyqt6-qt6 = "==6.5.2"
 # things jax
 jax = { version = "^0.6.0", extras = ["cuda"] }
 oryx = "^0.2.9"
-equinox = "^0.12.1"
+equinox = "^0.12.2"
 sympy2jax = "^0.0.7"
 jaxtyping = "^0.3.2"
 optax = "^0.2.4"
@@ -82,7 +82,7 @@ optax = "^0.2.4"
 # for tests
 pytest = "^8.3.5"
 pytest-cov = "^6.1.1"
-hypothesis = "^6.131.9"
+hypothesis = "^6.131.18"
 
 # misc
 meson = "^1.8.0"
