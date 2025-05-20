@@ -19,6 +19,8 @@
   (setq dired-auto-revert-buffer #'dired-directory-changed-p)
   (setq dired-movement-style 'bounded)
 
+  (setq dired-listing-switches "-alh")
+
   (clear-and-backup-keymap dired-mode-map)
   ;; (add-hook 'dired-mode-hook 'evil-motion-state)
   (add-to-list 'evil-motion-state-modes 'dired-mode)

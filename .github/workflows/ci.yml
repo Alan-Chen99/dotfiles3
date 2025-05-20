@@ -94,19 +94,26 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        emacs: [
-            #
-            ".#emacs",
-            ".#emacs29",
-            ".#emacs31",
-            ".#emacs-gtk",
-            ".#p.emacs30-nox",
-          ]
+        include:
+          - emacs: ".#emacs"
+            cache: true
+          - emacs: ".#emacs-gtk"
+            cache: true
+          - emacs: ".#emacs30"
+            cache: true
+
+          - emacs: ".#p.emacs29"
+            cache: false
+          - emacs: ".#p.emacs30"
+            cache: false
+          - emacs: ".#p.emacs30-nox"
+            cache: false
+
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
       - run: nix path-info --derivation ${{ matrix.emacs }}
-      - if: ${{ matrix.emacs != '.#p.emacs30-nox' }}
+      - if: ${{ matrix.cache }}
         uses: ./.github/actions/build_nix
         with:
           drv: ${{ matrix.emacs }}

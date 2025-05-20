@@ -38,11 +38,6 @@
       flake = false;
     };
 
-    emacs29 = {
-      url = "github:emacs-mirror/emacs/emacs-29";
-      flake = false;
-    };
-
     emacs30 = {
       url = "github:emacs-mirror/emacs/emacs-30.1";
       flake = false;

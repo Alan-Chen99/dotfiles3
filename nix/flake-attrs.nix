@@ -112,19 +112,11 @@
           }
       );
 
-      extend-pkgs.emacs29 = with-emacs29.emacs;
-      with-emacs29 = add-deps-overlay (final: prev: {
-        emacs-base = final.legacypkgs.emacs29.overrideAttrs {
-          version = "29.4.50";
-          src = inputs.emacs29;
-        };
-      });
-
-      extend-pkgs.emacs31 = with-emacs31.emacs;
-      with-emacs31 = add-deps-overlay (final: prev: {
-        emacs-base = final.legacypkgs.emacs-git-pgtk.overrideAttrs {
-          version = "31.0.50";
-          src = inputs.emacs31;
+      extend-pkgs.emacs30 = with-emacs30.emacs;
+      with-emacs30 = add-deps-overlay (final: prev: {
+        emacs-base = final.legacypkgs.emacs30-pgtk.overrideAttrs {
+          version = "30.1";
+          src = inputs.emacs30;
         };
       });
 

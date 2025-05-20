@@ -34,8 +34,7 @@
 
   export.lib = self.legacypkgs.lib;
 
-  export.std = std_ // dbg.__clean;
-  std_ = {
+  export.std = {
     inherit
       (self.legacypkgs)
       breakpointHook
@@ -47,7 +46,6 @@
       runCommandLocal
       runCommandCC
       stdenv
-      dbg
       writeScriptBin
       writeShellScript
       writeShellScriptBin
@@ -118,11 +116,10 @@
     home-manager = flakes.home-manager;
     home-manager-bin = self.deps.home-manager.packages.${system}.home-manager;
     coreutils = pkgs.coreutils-full;
-    emacs-base = pkgs.emacs30-pgtk.overrideAttrs {
-      # nix build .#inputs.emacs30.outPath
-      # ==> look in README
-      version = "30.1";
-      src = flakes.emacs30;
+
+    emacs-base = pkgs.emacs-git-pgtk.overrideAttrs {
+      version = "31.0.50";
+      src = flakes.emacs31;
     };
 
     gcc = pkgs.gcc_latest;
@@ -130,9 +127,7 @@
     llvmpkgs = pkgs.llvmPackages_18;
     clangtools = self.deps.llvmpkgs.clang-tools;
 
-    # TODO (1/22/2025): nodejs_latest is not in binary cache
-    # nodejs = pkgs.nodejs_latest;
-    nodejs = pkgs.nodejs_22;
+    nodejs = pkgs.nodejs_latest;
 
     python = pkgs.python312.override {
       # enableOptimizations = true;
