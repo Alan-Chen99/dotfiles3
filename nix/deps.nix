@@ -20,7 +20,7 @@
       allowUnfree = true;
       cudaSupport = true;
       permittedInsecurePackages = [
-        "emacs-29.4.50"
+        "emacs-29.4"
       ];
     };
     overlays = [
