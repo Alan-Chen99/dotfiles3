@@ -19,12 +19,11 @@
   f = attrs: let
     res = rec {
       base = base-init;
+      cur = attrs;
 
       p = attrs.legacypkgs;
       d = attrs.deps;
       pypkgs = attrs.poetrypython.python.pkgs;
-
-      homeConfigurations."alan" = attrs.home;
 
       inputs = inputs_;
 
@@ -62,7 +61,6 @@
             nix-index-database = inputs.nix-index-database.packages.${system}.default;
 
             home-manager = final.deps.home-manager-bin;
-            home-manager-activation-script = final.home.activation-script;
           };
         in {
           # impure
@@ -114,6 +112,13 @@
             packages = prev.packages // pkgs;
           }
       );
+
+      homeConfigurations."alan" = attrs.home;
+      # for github actions
+      homeConfigurations."runner" = with-username-runner.home;
+      with-username-runner = add-overlay (final: prev: {
+        user-name = "runner";
+      });
 
       extend-pkgs.emacs30 = with-emacs30.emacs;
       with-emacs30 = add-deps-overlay (final: prev: {

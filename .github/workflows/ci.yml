@@ -216,5 +216,5 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
-      - run: nix build .#home-manager-activation-script
+      - run: nix build .#homeConfigurations.alan.activation-script
       - run: nix run .#home-manager -- switch --flake .

@@ -119,7 +119,7 @@
   }));
 
   mod.home = callpackage ./home.nix {} (reexport (prev: {
-    inherit (prev) home;
+    inherit (prev) home user-name;
   }));
 
   mod.js = callpackage ../js {} (reexport (prev: {

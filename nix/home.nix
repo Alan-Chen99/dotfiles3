@@ -23,6 +23,9 @@
   #       --set PATH ${nix-stable}/bin:${git}/bin:${gnugrep}/bin
   #   '';
 
+  export.user-name = "alan";
+  user = self.user-name;
+
   # home-manager switch --flake .
   export.home = home-manager.lib.homeManagerConfiguration {
     # home-manager wants to pin its nixpkgs?
@@ -39,8 +42,8 @@
         }: {
           # Home Manager needs a bit of information about you and the paths it should
           # manage.
-          home.username = "alan";
-          home.homeDirectory = "/home/alan";
+          home.username = "${user}";
+          home.homeDirectory = "/home/${user}";
 
           programs.git = {
             package = git;
