@@ -209,3 +209,12 @@ jobs:
         with:
           drv: .#mods.rust.setuid
           CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
+
+  home-manager:
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - run: nix build .#home-manager-activation-script
+      - run: nix run .#home-manager -- switch --flake .

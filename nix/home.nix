@@ -13,7 +13,7 @@
   std,
   system,
 }: rec {
-  # TODO: why?
+  # TODO: (25-5) i think this was here bc i was trying to install it on a bare docker (prob distroless?)
   # export.home-manager-bin-wrapped =
   #   std.runCommandLocal "home-manager-bin" {
   #     nativeBuildInputs = [std.makeWrapper];

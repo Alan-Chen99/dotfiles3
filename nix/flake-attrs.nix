@@ -60,6 +60,9 @@
 
             # nix-index = inputs.nix-index.packages.${system}.default;
             nix-index-database = inputs.nix-index-database.packages.${system}.default;
+
+            home-manager = final.deps.home-manager-bin;
+            home-manager-activation-script = final.home.activation-script;
           };
         in {
           # impure
