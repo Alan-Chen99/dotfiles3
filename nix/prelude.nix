@@ -1,5 +1,5 @@
 let
-  dotfiles = import ./local.nix;
+  dotfiles = import ./local.nix {system = builtins.currentSystem;};
   default = dotfiles.default;
   dbg = default.dbg;
 in
