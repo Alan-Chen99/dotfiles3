@@ -38,6 +38,17 @@
       flake = false;
     };
 
+    emacs-overlay = {
+      url = "github:nix-community/emacs-overlay";
+      inputs.nixpkgs.follows = "empty";
+      inputs.nixpkgs-stable.follows = "empty";
+    };
+
+    emacs29 = {
+      url = "github:emacs-mirror/emacs/emacs-29";
+      flake = false;
+    };
+
     emacs30 = {
       url = "github:emacs-mirror/emacs/emacs-30.1";
       flake = false;
@@ -46,12 +57,6 @@
     emacs31 = {
       url = "github:emacs-mirror/emacs/master";
       flake = false;
-    };
-
-    emacs-overlay = {
-      url = "github:nix-community/emacs-overlay";
-      inputs.nixpkgs.follows = "empty";
-      inputs.nixpkgs-stable.follows = "empty";
     };
 
     empty = {
@@ -148,6 +153,11 @@
     nixpkgs22-11.url = "github:nixos/nixpkgs/nixos-22.11";
     nixpkgs23-11.url = "github:nixos/nixpkgs/nixos-23.11";
     nixpkgs24-05.url = "github:nixos/nixpkgs/nixos-24.05";
+
+    past-24-11-0 = {
+      url = "github:Alan-Chen99/dotfiles3/24-11-0";
+      flake = false;
+    };
 
     poetry2nix = {
       url = "github:Alan-Chen99/poetry2nix";

@@ -45,12 +45,12 @@
           home.username = "${user}";
           home.homeDirectory = "/home/${user}";
 
-          programs.git = {
-            package = git;
-            enable = true;
-            userName = "Alan Chen";
-            userEmail = "chenxinyang99@gmail.com";
-          };
+          # programs.git = {
+          #   package = git;
+          #   enable = true;
+          #   userName = "Alan Chen";
+          #   userEmail = "chenxinyang99@gmail.com";
+          # };
 
           fonts.fontconfig.enable = true;
 

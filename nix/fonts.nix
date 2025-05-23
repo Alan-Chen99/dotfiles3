@@ -1,7 +1,5 @@
 {
   self,
-  dejavu_fonts,
-  nerdfonts,
   legacypkgs,
   flakes,
   pkgs-unstable,
@@ -16,8 +14,8 @@
       legacypkgs.fontconfig
       legacypkgs.fontconfig.out
 
-      dejavu_fonts
-      (nerdfonts.override {
+      legacypkgs.dejavu_fonts
+      (legacypkgs.nerdfonts.override {
         fonts = [
           "FiraCode"
           "DroidSansMono"

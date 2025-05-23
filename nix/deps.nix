@@ -7,20 +7,19 @@
   mini-compile-commands,
   nix-filter,
   nixpkgs-flakes,
-  nixpkgs-unstable,
   poetry2nix,
   racket2nix,
   rust-overlay,
   system,
 }: rec {
-  # export.legacypkgs = nixpkgs-flakes.legacyPackages.${system};
-  export.legacypkgs = import nixpkgs-flakes {
+  export.nixpkgs-src = nixpkgs-flakes;
+  export.nixpkgs-config = {
     inherit system;
     config = {
       allowUnfree = true;
       cudaSupport = true;
       permittedInsecurePackages = [
-        "emacs-29.4"
+        "emacs-29.4.50"
       ];
     };
     overlays = [
@@ -30,7 +29,8 @@
     ];
   };
 
-  export.pkgs-unstable = nixpkgs-unstable.legacyPackages."${system}";
+  export.legacypkgs = import self.nixpkgs-src self.nixpkgs-config;
+  export.pkgs-unstable = import flakes.nixpkgs-unstable self.nixpkgs-config;
 
   export.lib = self.legacypkgs.lib;
 
@@ -66,7 +66,6 @@
       buildFHSUserEnv
       cacert
       cachix
-      dejavu_fonts
       diffstat
       diffutils
       direnv
@@ -81,7 +80,6 @@
       gnugrep
       gnused
       keychain
-      nerdfonts
       nix-doc
       nix-plugins
       nix-tree
@@ -146,5 +144,7 @@
     };
 
     texlive = pkgs.texliveSmall;
+
+    past-24-11-0 = import (flakes.past-24-11-0 + "/nix/local.nix") {system = system;};
   };
 }

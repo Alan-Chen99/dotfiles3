@@ -27,7 +27,6 @@
       mini-compile-commands = flakes.mini-compile-commands;
       nix-filter = flakes.nix-filter;
       # nixd = flakes.nixd.packages.${system}.default;
-      nixpkgs-unstable = flakes.nixpkgs-unstable;
       poetry2nix = flakes.poetry2nix;
       rust-overlay = flakes.rust-overlay.overlays.default;
       racket2nix = import flakes.racket2nix {

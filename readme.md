@@ -93,8 +93,9 @@ nix profile install .#emacs
 nix profile install .#less-build.emacs
 
 cd ~
-ln -s $(pwd)/emacs/.emacs ~/.emacs
-ln -s ../dotfiles/emacs/early-init.el ~/.emacs.d/early-init.el
+mkdir ~/.emacs.d
+ln -s $(pwd)/emacs/.emacs ~/.emacs.d/init.el
+ln -s $(pwd)/emacs/early-init.el ~/.emacs.d/early-init.el
 
 emacs --batch -l emacs/ci.el --eval "(ci-byte-compile)"
 ```

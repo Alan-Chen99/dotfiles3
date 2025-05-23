@@ -19,13 +19,15 @@
   f = attrs: let
     res = rec {
       base = base-init;
-      cur = attrs;
+      default = attrs;
 
       p = attrs.legacypkgs;
       d = attrs.deps;
       pypkgs = attrs.poetrypython.python.pkgs;
 
       inputs = inputs_;
+
+      past-24-11-0 = attrs.deps.past-24-11-0;
 
       add-overlay = overlay: (f (attrs overlay));
 
@@ -71,11 +73,9 @@
       );
 
       with-extend-pkgs = add-overlay (
-        final: prev:
-          extend-pkgs
-          // {
-            packages = prev.packages // extend-pkgs;
-          }
+        final: prev: {
+          packages = prev.packages // extend-pkgs;
+        }
       );
 
       set-versions = add-overlay (
@@ -113,11 +113,23 @@
           }
       );
 
+      with-unstable = add-overlay (final: prev: {
+        nixpkgs-src = inputs.nixpkgs-unstable;
+      });
+
       homeConfigurations."alan" = attrs.home;
       # for github actions
       homeConfigurations."runner" = with-username-runner.home;
       with-username-runner = add-overlay (final: prev: {
         user-name = "runner";
+      });
+
+      extend-pkgs.emacs29 = with-emacs29.emacs;
+      with-emacs29 = add-deps-overlay (final: prev: {
+        emacs-base = final.legacypkgs.emacs29.overrideAttrs {
+          version = "29.4.50";
+          src = inputs.emacs29;
+        };
       });
 
       extend-pkgs.emacs30 = with-emacs30.emacs;
