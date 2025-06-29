@@ -101,9 +101,9 @@ jobs:
             cache: true
           - emacs: ".#emacs30"
             cache: true
-
           - emacs: ".#emacs29"
-            cache: false
+            cache: true
+
           - emacs: ".#p.emacs30"
             cache: false
           - emacs: ".#p.emacs30-nox"
@@ -148,7 +148,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
-      - run: nix build .#python-all
       - run: (cd python && nix run ..#poetry -- lock && nix run ..#poetry -- up --latest --no-install)
       - uses: peter-evans/create-pull-request@v7
         with:
