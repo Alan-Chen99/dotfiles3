@@ -93,3 +93,6 @@ yt-dlp = "^2025.4.30"
 
 factorio-draftsman = "^2.0.2"
 vcstool2 = "^0.4.5"
+frozendict = "^2.4.6"
+cappa = "^0.28.0"
+wadler-lindig = "^0.1.7"
