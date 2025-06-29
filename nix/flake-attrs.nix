@@ -28,6 +28,7 @@
       inputs = inputs_;
 
       past-24-11-0 = attrs.deps.past-24-11-0;
+      future = attrs.deps.future;
 
       add-overlay = overlay: (f (attrs overlay));
 
@@ -162,8 +163,12 @@
           prev.deps
           // {
             emacs-base = final.legacypkgs.emacs30-gtk3;
-            nix = final.deps.nix-stable;
+            # nix = final.deps.nix-stable;
           };
+      });
+
+      with-nix-stable = add-deps-overlay (final: prev: {
+        nix = final.deps.nix-stable;
       });
     };
   in

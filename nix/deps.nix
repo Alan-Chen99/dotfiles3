@@ -104,8 +104,9 @@
       racket2nix
       ;
 
-    nix = flakes.nix.packages.${system}.default.overrideAttrs {allowSubstitutes = true;};
-    nix-stable = pkgs.nix;
+    # nix = flakes.nix.packages.${system}.default.overrideAttrs {allowSubstitutes = true;};
+    nix = pkgs.nixVersions.nix_2_28;
+    nix-stable = pkgs.nixVersions.stable;
     nixd = flakes.nixd.packages.${system}.default;
 
     mcc-env = (pkgs.callPackage mini-compile-commands {}).wrap self.std.stdenv;
@@ -145,6 +146,7 @@
 
     texlive = pkgs.texliveSmall;
 
+    future = import (flakes.future + "/nix/local.nix") {system = system;};
     past-24-11-0 = import (flakes.past-24-11-0 + "/nix/local.nix") {system = system;};
   };
 }

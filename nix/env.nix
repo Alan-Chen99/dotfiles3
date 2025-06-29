@@ -37,7 +37,7 @@
 
   _flake-registry = {
     p = "${source-ver}";
-    n = flakes-with-source.nixpkgs;
+    n = "${nixpkgs-flakes}";
     dotfiles = "${source-ver}";
   };
 

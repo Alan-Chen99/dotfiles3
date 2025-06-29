@@ -1,5 +1,7 @@
-let
-  system = builtins.currentSystem;
+{
+  #
+  system,
+}: let
   flake-compat =
     import
     (

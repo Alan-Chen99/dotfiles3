@@ -79,6 +79,11 @@
       url = "github:numtide/flake-utils";
     };
 
+    future = {
+      url = "github:Alan-Chen99/dotfiles3/update-python-deps";
+      flake = false;
+    };
+
     gitignore = {
       url = "github:hercules-ci/gitignore.nix";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -94,18 +99,6 @@
       # url = "github:danielbarter/mini_compile_commands";
       url = "github:Alan-Chen99/mini_compile_commands";
       flake = false;
-    };
-
-    nix = {
-      # https://github.com/NixOS/nix/pull/6530
-      # https://github.com/edolstra/nix/tree/lazy-trees
-      url = "github:edolstra/nix/lazy-trees";
-      inputs = {
-        nixpkgs.follows = "nixpkgs";
-        nixpkgs-23-11.follows = "empty";
-        nixpkgs-regression.follows = "empty";
-        flake-compat.follows = "flake-compat";
-      };
     };
 
     nix-filter.url = "github:numtide/nix-filter";

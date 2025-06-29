@@ -13,13 +13,13 @@
   std,
 }: rec {
   # https://discourse.nixos.org/t/nix-flamegraph-or-profiling-tool/33333
-  nix-instantiate-flamegraph = std.writeShellScriptBin "nix-instantiate-flamegraph" ''
-    WORKDIR=$(mktemp -d /tmp/nix-fun-calls-XXXXX)
-    ${nix}/bin/nix-instantiate --trace-function-calls "$1" -A "$2" 2> $WORKDIR/nix-function-calls.trace 1>/dev/null
-    ${python}/bin/python ${flakes.nix}/contrib/stack-collapse.py $WORKDIR/nix-function-calls.trace > $WORKDIR/nix-function-calls.folded
-    ${flamegraph}/bin/flamegraph.pl $WORKDIR/nix-function-calls.folded > $WORKDIR/nix-function-calls.svg
-    echo $WORKDIR/nix-function-calls.svg
-  '';
+  # nix-instantiate-flamegraph = std.writeShellScriptBin "nix-instantiate-flamegraph" ''
+  #   WORKDIR=$(mktemp -d /tmp/nix-fun-calls-XXXXX)
+  #   ${nix}/bin/nix-instantiate --trace-function-calls "$1" -A "$2" 2> $WORKDIR/nix-function-calls.trace 1>/dev/null
+  #   ${python}/bin/python ${flakes.nix}/contrib/stack-collapse.py $WORKDIR/nix-function-calls.trace > $WORKDIR/nix-function-calls.folded
+  #   ${flamegraph}/bin/flamegraph.pl $WORKDIR/nix-function-calls.folded > $WORKDIR/nix-function-calls.svg
+  #   echo $WORKDIR/nix-function-calls.svg
+  # '';
 
   export.nix-tree-with-stable =
     std.runCommandLocal "nix-tree" {
@@ -35,7 +35,7 @@
     name = "nix tools";
     paths = [
       alejandra
-      nix-instantiate-flamegraph
+      # nix-instantiate-flamegraph
       self.nix-tree-with-stable
       nixd
     ];
