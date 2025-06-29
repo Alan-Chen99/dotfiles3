@@ -57,6 +57,10 @@
       (progn
         ;; https://www.emacswiki.org/emacs/PythonProgrammingInEmacs#h5o-41
         (setq python-shell-interpreter "ipython")
+        ;; TODO:
+        ;; if different ipython versions are running concurrently using same config
+        ;; things may break with no warnings
+        ;; (i have experienced autoreload not working for unknown reasons)
         (setq python-shell-interpreter-args
               (combine-and-quote-strings
                (list

@@ -21,7 +21,7 @@
   (or (not (eq system-type 'windows-nt))
       (file-remote-p default-directory)))
 
-
+(span-instrument alan-load-shell-bash-fns)
 (defun alan-load-shell-bash-fns ()
   (cl-destructuring-bind (code stdout stderr)
       (let* ((f (expand-file-name "emacs-shell-bash.sh" alan-dotemacs-dir))

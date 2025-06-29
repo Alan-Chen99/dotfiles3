@@ -116,7 +116,7 @@
                ("https://github.com/emacs-compat/compat" . "compat")
                :files ("*" (:exclude ".git"))))
  (consult :source "MELPA" :recipe
-          (:ref "5b0c682d7092e02a0e8e0f047370be8c61ad3b4e" :package
+          (:ref "efad758b85b9b8af6d92e8c8d896eaba0623b8c3" :package
                 "consult" :repo "minad/consult" :fetcher github :files
                 ("*.el" "*.el.in" "dir" "*.info" "*.texi" "*.texinfo"
                  "doc/dir" "doc/*.info" "doc/*.texi" "doc/*.texinfo"
@@ -350,7 +350,7 @@
            :description "Go to last change" :date (26130 6720) :url
            "https://github.com/emacs-evil/goto-chg")
  (gptel :source "MELPA" :recipe
-        (:ref "55355bdead3d19d520157236f4420241cdb89e63" :package
+        (:ref "5fad6f18a608818c70ae7f9332e006c4cfaa1838" :package
               "gptel" :repo "karthink/gptel" :fetcher github :files
               ("*.el" "*.el.in" "dir" "*.info" "*.texi" "*.texinfo"
                "doc/dir" "doc/*.info" "doc/*.texi" "doc/*.texinfo"

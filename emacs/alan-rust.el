@@ -22,7 +22,7 @@
      ;; error
      '(error))
 
-    (setq-local format-all-formatters '(("Rust" rustfmt)))
+    ;; (setq-local format-all-formatters '(("Rust" cargo-fmt)))
 
     ))
 
@@ -68,6 +68,8 @@
     "SPC t" #'lsp-rust-analyzer-syntax-tree
     "SPC i" #'lsp-rust-analyzer-view-hir
     [remap evil-join] #'lsp-rust-analyzer-join-lines
+
+    [remap evil-indent] #'lsp-format-buffer
     )
   ;; (general-def rust-mode-map
   ;;   :states 'normal

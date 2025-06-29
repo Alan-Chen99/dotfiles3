@@ -101,6 +101,7 @@
   :states 'motion
 
   [remap self-insert-command] #'undefined
+  [remap newline] #'undefined
 
   "w" 'evil-window-map
   "N" #'help-command
@@ -215,14 +216,16 @@
   "g c" #'copy-cur-filename
   "g C" #'copy-wsl-windows-filename
   "g x" #'copy-cur-filename-last
-  ;; "g d" #'copy-default-directory
+  "g d" #'copy-default-directory
 
   "g e" #'flycheck-list-errors
 
+  "a s" #'alan-shell-command
   "a d" #'shell-this-remote
   "a v" #'vterm
   "a g" #'gpt
   "a t" #'toggle-truncate-lines
+  "a n" #'display-line-numbers-mode
 
   "S-SPC" #'embark-act
 
@@ -242,13 +245,6 @@
 
 (general-def
   :states 'normal
-
-  ;; essential
-  ;; moved from motion
-  ;; https://emacs.stackexchange.com/questions/46371/how-can-i-get-ret-to-follow-org-mode-links-when-using-evil-mode
-  ;; ~removed now, revisit if found use~
-  ;; I do need this, prevents ret from entering newline in normal state
-  "RET" #'evil-ret
 
   ;; perhaps move to smth els
   "x" #'evil-append
@@ -276,8 +272,7 @@
   "c" #'evil-change
   "d" #'evil-delete
 
-  "q" #'evil-use-register
-
+  ;; "q" #'evil-use-register
 
   "'" #'evil-indent
   "<" #'evil-shift-left
@@ -286,19 +281,19 @@
   "#" #'comment-region
   ":" #'uncomment-region
 
-  ;; needs to be bound to (maybe) something different
-  "=" 'nil ;;evil-indent
-
-  "\"" 'nil ;;evil-use-register
   "." #'evil-repeat
 
-  ;; "q" 'nil ;;evil-record-macro
-  "@" 'nil ;;evil-execute-macro
-
-  "`" #'evil-record-macro
-  "@" #'evil-execute-macro
-
   "g a" #'save-buffer
+
+  ;; needs to be bound to (maybe) something different
+
+  ;; "\"" 'nil ;;evil-use-register
+
+  ;; "q" 'nil ;;evil-record-macro
+  ;; "@" 'nil ;;evil-execute-macro
+
+  ;; "`" #'evil-record-macro
+  ;; "@" #'evil-execute-macro
 
   ;; todo: which of those do i need
   ;; "C" 'nil ;;evil-change-line
@@ -344,7 +339,6 @@
 
   "1" #'alan-evil-visual-star-nomove
 
-  ;; "g u" #'undo
   )
 
 (general-def evil-window-map
@@ -386,7 +380,7 @@
   "n" #'switch-to-buffer-other-window
   "p" #'consult-project-buffer
 
-  "SPC" #'consult-find
+  ;; "SPC" #'consult-find
 
   "m" #'alan-minibuffer-resize-count
   ;; "n" #'evil-buffer

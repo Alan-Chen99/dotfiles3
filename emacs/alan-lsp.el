@@ -32,7 +32,9 @@
     ;; :keymaps 'my-lsp-keymap-mode
     "<.> <down>" #'lsp-find-references
     "<.> m" #'lsp-goto-type-definition
-    "<.> <up>" #'lsp-execute-code-action)
+    "<.> <up>" #'lsp-execute-code-action
+    "`" #'lsp-rename
+    )
 
   (add-hook! 'lsp-mode-hook #'evil-normalize-keymaps)
   ;;   (my-lsp-keymap-mode (if lsp-mode 1 -1)))

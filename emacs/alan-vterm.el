@@ -85,6 +85,7 @@
     ;; [remap evil-delete-whole-line] (vterm-with-send-key "C-u C-k")
     [remap evil-delete-whole-line] #'alan-vterm-delete-whole-line-without-yank
 
+    [remap evil-append] #'evil-collection-vterm-append
     )
 
   (general-def vterm-mode-map
@@ -125,7 +126,7 @@
 (eval-after-load! evil-collection-vterm
   (span-msg "evil-collection-vterm (eval-after-load!)")
   (let ((evil-collection-state-denylist '(insert))
-        (evil-collection-key-blacklist (append '("[[" "]]" "a") evil-collection-key-blacklist)))
+        (evil-collection-key-blacklist (append '("[[" "]]" "a" "x") evil-collection-key-blacklist)))
     (evil-collection-vterm-setup))
 
   ;; (general-def vterm-mode-map)

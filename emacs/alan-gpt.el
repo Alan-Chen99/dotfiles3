@@ -14,16 +14,14 @@
   (interactive
    (progn
      (require 'gptel)
-     (let* ((backend (default-value 'gptel-backend))
-            (backend-name
-             (format "*%s*" (gptel-backend-name backend))))
+     (let* ((buffer-name "*gptel*"))
        (list (if current-prefix-arg
                  (read-buffer "Create or choose gptel buffer: "
-                              (generate-new-buffer-name backend-name) nil
+                              (generate-new-buffer-name buffer-name) nil
                               (lambda (b)
                                 (buffer-local-value 'gptel-mode
                                                     (get-buffer (or (car-safe b) b)))))
-               backend-name)))))
+               buffer-name)))))
   (gptel name nil nil t))
 
 (defun gptn ()
@@ -39,10 +37,11 @@
   (setq gptel-api-key gpt-api-key)
   (setq gptel--anthropic (gptel-make-anthropic "Claude" :stream t :key anthropic-api-key))
 
-  ;; (setq-default gptel-backend gptel--openai)
+  (setq gptel-backend gptel--openai)
+  (setq gptel-model 'gpt-4.1-mini)
 
-  (setq-default gptel-backend gptel--anthropic)
-  (setq-default gptel-model "Claude:claude-3-7-sonnet-20250219")
+  ;; (setq gptel-backend gptel--anthropic)
+  ;; (setq gptel-model 'claude-sonnet-4-20250514)
 
   (clear-and-backup-keymap gptel-mode-map)
   (general-def gptel-mode-map

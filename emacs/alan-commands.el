@@ -4,6 +4,8 @@
 (require 'evil)
 (require 'evil-visualstar)
 
+(require-if-is-bytecompile display-line-numbers alan-modeline)
+
 (defun alan-move-up-screen ()
   (interactive)
   (evil-previous-visual-line (- (window-height) 5)))
@@ -297,7 +299,7 @@
 
 (defun copy-default-directory ()
   (interactive)
-  (let ((v default-directory))
+  (let ((v (abbreviate-file-name default-directory)))
     (message "%s" v)
     (kill-new v)))
 
@@ -379,5 +381,34 @@
 
 ;; (x-display-pixel-height)
 
+(defvar alan-shell-command-count 0)
+
+(defun alan-shell-command (command)
+  ;; `comint-run' with single input
+  (interactive
+   (list (read-shell-command "Run: ")))
+
+  (let* ((evil-insert-state-modes nil)
+         (command-split (split-string-and-unquote command))
+         (buffer (generate-new-buffer
+                  (concat "Run<"
+                          (prin1-to-string (cl-incf alan-shell-command-count))
+                          ">: "
+                          command
+                          " ["
+                          ;; (buffer-name)
+                          ;; default-directory
+                          (substring-no-properties (alan-modeline-filepath-slow-impl default-directory))
+                          "]"
+                          ))))
+    (switch-to-buffer
+     (apply
+      #'make-comint-in-buffer
+      (car command-split) ;; name
+      buffer ;; buffer
+      (car command-split) ;; program
+      nil ;; startfile
+      (cdr command-split) ;; switches
+      ))))
 
 (provide 'alan-commands)

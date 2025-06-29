@@ -5,6 +5,9 @@
 (pkg! 'with-editor)
 
 (eval-after-load! with-editor
+
+  (setq process-environment (with-editor process-environment))
+
   (clear-and-backup-keymap with-editor-mode-map)
 
   (general-def with-editor-mode-map

@@ -9,6 +9,7 @@
 
 (require-if-is-bytecompile
  arc-mode
+ backtrace
  comint
  dafny-mode
  format-all
@@ -16,6 +17,8 @@
  outline
  python
  tq
+ tramp
+ tramp-sh
  tree-sitter-langs-build
 
  alan-simple
@@ -93,5 +96,52 @@
 (span-wrap tree-sitter-langs--call (&rest args)
   (:tree-sitter-langs--call (:seq args))
   (span-flush))
+
+(advice-add #'tramp-find-executable :override #'tramp-find-executable--override)
+(defun tramp-find-executable--override
+    (vec progname dirlist &optional ignore-tilde ignore-path)
+  "Search for PROGNAME in $PATH and all directories mentioned in DIRLIST.
+First arg VEC specifies the connection, PROGNAME is the program
+to search for, and DIRLIST gives the list of directories to
+search.  If IGNORE-TILDE is non-nil, directory names starting
+with \"~\" will be ignored.  If IGNORE-PATH is non-nil, searches
+only in DIRLIST.
+
+Returns the absolute file name of PROGNAME, if found, and nil otherwise.
+
+This function expects to be in the right *tramp* buffer."
+  (unless ignore-path
+    (setq dirlist (cons "$PATH" dirlist)))
+  (when ignore-tilde
+    ;; Remove all ~/foo directories from dirlist.
+    (let (newdl d)
+      (while dirlist
+	    (setq d (car dirlist)
+	          dirlist (cdr dirlist))
+	    (unless (char-equal ?~ (aref d 0))
+	      (setq newdl (cons d newdl))))
+      (setq dirlist (nreverse newdl))))
+  (when (tramp-send-command-and-check
+         ;; MODIFIED: previously -pv, i think that was a bug
+         vec (format "(unalias %s; %s command -v %s)"
+                     progname
+                     (if dirlist (concat "PATH=" (string-join dirlist ":")) "")
+                     progname))
+    (string-trim (tramp-get-buffer-string (tramp-get-connection-buffer vec)))))
+
+(span-instrument internal-default-process-sentinel)
+
+(startup-queue-package 'winner 50)
+(eval-after-load! winner
+  (winner-mode))
+
+(advice-add #'backtrace-print-frame :around #'span--wrap-backtrace-print-frame)
+(defun span--wrap-backtrace-print-frame (orig-fun frame view)
+  (span :backtrace-print-frame
+    (condition-case err
+        (funcall orig-fun frame view)
+      (error
+       (span-notef "backtrace-print-frame: error")
+       (insert (format "error (backtrace-print-frame): %S\n" err))))))
 
 (provide 'alan-experimental)

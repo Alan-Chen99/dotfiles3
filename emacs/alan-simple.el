@@ -198,7 +198,6 @@
 (add-to-list 'evil-motion-state-modes 'special-mode)
 
 (general-def messages-buffer-mode-map
-  "SPC t" #'toggle-truncate-lines
   "SPC l"
   (lambda () (interactive)
     (cl-letf

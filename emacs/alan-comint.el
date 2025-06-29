@@ -157,7 +157,8 @@
                     "stty echo; exec \"$@\""
                     ;; "stty echo onlcr; exec \"$@\""
                     ".."
-                    ,command ,@switches)))
+                    ,command ,@switches)
+                  ))
            ;; (code (call-process "stty" nil nil nil "-F" (process-tty-name proc) "echo"))
            )
       ;; (unless (= code 0)
@@ -250,7 +251,8 @@
 
 (defun comint-clear-buffer-no-undo ()
   (interactive)
-  (let ((buffer-undo-list t))
+  (let ((debugger #'span--debug)
+        (buffer-undo-list t))
     (comint-clear-buffer)))
 
 (defadvice! comint-add-to-input-history-no-props (fn cmd)
@@ -262,6 +264,7 @@
 
 (advice-add #'comint-next-prompt :override #'alan-comint-next-prompt)
 (defun alan-comint-next-prompt (n)
+  ;; CHANGED: now navigates the list of starts of outputs, or to the end
   (interactive "^p" comint-mode)
   (let ((pos (point))
 	    (input-pos nil)
@@ -273,10 +276,15 @@
 		        (next-single-char-property-change pos 'field)
 		      (previous-single-char-property-change pos 'field)))
 	  (cond ((= pos prev-pos)
+	         ;; Ran off the end of the buffer.
 	         (when (> n 0)
+		       ;; There's always an input field at the end of the
+		       ;; buffer, but it has a `field' property of nil.
 		       (setq input-pos (point-max)))
+	         ;; stop iterating
 	         (setq n 0))
-	        ((eq (get-char-property (if (> pos 1) (1- pos) pos) 'field) 'prompt)
+            ;; CHANGED: previously (null (get-char-property pos 'field))
+	        ((eq (get-char-property pos 'field) 'output)
 	         (setq n (if (< n 0) (1+ n) (1- n)))
 	         (setq input-pos pos))))
     (when input-pos

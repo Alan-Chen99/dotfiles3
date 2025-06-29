@@ -407,6 +407,28 @@
   (when (fboundp 'anzu--update-mode-line)
     (modeline-maybe-add-space (anzu--update-mode-line))))
 
+;; (defvar-local alan-last-process-status nil)
+(defvar-local alan-last-buffer-process nil)
+
+;; (advice-add #'internal-default-process-sentinel :override #'alan-internal-default-process-sentinel)
+;; (defun alan-internal-default-process-sentinel (proc msg)
+;;   (ignore proc)
+;;   (setq alan-last-process-status msg))
+
+(defun alan-modeline-process-info ()
+  (setq alan-last-buffer-process
+        (or (get-buffer-process (current-buffer)) alan-last-buffer-process))
+
+  (when-let* ((proc alan-last-buffer-process))
+    (concat
+     " "
+     ;; (prin1-to-string (process-id proc))
+     ;; ":"
+     (prin1-to-string (process-status proc))
+     ":"
+     (prin1-to-string (process-exit-status proc))
+     ))
+  )
 
 (setq mode-line-position
       `(
@@ -425,6 +447,7 @@
         (:eval (modeline-calc-modified))
         (:eval (alan-modeline-handle-filename))
         alan-modeline-file-and-buffername
+        (:eval (alan-modeline-process-info))
         (:eval (doom-modeline-selection-info))
         (:eval (anzu--update-mode-line-only-if-loaded))
         flycheck-mode-line

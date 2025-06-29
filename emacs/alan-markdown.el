@@ -6,6 +6,8 @@
 
 
 (eval-after-load! markdown-mode
+  ;; (clear-and-backup-keymap markdown-mode-map)
+
   (setq markdown-enable-math t)
   (setq markdown-fontify-code-blocks-natively t)
 
