@@ -26,6 +26,7 @@
   nixwrapper,
   patch,
   pdf-tools-epdfinfo,
+  pypkgs-bins,
   ripgrep,
   source-ver,
   std,
@@ -162,6 +163,11 @@
       unzip
       wayland-utils
       zip
+      ;
+
+    inherit
+      (pypkgs-bins)
+      diceware
       ;
   };
   export.pkgs-small = std.buildEnv {

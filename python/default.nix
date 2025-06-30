@@ -168,6 +168,7 @@
     inherit
       (poetrypython.pkgs)
       black
+      diceware
       isort
       vcstool2
       yt-dlp
