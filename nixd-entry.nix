@@ -1,3 +1,1 @@
-{
-  nixd-eval = (import ./nix/local.nix).nixd-eval;
-}
+{nixd-eval = (import ./. {}).nixd-eval;}

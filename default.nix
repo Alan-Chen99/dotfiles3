@@ -1,12 +1,12 @@
 {
   #
-  system,
+  system ? builtins.currentSystem,
 }: let
   flake-compat =
     import
     (
       let
-        lock = builtins.fromJSON (builtins.readFile ../flake.lock);
+        lock = builtins.fromJSON (builtins.readFile ./flake.lock);
       in
         fetchTarball {
           url = "https://github.com/inclyc/flake-compat/archive/${lock.nodes.flake-compat.locked.rev}.tar.gz";
@@ -17,7 +17,7 @@
     (
       flake-compat
       {
-        src = ../.;
+        src = ./.;
         inherit system;
       }
     )

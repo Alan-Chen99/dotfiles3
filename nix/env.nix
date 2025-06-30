@@ -76,7 +76,7 @@
   _nix-path = {
     n = "${nixpkgs-flakes}";
     nixpkgs = "${nixpkgs-flakes}";
-    df = "${source-ver}/nix/local.nix";
+    df = "${source-ver}";
     prelude = "${source-ver}/nix/prelude.nix";
   };
 
