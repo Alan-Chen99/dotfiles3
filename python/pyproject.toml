@@ -26,30 +26,30 @@ poetry-plugin-up = "^0.9.0"
 
 autoflake = "^2.3.1"
 black = { version = "^25.1.0", extras = ["d"] }
-flake8 = "^7.2.0"
+flake8 = "^7.3.0"
 isort = "^6.0.1"
-mypy = "^1.15.0"
+mypy = "^1.16.1"
 pylint = "^3.3.7"
 
 # build deps
 hatchling = "^1.27.0"
 pybind11 = "^2.13.6"
-pytest-mock = "^3.14.0"
-setuptools = "^80.3.1"
-uv-dynamic-versioning = "^0.7.0"
+pytest-mock = "^3.14.1"
+setuptools = "^80.9.0"
+uv-dynamic-versioning = "^0.8.2"
 
 # libraries
-PyMuPDF = "^1.25.5"
-Pygments = "^2.19.1"
-beartype = "^0.20.2"
+PyMuPDF = "^1.26.1"
+Pygments = "^2.19.2"
+beartype = "^0.21.0"
 cchardet = "^2.1.7"
 colorama = "^0.4.6"
 decompyle3 = "^3.9.2"
 git-filter-repo = "^2.47.0"
-matplotlib = "^3.10.1"
-pandas = "^2.2.3"
+matplotlib = "^3.10.3"
+pandas = "^2.3.0"
 pint = "^0.24.4"
-pulp = "^3.1.1"
+pulp = "^3.2.1"
 pygit2 = "^1.18.0"
 pyparsing = "^3.2.3"
 python-magic = "^0.4.27"
@@ -72,23 +72,23 @@ pyqt6 = "==6.5.2"
 pyqt6-qt6 = "==6.5.2"
 
 # things jax
-jax = { version = "^0.6.0", extras = ["cuda"] }
+jax = { version = "^0.6.2", extras = ["cuda"] }
 oryx = "^0.2.9"
-equinox = "^0.12.1"
+equinox = "^0.12.2"
 sympy2jax = "^0.0.7"
 jaxtyping = "^0.3.2"
-optax = "^0.2.4"
+optax = "^0.2.5"
 
 # for tests
-pytest = "^8.3.5"
-pytest-cov = "^6.1.1"
-hypothesis = "^6.131.9"
+pytest = "^8.4.1"
+pytest-cov = "^6.2.1"
+hypothesis = "^6.135.17"
 
 # misc
-meson = "^1.8.0"
+meson = "^1.8.2"
 nixpkgs = "^0.2.4"
 
-yt-dlp = "^2025.4.30"
+yt-dlp = "^2025.6.25"
 # youtube_dl = { git = "https://github.com/ytdl-org/youtube-dl.git" }
 
 factorio-draftsman = "^2.0.2"

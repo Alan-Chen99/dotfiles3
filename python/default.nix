@@ -86,6 +86,10 @@
           propagatedBuildInputs = (old.propagatedBuildInputs or []) ++ [final.pythonix final.ninja];
         });
 
+        nvidia-nvshmem-cu12 = prev.nvidia-nvshmem-cu12.overridePythonAttrs (old: {
+          autoPatchelfIgnoreMissingDeps = true;
+        });
+
         regexfactory = prev.regexfactory.overridePythonAttrs (old: {
           nativeBuildInputs = (old.nativeBuildInputs or []) ++ [final.setuptools];
         });
