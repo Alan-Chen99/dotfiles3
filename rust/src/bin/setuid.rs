@@ -7,7 +7,7 @@ use std::process::Command;
 use clap::Parser;
 use color_eyre::eyre::Result;
 use nix::libc::{gid_t, uid_t};
-use nix::unistd::{setgid, setuid, Gid, Uid};
+use nix::unistd::{Gid, Uid, setgid, setuid};
 
 #[derive(Parser)]
 struct Args {
