@@ -146,7 +146,8 @@
 
     texlive = pkgs.texliveSmall;
 
-    future = import (flakes.future + "/nix/local.nix") {system = system;};
-    past-24-11-0 = import (flakes.past-24-11-0 + "/nix/local.nix") {system = system;};
+    past-24-11-1 = import (flakes.past-24-11-1 + "/nix/local.nix") {system = system;};
+
+    update-python = import flakes.update-python {system = system;};
   };
 }

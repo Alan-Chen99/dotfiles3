@@ -27,8 +27,8 @@
 
       inputs = inputs_;
 
-      past-24-11-0 = attrs.deps.past-24-11-0;
-      future = attrs.deps.future;
+      past-24-11-1 = attrs.deps.past-24-11-1;
+      update-python = attrs.deps.update-python;
 
       add-overlay = overlay: (f (attrs overlay));
 

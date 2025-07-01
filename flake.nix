@@ -79,11 +79,6 @@
       url = "github:numtide/flake-utils";
     };
 
-    future = {
-      url = "github:Alan-Chen99/dotfiles3/update-python-deps";
-      flake = false;
-    };
-
     gitignore = {
       url = "github:hercules-ci/gitignore.nix";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -147,8 +142,8 @@
     nixpkgs23-11.url = "github:nixos/nixpkgs/nixos-23.11";
     nixpkgs24-05.url = "github:nixos/nixpkgs/nixos-24.05";
 
-    past-24-11-0 = {
-      url = "github:Alan-Chen99/dotfiles3/24-11-0";
+    past-24-11-1 = {
+      url = "github:Alan-Chen99/dotfiles3/24.11.1";
       flake = false;
     };
 
@@ -190,6 +185,11 @@
     };
 
     systems.follows = "flake-utils/systems";
+
+    update-python = {
+      url = "github:Alan-Chen99/dotfiles3/update-python-deps";
+      flake = false;
+    };
 
     z3 = {
       url = "github:Z3Prover/z3/z3-4.12.1";

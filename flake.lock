@@ -224,23 +224,6 @@
         "type": "github"
       }
     },
-    "future": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1751162316,
-        "narHash": "sha256-0WqaGZhk2IGt8Dk4zCXe/o9D+5ju9cNlOaPFOOPGGGQ=",
-        "owner": "Alan-Chen99",
-        "repo": "dotfiles3",
-        "rev": "388932394f9004c8721940e06d50c3c408f3bb55",
-        "type": "github"
-      },
-      "original": {
-        "owner": "Alan-Chen99",
-        "ref": "update-python-deps",
-        "repo": "dotfiles3",
-        "type": "github"
-      }
-    },
     "gitignore": {
       "inputs": {
         "nixpkgs": [
@@ -550,7 +533,7 @@
         "type": "github"
       }
     },
-    "past-24-11-0": {
+    "past-24-11-1": {
       "flake": false,
       "locked": {
         "lastModified": 1747859378,
@@ -562,7 +545,7 @@
       },
       "original": {
         "owner": "Alan-Chen99",
-        "ref": "24-11-0",
+        "ref": "24.11.1",
         "repo": "dotfiles3",
         "type": "github"
       }
@@ -645,7 +628,6 @@
         "flake-compat": "flake-compat",
         "flake-parts": "flake-parts",
         "flake-utils": "flake-utils",
-        "future": "future",
         "gitignore": "gitignore",
         "home-manager": "home-manager",
         "mini-compile-commands": "mini-compile-commands",
@@ -662,7 +644,7 @@
         "nixpkgs22-11": "nixpkgs22-11",
         "nixpkgs23-11": "nixpkgs23-11",
         "nixpkgs24-05": "nixpkgs24-05",
-        "past-24-11-0": "past-24-11-0",
+        "past-24-11-1": "past-24-11-1",
         "poetry2nix": "poetry2nix",
         "racket-fmt": "racket-fmt",
         "racket2nix": "racket2nix",
@@ -672,6 +654,7 @@
           "flake-utils",
           "systems"
         ],
+        "update-python": "update-python",
         "z3": "z3"
       }
     },
@@ -723,6 +706,23 @@
       "original": {
         "owner": "nix-systems",
         "repo": "default",
+        "type": "github"
+      }
+    },
+    "update-python": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1751358682,
+        "narHash": "sha256-3TvzKDOpFRLsl54ZNxZLWsaWXMamrzi9Vy6amkd5udE=",
+        "owner": "Alan-Chen99",
+        "repo": "dotfiles3",
+        "rev": "326c3c829824b7e802d99cdd50375a1fcdcef0b2",
+        "type": "github"
+      },
+      "original": {
+        "owner": "Alan-Chen99",
+        "ref": "update-python-deps",
+        "repo": "dotfiles3",
         "type": "github"
       }
     },
