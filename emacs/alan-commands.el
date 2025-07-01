@@ -382,7 +382,7 @@
 ;; (x-display-pixel-height)
 
 (defvar alan-shell-command-count 0)
-(defvar-local alan-shell-command-command)
+(defvar-local alan-shell-command-command nil)
 
 (defun alan-shell-command (command)
   ;; `comint-run' with single input

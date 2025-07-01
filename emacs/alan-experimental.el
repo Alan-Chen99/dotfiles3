@@ -11,6 +11,7 @@
  arc-mode
  backtrace
  comint
+ company-quickhelp
  dafny-mode
  format-all
  lsp-mode
@@ -46,6 +47,7 @@
 (alan-donot-debug-foreground #'outline-forward-same-level)
 (alan-donot-debug-foreground #'outline-backward-same-level)
 (alan-donot-debug-foreground #'line-move)
+(alan-donot-debug-foreground #'company-quickhelp--show)
 
 ;; (alan-donot-debug-foreground #'lsp--on-idle)
 
@@ -143,5 +145,9 @@ This function expects to be in the right *tramp* buffer."
       (error
        (span-notef "backtrace-print-frame: error")
        (insert (format "error (backtrace-print-frame): %S\n" err))))))
+
+(span-instrument tramp-find-executable)
+(span-instrument tramp-get-remote-path :verbose t)
+(span-instrument tramp-bundle-read-file-names :verbose t)
 
 (provide 'alan-experimental)
