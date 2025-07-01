@@ -382,6 +382,7 @@
 ;; (x-display-pixel-height)
 
 (defvar alan-shell-command-count 0)
+(defvar-local alan-shell-command-command)
 
 (defun alan-shell-command (command)
   ;; `comint-run' with single input
@@ -389,26 +390,67 @@
    (list (read-shell-command "Run: ")))
 
   (let* ((evil-insert-state-modes nil)
-         (command-split (split-string-and-unquote command))
-         (buffer (generate-new-buffer
-                  (concat "Run<"
-                          (prin1-to-string (cl-incf alan-shell-command-count))
-                          ">: "
-                          command
-                          " ["
-                          ;; (buffer-name)
-                          ;; default-directory
-                          (substring-no-properties (alan-modeline-filepath-slow-impl default-directory))
-                          "]"
-                          ))))
-    (switch-to-buffer
-     (apply
-      #'make-comint-in-buffer
-      (car command-split) ;; name
-      buffer ;; buffer
-      (car command-split) ;; program
-      nil ;; startfile
-      (cdr command-split) ;; switches
-      ))))
+         (buffer nil))
+
+    (setq buffer
+          (generate-new-buffer
+           (concat
+            "Run<"
+            (prin1-to-string (cl-incf alan-shell-command-count))
+            ">: "
+            command
+            " ["
+            ;; (buffer-name)
+            ;; default-directory
+            (substring-no-properties (alan-modeline-filepath-slow-impl default-directory))
+            "]"
+            )))
+
+    (with-current-buffer buffer
+      (comint-run-mode)
+      (setq-local alan-shell-command-command command))
+
+    (alan-start-comint-proc command buffer)
+    (switch-to-buffer buffer)))
+
+(defun alan-repeat-command (_ignore-auto _noconfirm)
+  (interactive)
+  (unless (derived-mode-p 'comint-run-mode)
+    (user-error "wrong major mode"))
+
+  (let* ((buffer (current-buffer))
+         (command alan-shell-command-command)
+         (prev-proc (get-buffer-process buffer)))
+
+    (when (and prev-proc (process-live-p prev-proc))
+      (user-error "process still alive"))
+
+    (let ((inhibit-read-only t))
+      (delete-region (point-min) (point-max)))
+
+    (alan-start-comint-proc command buffer)))
+
+
+(defun alan-start-comint-proc (command buffer)
+  (let ((command-split (split-string-and-unquote command)))
+    (with-current-buffer buffer
+      (insert command)
+      (insert "\n\f\n"))
+
+    (apply
+     #'make-comint-in-buffer
+     (car command-split) ;; name
+     buffer ;; buffer
+     (car command-split) ;; program
+     nil ;; startfile
+     (cdr command-split) ;; switches
+     )))
+
+(require 'comint)
+(define-derived-mode comint-run-mode comint-mode "Run-Comint"
+  "for running stuff."
+  (setq-local revert-buffer-function #'alan-repeat-command)
+  )
+
 
 (provide 'alan-commands)

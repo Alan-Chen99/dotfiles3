@@ -60,7 +60,8 @@
   ;; https://emacs.stackexchange.com/questions/62418/how-to-change-tramp-default-remote-shell-or-any-of-its-descendants
   ;; TODO: tramp?
   (unless (eq system-type 'windows-nt)
-    (setq explicit-shell-file-name "/bin/bash")
+    (setq explicit-shell-file-name "bash")
+    ;; (setq explicit-shell-file-name "/bin/bash")
     (setq explicit-bash-args '("-i")))
 
   (setq-default shell-font-lock-keywords nil)
