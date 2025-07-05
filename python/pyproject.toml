@@ -39,7 +39,7 @@ setuptools = "^80.9.0"
 uv-dynamic-versioning = "^0.8.2"
 
 # libraries
-PyMuPDF = "^1.26.1"
+PyMuPDF = "^1.26.3"
 Pygments = "^2.19.2"
 beartype = "^0.21.0"
 cchardet = "^2.1.7"
@@ -82,13 +82,13 @@ optax = "^0.2.5"
 # for tests
 pytest = "^8.4.1"
 pytest-cov = "^6.2.1"
-hypothesis = "^6.135.17"
+hypothesis = "^6.135.26"
 
 # misc
 meson = "^1.8.2"
 nixpkgs = "^0.2.4"
 
-yt-dlp = "^2025.6.25"
+yt-dlp = "^2025.6.30"
 # youtube_dl = { git = "https://github.com/ytdl-org/youtube-dl.git" }
 
 factorio-draftsman = "^2.0.2"
