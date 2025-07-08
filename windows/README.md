@@ -6,6 +6,11 @@ wsl hostname -I
 
 # https://jwstanly.com/blog/article/Port+Forwarding+WSL+2+to+Your+LAN/
 netsh interface portproxy add v4tov4 listenport=[PORT] listenaddress=0.0.0.0 connectport=[PORT] connectaddress=[WSL_IP]
+
+# ssh
+netsh interface portproxy add v4tov4 listenport=2222 listenaddress=0.0.0.0 connectport=22 connectaddress=172.22.118.103
+
+netsh interface portproxy add v4tov4 listenport=5201 listenaddress=0.0.0.0 connectport=5201 connectaddress=172.22.118.103
 ```
 
 ```bash
@@ -21,4 +26,12 @@ wsl -l -v
 
 # https://superuser.com/a/1734392
 diskpart /s .\wsl-compact-disk.txt
+```
+
+```
+https://github.com/microsoft/wslg/wiki/Controlling-WSLg-frame-rate
+https://github.com/microsoft/wslg/issues/1142#issuecomment-1810089480
+
+# put in:
+%USERPROFILE%\.wslgconfig
 ```

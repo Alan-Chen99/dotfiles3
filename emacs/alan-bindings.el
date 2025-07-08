@@ -22,7 +22,8 @@
 
 (eval-when-compile
   (unless (eq system-type 'windows-nt)
-    (require-if-is-bytecompile vterm)))
+    (require-if-is-bytecompile--one 'vterm)))
+
 
 (general-def
   "C-," #'help-command

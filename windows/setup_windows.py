@@ -27,6 +27,8 @@ USR_ENV_SUBPATH = r"Environment"
 HOME = Path(os.environ["USERPROFILE"])
 repodir = Path(__file__).parent.parent
 
+unused = object()
+
 
 def escape_powershell_string(s):
     # Wrap the string with escaped single quotes
@@ -244,6 +246,22 @@ def main():
         "--includeRecommended",
         ["--remove", "Microsoft.VisualStudio.Component.VC.CMake.Project"],
     )
+
+    # 5/26/2025
+    # idk if this actually helps
+    # https://superuser.com/questions/1755386/how-to-fix-windows-slow-response-to-bluetooth-mouse-and-keyboard
+    # https://helpdeskgeek.com/how-to-fix-bluetooth-mouse-lag-in-windows-11/
+    with winreg.OpenKey(
+        winreg.HKEY_LOCAL_MACHINE,
+        r"SYSTEM\CurrentControlSet\Enum\USB\VID_8087&PID_0033\5&578cb43&0&14\Device Parameters",
+        access=winreg.KEY_ALL_ACCESS,
+    ) as registry_key:
+        for name in [
+            "DeviceSelectiveSuspended",
+            "SelectiveSuspendEnabled",
+            "SelectiveSuspendSupported",
+        ]:
+            winreg.SetValueEx(registry_key, name, unused, winreg.REG_DWORD, 0)
 
 
 if __name__ == "__main__":

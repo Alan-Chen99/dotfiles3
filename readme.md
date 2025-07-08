@@ -70,9 +70,11 @@ If the elisp debugger pops up, you usually press `c` to ignore it and continue.
 ### start on new machine
 
 ```
-curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install
+sh <(curl -L https://nixos.org/nix/install) --daemon
 
-nix profile install .#p.cachix
+nix profile install --extra-experimental-features nix-command --extra-experimental-features flakes .#p.cachix
+
+echo "trusted-users = root alan" | sudo tee -a /etc/nix/nix.conf && sudo pkill nix-daemon
 
 cachix use alan-chen-public
 
