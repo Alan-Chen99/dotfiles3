@@ -436,8 +436,8 @@
 (setq tab-always-indent 'complete)
 
 ;; symlinks
-;; (setq find-file-visit-truename nil)
-(setq find-file-visit-truename t)
+(setq find-file-visit-truename nil)
+;; (setq find-file-visit-truename t)
 
 
 ;; (setq flycheck-navigation-minimum-level 'warnings)

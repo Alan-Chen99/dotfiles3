@@ -116,7 +116,7 @@
                ("https://github.com/emacs-compat/compat" . "compat")
                :files ("*" (:exclude ".git"))))
  (consult :source "MELPA" :recipe
-          (:ref "efad758b85b9b8af6d92e8c8d896eaba0623b8c3" :package
+          (:ref "d32cccdcb5559b503306291fa9f52df19594d687" :package
                 "consult" :repo "minad/consult" :fetcher github :files
                 ("*.el" "*.el.in" "dir" "*.info" "*.texi" "*.texinfo"
                  "doc/dir" "doc/*.info" "doc/*.texi" "doc/*.texinfo"
@@ -186,11 +186,19 @@
    (:ref "0b9a81409e615c92c35bc55cc616f8d3b37a7256" :package "elpaca")
    :source "Init file")
  (embark :source "MELPA" :recipe
-         (:ref "d5df0eff182b014ab49328a4dbb1d69eb7faafbd" :package
+         (:ref "89c7610fa7988b6c93029f87afa4ba6b7768bf81" :package
                "embark" :repo "oantolin/embark" :fetcher github :files
                ("embark.el" "embark-org.el" "embark.texi"))
          :description "Conveniently act on minibuffer completions"
          :date (26519 4816) :url "https://github.com/oantolin/embark")
+ (embark-consult :source "MELPA" :recipe
+                 (:ref "89c7610fa7988b6c93029f87afa4ba6b7768bf81"
+                       :package "embark-consult" :repo
+                       "oantolin/embark" :fetcher github :files
+                       ("embark-consult.el"))
+                 :description "Consult integration for Embark" :date
+                 (26525 43600) :url
+                 "https://github.com/oantolin/embark")
  (evil :source "MELPA" :recipe
        (:ref "c222ce1ea6fbefaed08308c061371ebdf01b078f" :package
              "evil" :repo "emacs-evil/evil" :fetcher github :files

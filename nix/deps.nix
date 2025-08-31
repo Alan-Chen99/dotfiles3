@@ -128,10 +128,8 @@
 
     nodejs = pkgs.nodejs_latest;
 
-    python = pkgs.python312.override {
-      # enableOptimizations = true;
-      # reproducibleBuild = false;
-      self = self.deps.python;
+    python-nopkgs = pkgs.python313.override {
+      self = self.deps.python-nopkgs;
     };
 
     rust = pkgs.rust-bin.nightly.latest.default.override {
@@ -147,6 +145,7 @@
     texlive = pkgs.texliveSmall;
 
     past-24-11-1 = import (flakes.past-24-11-1 + "/nix/local.nix") {system = system;};
+    past-24-11-2 = import flakes.past-24-11-2 {system = system;};
 
     update-python = import flakes.update-python {system = system;};
   };

@@ -27,7 +27,7 @@
   ;; (advice-add #'tramp-interrupt-process :override #'ignore)
 
   ;; use by rundocker.py script in this repo
-  (add-to-list 'tramp-remote-path "/docker_host_bin")
+  (add-to-list 'tramp-remote-path "/docker_host_prof/bin")
 
   (connection-local-set-profile-variables
    'alan-custom-vars

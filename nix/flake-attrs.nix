@@ -23,12 +23,15 @@
 
       p = attrs.legacypkgs;
       d = attrs.deps;
-      pypkgs = attrs.poetrypython.python.pkgs;
 
       inputs = inputs_;
 
-      past-24-11-1 = attrs.deps.past-24-11-1;
-      update-python = attrs.deps.update-python;
+      inherit
+        (attrs.deps)
+        past-24-11-1
+        past-24-11-2
+        update-python
+        ;
 
       add-overlay = overlay: (f (attrs overlay));
 
@@ -43,22 +46,15 @@
           pkgs = {
             inherit
               (final)
-              basedpyright
               emacs
               nixwrapper
-              password-generator
               pdf-tools-epdfinfo
-              poetry
-              prettier
-              pyright
-              python-all
-              schemat
-              scmindent
+              pypkgs-all
               yaru-theme
               ;
 
             nix-stable = final.deps.nix-stable;
-            python = final.poetrypython.python;
+            python = final.python-inject;
 
             # nix-index = inputs.nix-index.packages.${system}.default;
             nix-index-database = inputs.nix-index-database.packages.${system}.default;
@@ -69,7 +65,13 @@
           # impure
           nix-gl = inputs.nix-gl.packages.${system}.default;
 
-          packages = prev.packages // pkgs // final.pypkgs-bins // final.experimental.packages;
+          packages =
+            prev.packages
+            // pkgs
+            // final.jspkgs-bins
+            // final.pypkgs-bins
+            // final.rustpkgs-bins
+            // final.experimental.packages;
         }
       );
 
@@ -92,7 +94,7 @@
               ci-deps
               ci-instantiate
               cxxtools
-              env-scripts
+              # env-scripts
               flake-registry-file
               fonts
               js
@@ -102,7 +104,7 @@
               pkgs-small
               profile
               profile-root
-              pythonlibs
+              # pythonlibs
               pythontools
               ;
           };
@@ -125,13 +127,13 @@
         user-name = "runner";
       });
 
-      extend-pkgs.emacs29 = with-emacs29.emacs;
-      with-emacs29 = add-deps-overlay (final: prev: {
-        emacs-base = final.legacypkgs.emacs29.overrideAttrs {
-          version = "29.4.50";
-          src = inputs.emacs29;
-        };
-      });
+      # extend-pkgs.emacs29 = with-emacs29.emacs;
+      # with-emacs29 = add-deps-overlay (final: prev: {
+      #   emacs-base = final.legacypkgs.emacs29.overrideAttrs {
+      #     version = "29.4.50";
+      #     src = inputs.emacs29;
+      #   };
+      # });
 
       extend-pkgs.emacs30 = with-emacs30.emacs;
       with-emacs30 = add-deps-overlay (final: prev: {

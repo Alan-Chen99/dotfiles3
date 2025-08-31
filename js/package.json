@@ -10,6 +10,7 @@
     "clipboardy": "^4.0.0",
     "eslint": "^9.20.1",
     "eslint-lsp": "^0.1.2",
+    "nvm": "^0.0.4",
     "prettier": "^3.4.2",
     "pyright": "^1.1.393",
     "scmindent": "^1.0.4",

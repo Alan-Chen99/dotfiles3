@@ -47,6 +47,7 @@
   "SPC c" #'copy-eval-last-sexp
   "SPC o" #'pp-macroexpand-last-sexp ;; Only outmost layer
   "SPC a" #'pp-macroexpand-all-last-sexp ;; All
+  "SPC l" #'emacs-lisp-byte-compile-and-load
   )
 
 ;; TODO: do i still do this?

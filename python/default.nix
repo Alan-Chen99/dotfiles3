@@ -1,197 +1,124 @@
 {
   self,
+  std,
   legacypkgs,
   lib,
-  nixpkgs-flakes,
-  pkgs-unstable,
-  poetry2nix,
-  pyright,
-  python,
-  std,
-  basedpyright,
+  flakes,
+  python-nopkgs,
+  nix-filter,
 }: rec {
-  poetry-lib = poetry2nix.lib.mkPoetry2Nix {pkgs = legacypkgs;};
-
-  poetrypython = self.poetrypython.python;
-
-  python-patched = python.override {
-    self = python-patched;
-    packageOverrides = final: prev: {
-      pip = poetrypython.pkgs.pip;
+  workspace = flakes.uv2nix.lib.workspace.loadWorkspace {
+    workspaceRoot = nix-filter {
+      root = ./.;
+      include = [
+        ./pyproject.toml
+        ./uv.lock
+      ];
     };
   };
 
-  poetryPackages-attrs =
-    builtins.listToAttrs (
-      map (drv: {
-        name = drv.pname;
-        value = drv;
-      })
-      self.poetrypython.poetryPackages
+  overlay = workspace.mkPyprojectOverlay {
+    sourcePreference = "wheel"; # or sourcePreference = "sdist";
+  };
+
+  buildSystemOverrides = final: prev:
+    builtins.mapAttrs (
+      name: spec:
+        prev.${name}.overrideAttrs (old: {
+          nativeBuildInputs = old.nativeBuildInputs ++ final.resolveBuildSystem spec;
+        })
     )
-    // {tkinter = null;};
+    (import ./buildSystemOverrides.nix);
 
-  # ex: nix shell ..#python.inject.pip.ipython
-  export.poetrypython = let
-    injectwith = injected: (
-      builtins.mapAttrs
-      (name: val: (
-        let
-          new = injected ++ [name];
-        in
-          (poetrypython.withPackages (ps: map (x: ps."${x}") new)) // (injectwith new)
-      ))
-      poetryPackages-attrs
+  # Construct package set
+  pythonSet =
+    # Use base package set from pyproject.nix builders
+    (legacypkgs.callPackage flakes.pyproject-nix.build.packages {
+      python = python-nopkgs;
+    })
+    .overrideScope
+    (
+      lib.composeManyExtensions [
+        overlay
+        buildSystemOverrides
+        (flakes.uv2nix_hammer_overrides.overrides legacypkgs)
+      ]
     );
-  in
-    _poetrypython
-    // {
-      python =
-        _poetrypython.python
-        // {
-          inject = injectwith [];
-        };
-    };
 
-  _poetrypython = poetry-lib.mkPoetryPackages {
-    python = python-patched;
-    projectDir = ./.;
-    preferWheels = true;
-    overrides = [
-      (final: prev: rec {
-        # typing is builtin since python 3.6, ignore a dependency on typing module in pypi
-        typing = null;
+  ####################
 
-        cchardet = prev.cchardet.override {preferWheel = false;};
-
-        # final.pkgs.meson (meson with poetrypython) fails check so disable checks for now
-        # TODO: override dont work here bc poetry2nix use overrideAttrs to disable checks first
-        # and apparently you cant override after a overrideAttrs
-        pythonix = final.callPackage (nixpkgs-flakes + /pkgs/development/python-modules/pythonix) {
-          nix = prev.pkgs.nixVersions.nix_2_3;
-          meson =
-            (prev.pkgs.meson.override {
-              python3 = final.python;
-            })
-            .overrideAttrs {
-              doCheck = false;
-              doInstallCheck = false;
-            };
-        };
-
-        # qt6 = prev.qt6.override {preferWheel = false;};
-        pyqt6-qt6 = prev.pyqt6-qt6.override {preferWheel = false;};
-
-        nixpkgs = prev.nixpkgs.overridePythonAttrs (old: {
-          propagatedBuildInputs = (old.propagatedBuildInputs or []) ++ [final.pythonix final.ninja];
-        });
-
-        nvidia-nvshmem-cu12 = prev.nvidia-nvshmem-cu12.overridePythonAttrs (old: {
-          autoPatchelfIgnoreMissingDeps = true;
-        });
-
-        regexfactory = prev.regexfactory.overridePythonAttrs (old: {
-          nativeBuildInputs = (old.nativeBuildInputs or []) ++ [final.setuptools];
-        });
-
-        simple-parsing = prev.simple-parsing.overridePythonAttrs (old: {
-          UV_DYNAMIC_VERSIONING_BYPASS = old.version;
-          nativeBuildInputs =
-            (old.nativeBuildInputs or [])
-            ++ [
-              final.hatchling
-              final.uv-dynamic-versioning
-            ];
-        });
-
-        weasyprint = assert prev.weasyprint.version == python.pkgs.weasyprint.version;
-          prev.weasyprint.override {preferWheel = false;};
-
-        # this is bc defaultPoetryOverrides says poetry = poetry_core
-        _poetry = prev.poetry;
-      })
-      poetry-lib.defaultPoetryOverrides
-    ];
-  };
-
-  # for running scripts in this repo
-  export.env-scripts = poetrypython.withPackages (ps: [
-    ps.pygit2
-    ps.regexfactory
-  ]);
-
-  export.python-all = poetrypython.withPackages (ps:
-    self.poetrypython.poetryPackages
-    ++ [
-      ps._poetry
-      ps.tkinter
-    ]);
+  export.pypkgs = pythonSet;
+  export.pypkgs-all = pythonSet.mkVirtualEnv "venv-all-uv-packages" workspace.deps.all;
 
   export.pythonlibs = std.buildEnv {
     name = "python libs";
     paths = [
-      self.python-all
+      self.pypkgs-all
     ];
     pathsToLink = [
       "/lib"
     ];
   };
 
-  defaultdeps = {
+  ####################
+
+  _python-inject = let
+    injectwith = injected: let
+      drv = pythonSet.mkVirtualEnv "inject-${python-nopkgs.name}" injected;
+    in (
+      (
+        builtins.mapAttrs
+        (name: _val: injectwith (injected // {"${name}" = [];}))
+        pythonSet
+      )
+      // {
+        inherit (drv) type name drvPath meta;
+        _drv = drv;
+      }
+    );
+  in
+    injectwith {};
+
+  export.python-inject = python-nopkgs // {inject = _python-inject;};
+
+  ####################
+
+  mkApplication = (legacypkgs.callPackages flakes.pyproject-nix.build.util {}).mkApplication;
+
+  make_app = name:
+    mkApplication {
+      venv = pythonSet.mkVirtualEnv "${name}-env" {"${name}" = [];};
+      package = pythonSet."${name}";
+    };
+
+  pythontools_ = {
     inherit
-      (poetrypython.pkgs)
+      (pythonSet)
       autoflake
+      basedpyright
       black
       ipython
       isort
-      pybind11
+      pyright
       ;
   };
+  pypkgs-bins_ =
+    pythontools_
+    // {
+      inherit
+        (pythonSet)
+        diceware
+        yt-dlp
+        ;
+    };
+
+  export.pypkgs-bins =
+    builtins.mapAttrs (n: _: (make_app n)) pypkgs-bins_;
 
   export.pythontools = std.buildEnv {
     name = "python tools";
     paths =
-      (builtins.attrValues defaultdeps)
-      ++ [
-        # poetrypython
-        # pyright
-        basedpyright
-      ];
-    pathsToLink = ["/bin"];
-    postBuild = ''
-      mkdir -p $out/lib/python3.12/site-packages/
-      ln -s ${python-patched} $out/python-nodep
-    '';
+      builtins.attrValues
+      (builtins.mapAttrs (n: _: (make_app n)) pythontools_);
   };
-
-  pypkgs-bins_ = {
-    inherit
-      (poetrypython.pkgs)
-      black
-      diceware
-      isort
-      vcstool2
-      yt-dlp
-      ;
-  };
-
-  _poetry = poetrypython.withPackages (ps: [
-    ps._poetry
-    ps.poetry-plugin-shell
-    ps.poetry-plugin-up
-  ]);
-  export.poetry =
-    std.runCommandLocal "poetry" {}
-    ''
-      mkdir -p $out/bin
-      ln -s ${_poetry}/bin/poetry $out/bin/poetry
-    '';
-
-  export.pypkgs-bins = builtins.mapAttrs (n: e:
-    std.buildEnv {
-      name = e.name;
-      paths = [e];
-      pathsToLink = ["/bin" "/etc" "/share"];
-    })
-  pypkgs-bins_;
 }

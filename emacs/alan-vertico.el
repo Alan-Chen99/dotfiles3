@@ -25,9 +25,9 @@
 
   (vertico-mode))
 
-(defadvice! vertico--exhibit--debug (fn)
+(defadvice! vertico--exhibit--suppress (fn)
   :around #'vertico--exhibit
-  (alan-always-debug
+  (alan-with-demoted-errors
    (span :vertico--exhibit
      (funcall fn))))
 

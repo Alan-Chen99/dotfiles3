@@ -38,8 +38,9 @@
     };
 
   export.basedpyright = jspkg {name = "basedpyright";};
-  export.password-generator = jspkg {name = "@sebastienrousseau/password-generator";};
-  export.prettier = jspkg {
+  export.pyright = jspkg {name = "pyright";};
+
+  prettier = jspkg {
     name = "prettier";
     publishBinsFor = ["prettier" "@fsouza/prettierd"];
     postInstall = ''
@@ -47,8 +48,13 @@
     '';
     nativeBuildInputs = [pkgs.makeWrapper];
   };
-  export.pyright = jspkg {name = "pyright";};
-  export.scmindent = jspkg {name = "scmindent";};
+
+  export.jspkgs-bins = {
+    nvm = jspkg {name = "nvm";};
+    password-generator = jspkg {name = "@sebastienrousseau/password-generator";};
+    prettier = prettier;
+    scmindent = jspkg {name = "scmindent";};
+  };
 
   deps = pkgs.mkYarnPackage {
     nodejs = nodejs;

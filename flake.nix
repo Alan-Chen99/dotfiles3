@@ -129,7 +129,7 @@
 
     nixpkgs = {
       # nix flake update nixpkgs
-      url = "github:nixos/nixpkgs/nixos-24.11";
+      url = "github:nixos/nixpkgs/nixos-25.05";
       # url = "github:nixos/nixpkgs/ae584d90cbd0396a422289ee3efb1f1c9d141dc3";
     };
     # nixpkgs-lib.url = "github:nixos/nixpkgs/ae584d90cbd0396a422289ee3efb1f1c9d141dc3?dir=lib";
@@ -141,9 +141,14 @@
     nixpkgs22-11.url = "github:nixos/nixpkgs/nixos-22.11";
     nixpkgs23-11.url = "github:nixos/nixpkgs/nixos-23.11";
     nixpkgs24-05.url = "github:nixos/nixpkgs/nixos-24.05";
+    nixpkgs24-11.url = "github:nixos/nixpkgs/nixos-24.11";
 
     past-24-11-1 = {
       url = "github:Alan-Chen99/dotfiles3/24.11.1";
+      flake = false;
+    };
+    past-24-11-2 = {
+      url = "github:Alan-Chen99/dotfiles3/24.11.2";
       flake = false;
     };
 
@@ -157,6 +162,18 @@
         systems.follows = "systems";
         treefmt-nix.follows = "empty";
       };
+    };
+
+    pyproject-build-systems = {
+      url = "github:pyproject-nix/build-system-pkgs";
+      inputs.pyproject-nix.follows = "pyproject-nix";
+      inputs.uv2nix.follows = "uv2nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    pyproject-nix = {
+      url = "github:pyproject-nix/pyproject.nix";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
 
     racket-fmt = {
@@ -189,6 +206,29 @@
     update-python = {
       url = "github:Alan-Chen99/dotfiles3/update-python-deps";
       flake = false;
+    };
+
+    uv = {
+      url = "github:astral-sh/uv/0.7.21";
+      flake = false;
+    };
+
+    uv-upgrade = {
+      url = "github:astral-sh/uv/refs/pull/13934/head";
+      flake = false;
+    };
+
+    uv2nix = {
+      url = "github:pyproject-nix/uv2nix";
+      inputs.pyproject-nix.follows = "pyproject-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    uv2nix_hammer_overrides = {
+      url = "github:TyberiusPrime/uv2nix_hammer_overrides";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.systems.follows = "systems";
+      inputs.treefmt-nix.follows = "empty";
     };
 
     z3 = {

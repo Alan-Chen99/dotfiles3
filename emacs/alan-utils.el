@@ -41,7 +41,7 @@
 
 (defun maybe-record-dependency (feature)
   (when-let* ((parent (span-var 'current-require-or-load)))
-    (when (symbolp parent)
+    (when (and (symbolp parent) (not (featurep parent)))
       (cl-pushnew feature (alist-get parent alan-dependency-alist-new-tmp)))))
 
 (defadvice! alan-require-span (orig-fun feature &optional filename noerror)

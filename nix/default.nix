@@ -124,12 +124,11 @@
   mod.js = callpackage ../js {} (reexport (prev: {
     inherit
       (prev)
-      basedpyright
       js
-      password-generator
-      prettier
-      pyright
-      scmindent
+      jspkgs-bins
+      #
+      # basedpyright
+      # pyright
       ;
   }));
 
@@ -158,11 +157,10 @@
   mod.python = callpackage ../python {} (reexport (prev: {
     inherit
       (prev)
-      env-scripts
-      poetry
-      poetrypython
+      pypkgs
+      pypkgs-all
       pypkgs-bins
-      python-all
+      python-inject
       pythonlibs
       pythontools
       ;
@@ -177,7 +175,7 @@
   }));
 
   mod.rust = callpackage ../rust {} (reexport (prev: {
-    inherit (prev) craneLib schemat;
+    inherit (prev) rustpkgs-bins;
   }));
 
   mod.source = callpackage ./source.nix {} (reexport (prev: {

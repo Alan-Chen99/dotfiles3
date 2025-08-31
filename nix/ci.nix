@@ -19,7 +19,7 @@
       super.ci-deps
       super.cxxtools
       super.emacs
-      super.env-scripts
+      # super.env-scripts
       super.fonts
       super.home.activationPackage
       super.js
@@ -30,7 +30,7 @@
       super.pkgs-small
       super.profile
       super.profile-root
-      super.python-all
+      super.pypkgs-all
       super.pythontools
       super.schemat
     ];

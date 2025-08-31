@@ -33,7 +33,7 @@ SSL_CERT_FILE = os.environ.get("SSL_CERT_FILE", "")
 extra_path1 = HOME / ".nix-profile/bin"
 extra_path2 = HOME / ".local/docker_static_bin"
 
-host_bin_path = "/docker_host_bin"
+host_bin_path = "/docker_host_prof/bin"
 
 flags: list[str | list[str]] = [
     "docker",

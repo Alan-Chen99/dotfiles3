@@ -25,9 +25,39 @@ in rec {
     stdenv = std.keepDebugInfo std.stdenv;
   });
 
-  export.schemat = self.craneLib.buildPackage {
+  export.rustpkgs-bins.schemat = craneLib.buildPackage {
     src = flakes.schemat;
+    strictDeps = true;
   };
+
+  # export.rustpkgs-bins.uv = let
+  #   cargoArtifacts = craneLib.buildDepsOnly {
+  #     src = flakes.uv;
+  #     # strictDeps = true;
+  #   };
+  # in
+  #   craneLib.buildPackage {
+  #     inherit (craneLib.crateNameFromCargoToml {src = "${flakes.uv}/crates/uv";}) pname version;
+  #     src = flakes.uv;
+  #     strictDeps = true;
+  #     doCheck = false;
+  #     cargoArtifacts = cargoArtifacts;
+  #   };
+
+  export.rustpkgs-bins.uv-upgrade = let
+    src = flakes.uv-upgrade;
+    cargoArtifacts = craneLib.buildDepsOnly {
+      src = src;
+      strictDeps = true;
+    };
+  in
+    craneLib.buildPackage {
+      inherit (craneLib.crateNameFromCargoToml {src = "${src}/crates/uv";}) pname version;
+      src = src;
+      strictDeps = true;
+      doCheck = false;
+      cargoArtifacts = cargoArtifacts;
+    };
 
   commonArgs = {
     src = nix-filter {

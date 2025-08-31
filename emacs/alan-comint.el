@@ -125,7 +125,8 @@
                  read-only t
                  front-sticky (read-only)
                  rear-nonsticky (field read-only font-lock-face keymap)
-                 keymap ,alan-comint-output-map)
+                 ;; keymap ,alan-comint-output-map
+                 )
                string)
 
 	          (insert string)

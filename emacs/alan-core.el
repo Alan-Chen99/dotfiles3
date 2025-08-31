@@ -131,9 +131,4 @@
 (make-lazy rainbow-mode-lazy 'rainbow-mode 'rainbow-mode)
 
 
-(defun evil-collection-require-lazy (sym)
-  (eval-after-load! evil-collection
-    (evil-collection-require sym)))
-
-
 (provide 'alan-core)

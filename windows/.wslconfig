@@ -1,0 +1,13 @@
+[wsl2]
+# https://stackoverflow.com/questions/73021599/how-to-enable-cgroup-v2-in-wsl2
+kernelCommandLine = cgroup_no_v1=all
+networkingMode = mirrored
+# hostAddressLoopback = true
+dnsTunneling=true
+swap=0
+memory=28GB
+# firewall=false
+
+[experimental]
+# https://github.com/microsoft/WSL/issues/11102
+hostAddressLoopback=true

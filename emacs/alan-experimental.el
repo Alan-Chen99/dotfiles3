@@ -7,21 +7,28 @@
                :files ("el/*.el")
                ))
 
+(pkg! 'embark-consult)
+(pkg! 'bash-completion)
+
 (require-if-is-bytecompile
  arc-mode
  backtrace
  comint
  company-quickhelp
  dafny-mode
+ embark
  format-all
  lsp-mode
+ magit
  outline
  python
+ server
  tq
  tramp
  tramp-sh
  tree-sitter-langs-build
 
+ alan-iflipb
  alan-simple
  )
 
@@ -149,5 +156,48 @@ This function expects to be in the right *tramp* buffer."
 (span-instrument tramp-find-executable)
 (span-instrument tramp-get-remote-path :verbose t)
 (span-instrument tramp-bundle-read-file-names :verbose t)
+
+(span-instrument server-start)
+(span-instrument server-stop)
+
+(eval-after-load! server
+  ;; TODO: on server invocation, before calling server-execute,
+  ;; buffer is set to " *server*" and pre-command-hook is called (before server ops)
+  ;; causing #'pre-command-handle-iflipb to be called on the server buffer
+  (setq server-name (format "server%s" (emacs-pid))))
+
+;; (span-instrument pre-command-handle-iflipb
+;;   (when (string= (buffer-name (current-buffer)) " *server*")
+;;     (span--backtrace)))
+
+;; (span-instrument server-visit-files)
+;; (span-instrument server-execute)
+
+;; (span-instrument server-process-filter)
+
+;; (span-instrument embark-become :verbose t)
+;; (span-instrument embark--prompt :verbose t)
+;; (span-instrument embark--become-command :verbose t)
+;; (span-instrument embark--display-string
+;;   :verbose t
+;;   (span-dbgf (minibuffer-contents)))
+
+;; (span-instrument embark--read-key-sequence
+;;   :verbose t
+;;   (span-dbgf overriding-terminal-local-map))
+
+;; (span-instrument read-key-sequence-vector :verbose t)
+;; (span-instrument embark-keymap-prompter :verbose t)
+
+;; (span-instrument embark--become-keymap :verbose t)
+;; (advice-add #'embark--become-keymap :override #'ignore)
+
+;; (defadvice! magit-bare-repo-p
+
+(cl-defmethod magit-bare-repo-p :around (&rest _args)
+  (or (cl-call-next-method)
+      (not (magit-rev-parse-safe "--show-toplevel"))))
+
+;; (span-instrument all-completions :verbose t)
 
 (provide 'alan-experimental)

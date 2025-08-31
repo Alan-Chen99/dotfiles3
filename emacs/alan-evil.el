@@ -155,4 +155,8 @@
 (eval-after-load! evil-collection
   (setq evil-collection-key-blacklist '("s")))
 
+(defun evil-collection-require-lazy (sym)
+  (eval-after-load! evil-collection
+    (evil-collection-require sym)))
+
 (provide 'alan-evil)

@@ -1,7 +1,7 @@
 {
   self,
   system,
-  python,
+  python-nopkgs,
   flakes,
   lib,
   nix,
@@ -103,7 +103,7 @@
   export.nixwrapper =
     derivation {
       name = "nixwrapper";
-      builder = "${python}/bin/python";
+      builder = "${python-nopkgs}/bin/python";
       system = system;
       args = [
         "${./make_nix_wrapper.py}"

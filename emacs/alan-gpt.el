@@ -38,7 +38,7 @@
   (setq gptel--anthropic (gptel-make-anthropic "Claude" :stream t :key anthropic-api-key))
 
   (setq gptel-backend gptel--openai)
-  (setq gptel-model 'gpt-4.1-mini)
+  (setq gptel-model 'gpt-4.1)
 
   ;; (setq gptel-backend gptel--anthropic)
   ;; (setq gptel-model 'claude-sonnet-4-20250514)

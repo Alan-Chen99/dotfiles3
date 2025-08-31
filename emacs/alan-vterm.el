@@ -1,7 +1,7 @@
 ;; -*- lexical-binding: t -*-
 
 (require 'alan-core)
-(require 'evil)
+(require 'alan-evil)
 (require 'alan-shell)
 
 (require-if-is-bytecompile evil-collection-vterm)

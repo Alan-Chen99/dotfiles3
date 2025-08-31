@@ -18,12 +18,7 @@
  alan-iflipb
  alan-minibuffer
  alan-theme
- )
-
-(eval-when-compile
-  (unless (eq system-type 'windows-nt)
-    (require-if-is-bytecompile--one 'vterm)))
-
+ (vterm . (not (eq system-type 'windows-nt))))
 
 (general-def
   "C-," #'help-command
@@ -33,8 +28,10 @@
   ;; TODO: end up using those rarely, should put something more useful here
   ;; "<w>" #'move-beginning-of-line
   "<z>" #'undo-only
-  ;; "<y>" #'evil-redo
+  "<y>" #'evil-redo
   ;; "<q>" #'evil-delete-line
+
+  ;; "S-SPC" #'embark-act
 
   "<S-return>" #'newline
   "<.> <up>" #'newline
@@ -64,6 +61,7 @@
   "v" #'describe-variable
   "f" #'describe-function
   "c" #'describe-char
+  "s" #'describe-symbol
 
   "x" #'alan-describe-ex-command
   "t" #'alan-describe-font-at-point
@@ -118,7 +116,9 @@
   ;; "g m" #'consult-mark
 
   "g r" #'consult-ripgrep
-  "g SPC" (lambda () (interactive) (consult-ripgrep default-directory))
+  "g SPC" (lambda () (interactive)
+            (let ((consult-ripgrep-args (append consult-ripgrep-args '("--no-ignore"))))
+              (consult-ripgrep default-directory)))
 
   "g f" (lambda () (interactive) (consult-fd default-directory))
 
@@ -178,7 +178,7 @@
   "[" #'evil-ex-search-previous
 
   "t" #'evil-find-char-to
-  ;; "<t>" 'evil-find-char-backward
+  "<T>" #'evil-find-char-to-backward
 
   "e" #'evil-find-char
   "{" #'evil-find-char-backward
@@ -195,6 +195,7 @@
   "\"" #'evil-jump-item ;; go to other parenthesis
 
   "<.> j" #'evil-goto-definition
+  "<.> <down>" #'(lambda () (interactive) (let ((find-file-visit-truename t)) (evil-goto-definition)))
 
   "0" #'display-local-help
 
@@ -282,6 +283,9 @@
   "#" #'comment-region
   ":" #'uncomment-region
 
+  "<.> o" #'sort-lines
+  "<.> +" #'sort-paragraphs
+
   "." #'evil-repeat
 
   "g a" #'save-buffer
@@ -365,16 +369,7 @@
   "v" #'evil-window-vsplit
   "f" #'window-swap-states
 
-  "t"
-  (lambda ()
-    (interactive)
-    (let ((wconfig (current-window-configuration)))
-      (add-hook-once! 'post-command-hook :depth 100
-        (call-interactively
-         (lambda ()
-           (interactive)
-           (set-window-configuration wconfig nil 'dont-set-miniwindow)))))
-    (top-level))
+  "t" #'alan-top-level-keep-windows
 
   "w" #'find-file
   "b" #'switch-to-buffer

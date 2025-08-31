@@ -1,6 +1,8 @@
 ;; -*- lexical-binding: t -*-
 
 (require 'alan-core)
+(require 'alan-evil)
+(require 'alan-commands)
 
 (pkg! 'embark
   (startup-queue-package 'embark 0))
@@ -8,58 +10,75 @@
 
 (eval-after-load! embark
   (setq
-   embark-help-key "S-SPC"
+   ;; embark-help-key "S-SPC"
+   embark-help-key nil
    embark-cycle-key "SPC"
    embark-prompter #'embark-keymap-prompter
    embark-quit-after-action '((kill-buffer . t) (t . nil)))
 
   (setq embark-indicators
         '(
-          ;; embark--vertico-indicator
+          embark-minimal-indicator
+          embark--vertico-indicator
           ;; embark-mixed-indicator
           embark-highlight-indicator
           embark-isearch-highlight-indicator))
 
+  ;; (setq embark-become-keymaps '(evil-motion-state-map))
+
+  (defadvice! embark--become-keymap--override (&rest _args)
+    :override #'embark--become-keymap
+    evil-motion-state-map)
+
+  (--each embark-keymap-alist (eval `(clear-and-backup-keymap ,(-last-item it))))
+
+  ;; eval (clear-and-backup-keymap)
+
+  ;; embark-keymap-alist
+
   (general-def embark-general-map
-    "c" #'embark-collect)
+    "S-SPC" #'embark-keymap-help
+    "SPC" #'embark-cycle
 
-  (general-def embark-file-map
-    "c" #'embark-collect)
+    "n" (lambda () (interactive) (embark--run-after-command #'evil-normal-state))
+    "t" #'alan-top-level-keep-windows
 
-  (clear-and-backup-keymap embark-collect-mode-map)
+    "a" #'embark-act-all
+    "b" #'embark-become
+    "c" #'embark-collect
+    "e" #'embark-export
+    "l" #'embark-live
+    "y" #'embark-copy-as-kill
+
+    ;; "r" #'embark-history-remove
+    )
+
+  (general-def embark-symbol-map
+    "h" #'describe-symbol
+    "d" #'embark-find-definition
+    "e" #'pp-eval-expression
+    )
+
+
+  ;; embark--act treats embark-become specially
+  ;; so we cant define another command to call embark-become
+  (defadvice! embark-become--always-full (fn &optional _full)
+    :around #'embark-become
+    (funcall fn 'full))
+
+  ;; embark-become
+
+  ;; (setq embark-prompter 'embark-completing-read-prompter)
+
+
+  ;; (general-def embark-file-map
+  ;;   "c" #'embark-collect)
+
+  ;; (general-def embark-command-map
+  ;;   "c" #'embark-collect)
+
+  ;; (clear-and-backup-keymap embark-collect-mode-map)
 
   )
-
-;; (use-package embark
-;;   :functions embark-verbose-indicator-override
-;;   :autoload (embark-keymap-prompter)
-;;   :general
-;;   (motion
-;;    "S-SPC" #'embark-act)
-;;   (embark-buffer-map
-;;    "<up>" #'kill-current-buffer
-;;    )
-;;   (vertico-map
-;;    :states 'insert
-;;    "S-SPC" #'embark-act)
-;;   :init
-;;   (startup-queue-package 'embark 50)
-;;   (defvar embark-indicators
-;;     '(
-;;       ;; embark--vertico-indicator
-;;       ;; embark-mixed-indicator
-;;       embark-highlight-indicator
-;;       embark-isearch-highlight-indicator))
-
-;;   (setq-default
-;;    embark-help-key "S-SPC"
-;;    embark-cycle-key "SPC"
-;;    embark-prompter #'embark-keymap-prompter
-;;    embark-quit-after-action '((kill-buffer . t) (t . nil)))
-;;   ;;    embark-bindings-at-point
-;;   ;; :config
-;;   ;; embark-keymap-prompter
-;;   ;; (setq-default embark-prompter #'embark-keymap-prompter)
-;;   )
 
 (provide 'alan-embark)

@@ -1,0 +1,3 @@
+{
+  regexfactory.setuptools = [];
+}

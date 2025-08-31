@@ -8,9 +8,10 @@
 
 (general-def [remap evil-indent] #'format-all-region-or-buffer)
 
+
 (eval-after-load! format-all
   ;; (alan-set-ignore-debug-on-error #'format-all--prompt-for-formatter)
-
+  (add-to-list 'debug-ignored-errors 'format-all-executable-not-found)
 
   (defadvice! alan-format-all--language-id-buffer ()
     :before-until #'format-all--language-id-buffer

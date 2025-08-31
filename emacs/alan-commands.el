@@ -273,6 +273,7 @@
          (if buffer-file-name
              buffer-file-name
            default-directory)))
+    (setq v (file-truename v))
     (message "%s" v)
     (kill-new v)))
 
@@ -389,6 +390,8 @@
   (interactive
    (list (read-shell-command "Run: ")))
 
+  (setq command (string-trim command))
+
   (let* ((evil-insert-state-modes nil)
          (buffer nil))
 
@@ -451,6 +454,16 @@
   "for running stuff."
   (setq-local revert-buffer-function #'alan-repeat-command)
   )
+
+(defun alan-top-level-keep-windows ()
+  (interactive)
+  (let ((wconfig (current-window-configuration)))
+    (add-hook-once! 'post-command-hook :depth 100
+      (call-interactively
+       (lambda ()
+         (interactive)
+         (set-window-configuration wconfig nil 'dont-set-miniwindow)))))
+  (top-level))
 
 
 (provide 'alan-commands)

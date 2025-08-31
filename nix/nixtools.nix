@@ -9,7 +9,6 @@
   nix-tree,
   nixconf-file,
   nixd,
-  python,
   std,
 }: rec {
   # https://discourse.nixos.org/t/nix-flamegraph-or-profiling-tool/33333

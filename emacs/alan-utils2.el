@@ -9,13 +9,6 @@
 
 (defvar alan-dotemacs-dir nil)
 
-(defun alan-eval-after-load (file form)
-  (declare (indent 1))
-  (eval-after-load file
-    (lambda ()
-      (with-current-buffer (get-buffer-create " *eval-after-load*" t)
-        (funcall form)))))
-
 ;; (string-prefix-p "evil-collection-" (symbol-name 'evil-collection-rg))
 
 (declare-function evil-collection-require "evil-collection")
@@ -31,16 +24,11 @@
 
 (defmacro require-if-is-bytecompile (&rest features)
   (dolist (feature features)
-    (require-if-is-bytecompile--one feature))
+    (if (consp feature)
+        (when (eval (cdr feature))
+          (require-if-is-bytecompile--one (car feature)))
+      (require-if-is-bytecompile--one feature)))
   nil)
-
-(defmacro eval-after-load! (feature &rest body)
-  ;; with-eval-after-load but requires feature when byte compiling to silent errors.
-  ;; warning: the byte compiler sees feature being loaded even afte this macro
-  ;; TODO: maybe its possible to fix above?
-  (declare (indent 1) (debug (form def-body)))
-  (require-if-is-bytecompile--one feature)
-  `(alan-eval-after-load ',feature (lambda () ,@body)))
 
 (defun alan-wrap-callback (fn)
   (let ((buf (current-buffer)))
@@ -114,6 +102,22 @@
 (defun require-noerr (package)
   (force-noerr
    (require package)))
+
+(defun alan-eval-after-load (file form)
+  (declare (indent 1))
+  (eval-after-load file
+    (lambda ()
+      (force-noerr
+       (with-current-buffer (get-buffer-create " *eval-after-load*" t)
+         (funcall form))))))
+
+(defmacro eval-after-load! (feature &rest body)
+  ;; with-eval-after-load but requires feature when byte compiling to silent errors.
+  ;; warning: the byte compiler sees feature being loaded even afte this macro
+  ;; TODO: maybe its possible to fix above?
+  (declare (indent 1) (debug (form def-body)))
+  (require-if-is-bytecompile--one feature)
+  `(alan-eval-after-load ',feature (lambda () ,@body)))
 
 (defun alan-ignore-error-advice (func &rest args)
   (ignore-errors

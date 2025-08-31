@@ -566,19 +566,22 @@ designed to be created at compile time and used as constant"
     (let* ((verbose (get sym 'span--instrument-verbose))
            (backtrace (get sym 'span--instrument-backtrace))
            (callback (get sym 'span--instrument-callback))
+           (buffer (current-buffer))
            (msg
             (if verbose
                 (span-fmt-to-string (cons sym args))
               (span-fmt `(cl-prin1-to-string ,(:seq (cons sym args)))))))
       (span (:: (:unsafe msg))
-        (span-flush)
+        (span-msg "buf: %s" buffer)
         (when backtrace
           (span--backtrace))
         (when callback
           (funcall callback))
         ;; (span-msg "args: %s" args)
-        (span-msg "buf: %s" (current-buffer))
-        (let ((res (apply fn args)))
+        (let ((res
+               (unwind-protect (apply fn args)
+                 (unless (eq (current-buffer) buffer)
+                   (span-msg "buf (changed): %s" (current-buffer))))))
           (if verbose
               (span-msg "%s -> %s" sym (span-fmt-to-string res))
             (span-notef "%s -> %S" sym res))
@@ -721,12 +724,12 @@ designed to be created at compile time and used as constant"
   (:sleep-for (:seq args)))
 
 
-(defvar span--require-buf (get-buffer-create " *span-require*" t))
+(defvar span--require-buf " *span-require*")
 
 (defun span--wrap-require (orig-fun feature &rest args)
   (span--context :require
     (span--unchecked (:require feature)
-      (with-current-buffer span--require-buf
+      (with-current-buffer (get-buffer-create span--require-buf t)
         (cl-letf (((span-var 'current-require-or-load) feature))
           (let (inhibit-quit)
             (span-with-no-minibuffer-message
@@ -736,7 +739,7 @@ designed to be created at compile time and used as constant"
 (defun span--wrap-load (orig-fun file &rest args)
   (span--context :require
     (span--unchecked (:load file)
-      (with-current-buffer span--require-buf
+      (with-current-buffer (get-buffer-create span--require-buf t)
         (cl-letf (((span-var 'current-require-or-load) file))
           (let (inhibit-quit)
             (apply orig-fun file args)))))))

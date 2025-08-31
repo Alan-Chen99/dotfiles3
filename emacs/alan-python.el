@@ -7,7 +7,7 @@
 
 (pkg! 'lsp-pyright)
 
-(require-if-is-bytecompile lsp-completion python)
+(require-if-is-bytecompile lsp-completion python lsp-pyright)
 
 (defun alan-redef-python-mode ()
   ;; remove uneeded stuff from python
@@ -198,6 +198,8 @@
 
 
 ;; (alan-set-ignore-debug-on-error #'python-indent-line)
+
+(setq lsp-pyright-langserver-command "basedpyright")
 
 (eval-after-load! lsp-pyright
   (add-to-list 'lsp-file-watch-ignored-directories (rx "/site-packages/"))
