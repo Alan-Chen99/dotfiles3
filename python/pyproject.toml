@@ -38,6 +38,7 @@ dependencies = [
   "pygit2>=1.18.2",
   "regexfactory",
   "rich>=14.1.0",
+  "simple-parsing>=0.1.7",
   "sympy>=1.14.0",
   "z3-solver>=4.15.3.0",
   #
