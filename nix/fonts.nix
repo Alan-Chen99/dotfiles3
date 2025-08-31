@@ -8,29 +8,37 @@
 }: rec {
   # pkgs = flakes.nixpkgs21-11.legacyPackages."${system}";
 
+  fonts_ = {
+    inherit
+      (legacypkgs)
+      dejavu_fonts
+      #
+      noto-fonts
+      noto-fonts-color-emoji
+      # noto-fonts-cjk
+      noto-fonts-cjk-sans
+      # noto-fonts-cjk-serif
+      noto-fonts-extra
+      ;
+
+    inherit
+      (legacypkgs.nerd-fonts)
+      fira-code
+      droid-sans-mono
+      iosevka
+      hack
+      inconsolata
+      dejavu-sans-mono
+      ;
+  };
+
   export.fonts = std.buildEnv {
     name = "fonts";
-    paths = [
-      legacypkgs.fontconfig
-      legacypkgs.fontconfig.out
-
-      legacypkgs.dejavu_fonts
-      (legacypkgs.nerdfonts.override {
-        fonts = [
-          "FiraCode"
-          "DroidSansMono"
-          "Iosevka"
-          "Hack"
-          "Inconsolata"
-          "DejaVuSansMono"
-        ];
-      })
-      legacypkgs.noto-fonts
-      legacypkgs.noto-fonts-color-emoji
-      # legacypkgs.noto-fonts-cjk
-      legacypkgs.noto-fonts-cjk-sans
-      # legacypkgs.noto-fonts-cjk-serif
-      legacypkgs.noto-fonts-extra
-    ];
+    paths =
+      [
+        legacypkgs.fontconfig
+        legacypkgs.fontconfig.out
+      ]
+      ++ builtins.attrValues fonts_;
   };
 }
