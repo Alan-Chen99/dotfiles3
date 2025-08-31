@@ -31,23 +31,6 @@
         "type": "github"
       }
     },
-    "dafny": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1738683282,
-        "narHash": "sha256-HBeMZyJO/1vVcqEuvcQY4pgh7R3GkTdK7Xl/o8uHnvc=",
-        "owner": "dafny-lang",
-        "repo": "dafny",
-        "rev": "6cb34c1e708ab5aa2078b8ac13bded3033d97c13",
-        "type": "github"
-      },
-      "original": {
-        "owner": "dafny-lang",
-        "ref": "4.10.0",
-        "repo": "dafny",
-        "type": "github"
-      }
-    },
     "dream2nix": {
       "flake": false,
       "locked": {
@@ -697,7 +680,6 @@
       "inputs": {
         "crane": "crane",
         "crate2nix": "crate2nix",
-        "dafny": "dafny",
         "dream2nix": "dream2nix",
         "emacs-overlay": "emacs-overlay",
         "emacs29": "emacs29",

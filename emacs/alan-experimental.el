@@ -15,7 +15,6 @@
  backtrace
  comint
  company-quickhelp
- dafny-mode
  embark
  format-all
  lsp-mode
@@ -50,7 +49,6 @@
 (alan-donot-debug-foreground #'revert-buffer)
 (alan-donot-debug-foreground #'format-all--prompt-for-formatter)
 (alan-donot-debug-foreground #'elisp--local-variables)
-(alan-donot-debug-foreground #'dafny-docs-open)
 (alan-donot-debug-foreground #'outline-forward-same-level)
 (alan-donot-debug-foreground #'outline-backward-same-level)
 (alan-donot-debug-foreground #'line-move)

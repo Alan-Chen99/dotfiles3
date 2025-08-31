@@ -27,12 +27,6 @@
       flake = false;
     };
 
-    dafny = {
-      # url = "github:Alan-Chen99/dafny";
-      url = "github:dafny-lang/dafny/4.10.0";
-      flake = false;
-    };
-
     dream2nix = {
       url = "github:nix-community/dream2nix";
       flake = false;
