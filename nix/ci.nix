@@ -17,22 +17,29 @@
     name = "ci-instantiate";
     paths = [
       super.ci-deps
-      super.cxxtools
+      #
+      super.pkgs-big
+      super.pkgs-small
+      #
+      super.profile
+      super.profile-root
+      #
       super.emacs
-      # super.env-scripts
       super.fonts
       super.home.activationPackage
+      super.pdf-tools-epdfinfo
+      #
+      super.experimental.packages
+      super.jspkgs-bins
+      super.pypkgs-bins
+      super.rustpkgs-bins
+      #
+      super.cxxtools
       super.js
       super.latexenv
       super.nixtools
-      super.pdf-tools-epdfinfo
-      super.pkgs-big
-      super.pkgs-small
-      super.profile
-      super.profile-root
       super.pypkgs-all
       super.pythontools
-      super.schemat
     ];
   };
 }
