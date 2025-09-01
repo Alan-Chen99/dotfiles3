@@ -46,13 +46,15 @@ in rec {
 
   export.rustpkgs-bins.uv-upgrade = let
     src = flakes.uv-upgrade;
+    name = craneLib.crateNameFromCargoToml {src = "${src}/crates/uv";};
     cargoArtifacts = craneLib.buildDepsOnly {
+      inherit (name) pname version;
       src = src;
       strictDeps = true;
     };
   in
     craneLib.buildPackage {
-      inherit (craneLib.crateNameFromCargoToml {src = "${src}/crates/uv";}) pname version;
+      inherit (name) pname version;
       src = src;
       strictDeps = true;
       doCheck = false;

@@ -176,7 +176,7 @@ jobs:
           title: "update flakes"
           branch: "update-flakes"
 
-  schemat:
+  rust-bins:
     needs: setup
     runs-on: ubuntu-latest
     steps:
@@ -185,6 +185,10 @@ jobs:
       - uses: ./.github/actions/build_nix
         with:
           drv: .#schemat
+          CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
+      - uses: ./.github/actions/build_nix
+        with:
+          drv: .#uv-upgrade
           CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
 
   rust-scripts:
