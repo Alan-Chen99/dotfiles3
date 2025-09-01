@@ -24,6 +24,8 @@
           "--smart-case" "--no-heading" "--with-filename" "--line-number" "--search-zip"
           ;; added
           "--hidden"
+          ;; disable .git/ which is hidden, but its not ignored by gitignore
+          "--glob" "!.git/*"
           ))
 
   ;; (setq consult-ripgrep-args
