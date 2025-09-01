@@ -54,7 +54,7 @@ jobs:
       - if: success() || failure()
         run: |
           ./nix/tests/nix_instantiate.py \
-            --nix n#nixVersions.nix_2_23 n#nixVersions.nix_2_24 n#nixVersions.nix_2_25 .#deps.nix .#nixwrapper \
+            --nix n#nixVersions.nix_2_24 n#nixVersions.nix_2_26 n#nixVersions.nix_2_28 .#deps.nix .#nixwrapper \
             --drv .#ci-instantiate p#ci-instantiate
 
   python:

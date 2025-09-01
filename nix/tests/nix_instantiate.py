@@ -16,7 +16,7 @@ from simple_parsing import field
 class Args:
     nix: list[str] = field(
         default_factory=lambda: [
-            "n#nixVersions.nix_2_25",
+            "n#nixVersions.nix_2_28",
             ".#deps.nix",
             ".#nixwrapper",
         ],
