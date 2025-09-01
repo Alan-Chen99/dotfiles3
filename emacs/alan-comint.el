@@ -153,7 +153,8 @@
       (funcall fn name buffer command switches)
     (let* ((proc (funcall
                   fn name buffer
-                  "bash"
+                  ;; "bash"
+                  "sh"
                   `("-c"
                     "stty echo; exec \"$@\""
                     ;; "stty echo onlcr; exec \"$@\""

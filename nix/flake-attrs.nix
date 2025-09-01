@@ -104,7 +104,7 @@
               pkgs-small
               profile
               profile-root
-              # pythonlibs
+              pythonlibs
               pythontools
               ;
           };

@@ -33,6 +33,22 @@
                ("https://git.savannah.gnu.org/git/auctex.git"
                 . "auctex")
                :branch "main" :files ("*" (:exclude ".git"))))
+ (bash-completion :source "MELPA" :recipe
+                  (:ref "520503455d0ad762faa75b88501cccc71786343d"
+                        :package "bash-completion" :repo
+                        "szermatt/emacs-bash-completion" :fetcher
+                        github :files
+                        ("*.el" "*.el.in" "dir" "*.info" "*.texi"
+                         "*.texinfo" "doc/dir" "doc/*.info"
+                         "doc/*.texi" "doc/*.texinfo" "lisp/*.el"
+                         "docs/dir" "docs/*.info" "docs/*.texi"
+                         "docs/*.texinfo"
+                         (:exclude ".dir-locals.el" "test.el"
+                                   "tests.el" "*-test.el" "*-tests.el"
+                                   "LICENSE" "README*" "*-pkg.el")))
+                  :description "Bash completion for the shell buffer"
+                  :date (26484 52176) :url
+                  "http://github.com/szermatt/emacs-bash-completion")
  (better-jumper :source "MELPA" :recipe
                 (:ref "b1bf7a3c8cb820d942a0305e0e6412ef369f819c"
                       :package "better-jumper" :repo
@@ -111,7 +127,7 @@
  (compat :source "GNU ELPA" :url
          "https://elpa.gnu.org/packages/compat.html" :description
          "Emacs Lisp Compatibility Library" :recipe
-         (:ref "bfc0a46098be2dcaad0518ec200ff5a2be5cc9bb" :package
+         (:ref "cccd41f549fa88031a32deb26253b462021d7e12" :package
                "compat" :repo
                ("https://github.com/emacs-compat/compat" . "compat")
                :files ("*" (:exclude ".git"))))
@@ -358,7 +374,7 @@
            :description "Go to last change" :date (26130 6720) :url
            "https://github.com/emacs-evil/goto-chg")
  (gptel :source "MELPA" :recipe
-        (:ref "5fad6f18a608818c70ae7f9332e006c4cfaa1838" :package
+        (:ref "40f6950e80676bb92a3a7e07656d87578439fbbe" :package
               "gptel" :repo "karthink/gptel" :fetcher github :files
               ("*.el" "*.el.in" "dir" "*.info" "*.texi" "*.texinfo"
                "doc/dir" "doc/*.info" "doc/*.texi" "doc/*.texinfo"

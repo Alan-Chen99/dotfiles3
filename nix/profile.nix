@@ -146,6 +146,7 @@
       buildifier
       cachix
       cmake-format
+      curl
       dconf
       dnsutils
       dockfmt
@@ -153,6 +154,7 @@
       git-lfs
       gnome-icon-theme
       graphviz
+      host
       html-tidy
       hyperfine
       ispell

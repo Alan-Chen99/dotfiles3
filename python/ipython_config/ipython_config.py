@@ -6,7 +6,7 @@ c = get_config()  # noqa
 
 c.InteractiveShellApp.extensions = ["autoreload"]
 # c.InteractiveShellApp.exec_lines = ["%autoreload complete"]
-c.InteractiveShellApp.exec_lines = ["%autoreload all"]
+c.InteractiveShellApp.exec_lines = ["%autoreload all --print"]
 
 if importlib.util.find_spec("rich") is not None:
     c.InteractiveShellApp.extensions.append("rich")

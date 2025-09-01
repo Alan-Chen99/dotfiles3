@@ -27,6 +27,9 @@
   user = self.user-name;
 
   # home-manager switch --flake .
+  # some updates invalidates cache
+  # TODO: why dont home-manger run this on switch?
+  # fc-cache -fv
   export.home = home-manager.lib.homeManagerConfiguration {
     # home-manager wants to pin its nixpkgs?
     pkgs = home-manager.inputs.nixpkgs.legacyPackages."${system}";

@@ -377,12 +377,13 @@
 
 ;; (setq load-file-rep-suffixes '(".gz" ""))
 
-;; TODO
-;; This causes err, makes load-file-rep-suffixes nil
-;; (let (file-name-handler-alist)
-;;   (with-auto-compression-mode nil))
-;; temp workaround:
-(advice-add 'jka-compr-uninstall :override #'ignore)
+;; Update (2025/9): seems to have been fixed
+;; ;; TODO
+;; ;; This causes err, makes load-file-rep-suffixes nil
+;; ;; (let (file-name-handler-alist)
+;; ;;   (with-auto-compression-mode nil))
+;; ;; temp workaround:
+;; (advice-add 'jka-compr-uninstall :override #'ignore)
 
 
 ;; (setq explicit-bash-args

@@ -6,7 +6,8 @@
 (require-if-is-bytecompile lsp-completion)
 
 (eval-after-load! lsp-eslint
-  (setq lsp-eslint-server-command '("yarn" "eslint-lsp" "--stdio")))
+  ;; (setq lsp-eslint-server-command '("yarn" "eslint-lsp" "--stdio")))
+  (setq lsp-eslint-server-command '("eslint-lsp" "--stdio")))
 
 (add-to-list 'major-mode-remap-alist (cons #'javascript-mode #'typescript-ts-mode))
 (add-to-list 'major-mode-remap-alist (cons #'js-json-mode #'json-ts-mode))

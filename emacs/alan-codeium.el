@@ -38,7 +38,7 @@
   ;; use M-x codeium-diagnose to see apis/fields that would be sent to the local language server
   (setq codeium-api-enabled
         (lambda (api)
-          (memq api '(GetCompletions Heartbeat CancelRequest GetAuthToken RegisterUser auth-redirect AcceptCompletion))))
+          (memq api '(GetCompletions CancelRequest GetAuthToken RegisterUser auth-redirect AcceptCompletion))))
   ;; you can also set a config for a single buffer like this:
   ;; (add-hook 'python-mode-hook
   ;;     (lambda ()
