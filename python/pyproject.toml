@@ -49,7 +49,7 @@ dependencies = [
   #
   # other libraries
   "pyyaml>=6.0.2",
-  "simple-crypt>=4.1.7",
+  "simple-crypt",
 ]
 
 # [[tool.uv.index]]
@@ -61,3 +61,4 @@ dependencies = [
 # torch = [{ index = "pytorch-cpu" }]
 # torchvision = [{ index = "pytorch-cpu" }]
 regexfactory = { git = "https://github.com/Alan-Chen99/RegexFactory.git" }
+simple-crypt = { git = "https://github.com/KyleKing/simple-crypt.git" }
