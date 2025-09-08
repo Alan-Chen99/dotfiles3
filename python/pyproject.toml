@@ -48,6 +48,7 @@ dependencies = [
   # "torchvision>=0.23.0",
   #
   # other libraries
+  "pyyaml>=6.0.2",
   "simple-crypt>=4.1.7",
 ]
 
