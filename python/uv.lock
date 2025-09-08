@@ -428,6 +428,7 @@ dependencies = [
     { name = "regexfactory" },
     { name = "rich" },
     { name = "setuptools" },
+    { name = "simple-crypt" },
     { name = "simple-parsing" },
     { name = "sympy" },
     { name = "wheel" },
@@ -463,6 +464,7 @@ requires-dist = [
     { name = "regexfactory", git = "https://github.com/Alan-Chen99/RegexFactory.git" },
     { name = "rich", specifier = ">=14.1.0" },
     { name = "setuptools", specifier = ">=80.9.0" },
+    { name = "simple-crypt", specifier = ">=4.1.7" },
     { name = "simple-parsing", specifier = ">=0.1.7" },
     { name = "sympy", specifier = ">=1.14.0" },
     { name = "wheel", specifier = ">=0.45.1" },
@@ -1105,6 +1107,12 @@ wheels = [
 ]
 
 [[package]]
+name = "pycrypto"
+version = "2.6.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/60/db/645aa9af249f059cc3a368b118de33889219e0362141e75d4eaf6f80f163/pycrypto-2.6.1.tar.gz", hash = "sha256:f2ce1e989b272cfcb677616763e0a2e7ec659effa67a88aa92b3a65528f60a3c", size = 446240, upload-time = "2014-06-20T08:10:20.813Z" }
+
+[[package]]
 name = "pyflakes"
 version = "3.4.0"
 source = { registry = "https://pypi.org/simple" }
@@ -1267,6 +1275,15 @@ sdist = { url = "https://files.pythonhosted.org/packages/18/5d/3bf57dcd21979b887
 wheels = [
     { url = "https://files.pythonhosted.org/packages/a3/dc/17031897dae0efacfea57dfd3a82fdd2a2aeb58e0ff71b77b87e44edc772/setuptools-80.9.0-py3-none-any.whl", hash = "sha256:062d34222ad13e0cc312a4c02d73f059e86a4acbfbdea8f8f76b28c99f306922", size = 1201486, upload-time = "2025-05-27T00:56:49.664Z" },
 ]
+
+[[package]]
+name = "simple-crypt"
+version = "4.1.7"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "pycrypto" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/60/66/5bf6feb073f715a61492f8a6d444ad3d884ada71af317ce7a9c80bebee60/simple-crypt-4.1.7.tar.gz", hash = "sha256:49462ab7ea4b080a8c10e362abfe35ecfa6dbe1e1c454ea36de7d2a71dce992f", size = 10569, upload-time = "2015-06-16T23:44:51.542Z" }
 
 [[package]]
 name = "simple-parsing"

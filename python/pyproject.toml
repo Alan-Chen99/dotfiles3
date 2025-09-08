@@ -48,6 +48,7 @@ dependencies = [
   # "torchvision>=0.23.0",
   #
   # other libraries
+  "simple-crypt>=4.1.7",
 ]
 
 # [[tool.uv.index]]
