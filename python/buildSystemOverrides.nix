@@ -1,3 +1,4 @@
 {
   regexfactory.setuptools = [];
+  cchardet.setuptools = [];
 }

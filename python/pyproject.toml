@@ -28,28 +28,42 @@ dependencies = [
   "pytest-cov>=6.2.1",
   "pytest>=8.4.1",
   #
-  # applications (other)
+  # applications
   "diceware>=1.0.1",
-  "yt-dlp>=2025.8.27",
+  "mcp-proxy>=0.9.0",
+  "yt-dlp>=2025.9.26",
   #
-  # libraries (commonly used / general)
+  # libraries
   "cappa>=0.30.0",
+  "cchardet>=2.2.0a2",
+  "fastapi>=0.119.1",
   "matplotlib>=3.10.6",
+  "numpy>=2.3.2",
+  "openai>=2.6.0",
+  "pydantic>=2.12.1",
   "pygit2>=1.18.2",
+  "pygments>=2.19.2",
+  "pypdf2>=3.0.1",
+  "python-magic>=0.4.27",
+  "python-multipart>=0.0.20",
+  "pyyaml>=6.0.2",
   "regexfactory",
+  "requests>=2.32.5",
   "rich>=14.1.0",
+  "simple-crypt",
   "simple-parsing>=0.1.7",
   "sympy>=1.14.0",
+  "uvicorn[standard]>=0.37.0",
   "z3-solver>=4.15.3.0",
   #
-  # libraries (numerical and ml)
-  "numpy>=2.3.2",
   # "torch>=2.8.0",
   # "torchvision>=0.23.0",
   #
-  # other libraries
-  "pyyaml>=6.0.2",
-  "simple-crypt",
+  "langchain-community>=0.4.1",
+  "langchain-openai>=1.0.1",
+  "langchain>=1.0.2",
+  "langgraph>=1.0.1",
+  "langsmith>=0.4.38",
 ]
 
 # [[tool.uv.index]]
