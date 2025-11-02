@@ -734,11 +734,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1757212513,
-        "narHash": "sha256-ZTHwY7u8BQF1JUazhGk+ftCjsS57Ht6KSnnkxQoUBA8=",
+        "lastModified": 1762051177,
+        "narHash": "sha256-pESNTx/m3WnrYx+OujBtDP5Bj0/mAyHa4MgEwzkgkLE=",
         "owner": "oxalica",
         "repo": "rust-overlay",
-        "rev": "a8c2f9348abb14647d8a4899d1b3acd0155ce2cd",
+        "rev": "08c33e87c4829bbdd42b5af247cf7a19e126369f",
         "type": "github"
       },
       "original": {
@@ -798,16 +798,16 @@
     "uv": {
       "flake": false,
       "locked": {
-        "lastModified": 1752516088,
-        "narHash": "sha256-xY7olVRb8xEvTB+VuUNoq29f37sms+JliU4L9dxsReU=",
+        "lastModified": 1761860871,
+        "narHash": "sha256-I0Oe6vaH7iQh+Ubp5RIk8Ol6Ni7OPu8HKX0fqLdewyk=",
         "owner": "astral-sh",
         "repo": "uv",
-        "rev": "77c771c7f33df1040c854aeea462c18b74d39987",
+        "rev": "0adb444806e8bcea7e7a5e9ae90d1288778a0b54",
         "type": "github"
       },
       "original": {
         "owner": "astral-sh",
-        "ref": "0.7.21",
+        "ref": "0.9.7",
         "repo": "uv",
         "type": "github"
       }
@@ -815,11 +815,11 @@
     "uv-upgrade": {
       "flake": false,
       "locked": {
-        "lastModified": 1756622659,
-        "narHash": "sha256-2opJ3jfMWpzQCR6TCVL4qGDiqhopddjK4opaw+hocog=",
+        "lastModified": 1760772948,
+        "narHash": "sha256-MoZFJHtGiVyqlm6i1XpZcKVfsFtOJJx1bRm72Au4x+g=",
         "owner": "astral-sh",
         "repo": "uv",
-        "rev": "d3962c7ebd23dbc6121093630451856f6b365ebd",
+        "rev": "cdbf28b31bcd5cebce1df7059fc49cf2d462c33e",
         "type": "github"
       },
       "original": {

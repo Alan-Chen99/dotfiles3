@@ -203,7 +203,7 @@
     };
 
     uv = {
-      url = "github:astral-sh/uv/0.7.21";
+      url = "github:astral-sh/uv/0.9.7";
       flake = false;
     };
 

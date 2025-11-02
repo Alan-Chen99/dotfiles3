@@ -16,10 +16,36 @@
   taplo,
   tree,
   which,
+  dbg,
 }: let
   inherit (self) craneLib craneLib-dbg;
+  pkgs = legacypkgs;
 in rec {
-  export.craneLib = (crane.mkLib legacypkgs).overrideToolchain rust;
+  # craneLib = (inputs.crane.mkLib pkgs).overrideScope (final: prev: {
+  #     # We override the behavior of `mkCargoDerivation` by adding a wrapper which
+  #     # will set a default value of `CARGO_PROFILE` when not set by the caller.
+  #     # This change will automatically be propagated to any other functions built
+  #     # on top of it (like `buildPackage`, `cargoBuild`, etc.)
+  #     mkCargoDerivation = args: prev.mkCargoDerivation ({
+  #       CARGO_PROFILE = "bench"; # E.g. always build in benchmark mode unless overridden
+  #     } // args);
+  #   });
+
+  export.craneLib = (crane.mkLib pkgs).overrideToolchain rust;
+
+  # this tries to solve a fetch fail but it seems to be only a cache bug in nix?
+  # does nothing, and then
+  # a manual call to fetchGit in a repl worked without allRefs
+  # TODO: look at narinfo-cache-negative-ttl=0
+  # craneLib_ = (crane.mkLib pkgs).overrideToolchain rust;
+  # export.craneLib = craneLib_.overrideScope (final: prev: {
+  #   downloadCargoPackageFromGit = args: let
+  #     ans = prev.downloadCargoPackageFromGit (
+  #       builtins.seq (dbg.pr args) (args // {allRefs = true;})
+  #     );
+  #   in
+  #     builtins.seq (dbg.pr ans) ans;
+  # });
 
   export.craneLib-dbg = craneLib.overrideScope (final: prev: {
     stdenv = std.keepDebugInfo std.stdenv;
@@ -30,35 +56,40 @@ in rec {
     strictDeps = true;
   };
 
-  # export.rustpkgs-bins.uv = let
-  #   cargoArtifacts = craneLib.buildDepsOnly {
-  #     src = flakes.uv;
-  #     # strictDeps = true;
-  #   };
-  # in
-  #   craneLib.buildPackage {
-  #     inherit (craneLib.crateNameFromCargoToml {src = "${flakes.uv}/crates/uv";}) pname version;
-  #     src = flakes.uv;
-  #     strictDeps = true;
-  #     doCheck = false;
-  #     cargoArtifacts = cargoArtifacts;
-  #   };
+  export.rustpkgs-bins.uv = let
+    src = flakes.uv;
 
-  export.rustpkgs-bins.uv-upgrade = let
-    src = flakes.uv-upgrade;
+    rust = pkgs.rust-bin.fromRustupToolchainFile "${src}/rust-toolchain.toml";
+    craneLib = (crane.mkLib pkgs).overrideToolchain rust;
+
     name = craneLib.crateNameFromCargoToml {src = "${src}/crates/uv";};
-    cargoArtifacts = craneLib.buildDepsOnly {
-      inherit (name) pname version;
-      src = src;
-      strictDeps = true;
-    };
   in
     craneLib.buildPackage {
       inherit (name) pname version;
       src = src;
       strictDeps = true;
       doCheck = false;
-      cargoArtifacts = cargoArtifacts;
+    };
+
+  export.rustpkgs-bins.uv-upgrade = let
+    src = flakes.uv-upgrade;
+
+    rust = pkgs.rust-bin.fromRustupToolchainFile "${src}/rust-toolchain.toml";
+    craneLib = (crane.mkLib pkgs).overrideToolchain rust;
+
+    name = craneLib.crateNameFromCargoToml {src = "${src}/crates/uv";};
+  in
+    craneLib.buildPackage {
+      inherit (name) pname version;
+      src = src;
+      strictDeps = true;
+      doCheck = false;
+
+      stdenv = p: p.clangStdenv;
+
+      hardeningDisable = ["format"];
+
+      LIBCLANG_PATH = "${pkgs.llvmPackages.libclang.lib}/lib";
     };
 
   commonArgs = {
