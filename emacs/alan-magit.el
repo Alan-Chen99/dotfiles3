@@ -24,7 +24,7 @@
     :states 'motion
     "SPC" smerge-basic-map)
 
-  (add-hook! smerge-mode-hook #'evil-normalize-keymaps)
+  (add-hook! 'smerge-mode-hook #'evil-normalize-keymaps)
 
   ;; (setq smerge-mode-map (key-description smerge-command-prefix) smerge-basic-map)
 

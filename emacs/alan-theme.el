@@ -202,10 +202,11 @@
 
 (eval-after-load! doom-themes-base
   ;; note: this need to be before indivial doom themes to take effect
-  (setf
-   (alist-get 'ansi-color-green doom-themes-base-faces)
-   '(:foreground green :background (doom-blend green bg 0.5))
-   )
+  (setf (alist-get 'ansi-color-green doom-themes-base-faces)
+        '(:foreground green :background (doom-blend green bg 0.5)))
+
+  (setf (alist-get 'tab-line doom-themes-base-faces)
+        '(:background bg-alt :foreground fg))
 
   )
 

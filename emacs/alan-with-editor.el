@@ -5,8 +5,14 @@
 (pkg! 'with-editor)
 
 (eval-after-load! with-editor
-
-  (setq process-environment (with-editor process-environment))
+  (alan-startup-schedual-fn -1000
+    (lambda ()
+      ;; delaying with timer makes it less likely to throw
+      ;; (file-error "Cannot bind server socket" "Interrupted system call")
+      (run-with-idle-timer
+       0.5 nil
+       (callback-lambda ()
+         (setq process-environment (with-editor process-environment))))))
 
   (clear-and-backup-keymap with-editor-mode-map)
 

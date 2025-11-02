@@ -10,7 +10,8 @@
 
 (setq redisplay-skip-fontification-on-input t)
 ;; (setq max-redisplay-ticks 500000)
-(setq max-redisplay-ticks 1000000)
+;; (setq max-redisplay-ticks 1000000)
+(setq max-redisplay-ticks 2000000)
 ;; 1000000
 
 (setq-default native-comp-speed 3)
@@ -292,6 +293,8 @@
 (add-to-list 'read-only-dir-list (expand-file-name user-emacs-directory))
 (when (and source-directory (file-exists-p source-directory))
   (add-to-list 'read-only-dir-list source-directory))
+
+(add-to-list 'read-only-dir-list (expand-file-name "~/.cargo"))
 
 
 (provide 'alan-simple)

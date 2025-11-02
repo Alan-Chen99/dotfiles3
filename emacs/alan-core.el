@@ -8,6 +8,7 @@
 (defvar async-queue nil)
 (defvar process-queue-thread-exist nil)
 (defun alan-startup-schedual-fn (priority func)
+  (declare (indent 1))
   ;; same priority => "last in first out"
   (push func (alist-get priority async-queue nil nil #'=))
   (when alan-finished-early-init
@@ -82,12 +83,11 @@
 ;; 0 = standard
 ;; < 0 = wont do anything until timer
 (defun startup-queue-package (package priority)
-  (alan-startup-schedual-fn
-   priority
-   (lambda ()
-     (alan-require-one package)
-     (unless (get package 'alan-has-required)
-       (startup-queue-package package priority)))))
+  (alan-startup-schedual-fn priority
+    (lambda ()
+      (alan-require-one package)
+      (unless (get package 'alan-has-required)
+        (startup-queue-package package priority)))))
 
 
 ;; (setq-default completion-at-point-functions nil)

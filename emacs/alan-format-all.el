@@ -41,6 +41,16 @@
     (:install)
     (:languages "Scheme")
     (:features)
-    (:format (format-all--buffer-easy executable))))
+    (:format (format-all--buffer-easy executable)))
+
+  (define-format-all-formatter nasmfmt
+    (:executable "nasmfmt")
+    (:install)
+    (:languages "Assembly")
+    (:features)
+    ;; return run_command("nasmfmt", "-ii", "4", "-", stdin=content)
+    (:format (format-all--buffer-easy executable "-ii" "4" "-")))
+
+  )
 
 (provide 'alan-format-all)

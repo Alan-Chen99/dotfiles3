@@ -12,6 +12,8 @@
 (add-to-list 'major-mode-remap-alist (cons #'c++-mode #'c++-ts-mode))
 (add-to-list 'major-mode-remap-alist (cons #'c-or-c++-mode #'c++-ts-mode))
 
+(add-to-list 'auto-mode-alist `(,(rx ".cu" eos) . c++-ts-mode))
+
 (add-hook! 'c++-ts-mode-hook
   (defun alan-setup-cxx ()
 

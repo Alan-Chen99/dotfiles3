@@ -48,9 +48,11 @@
    lsp-rust-analyzer-display-parameter-hints t
    lsp-rust-analyzer-display-reborrow-hints "never"
 
+   ;; lsp-rust-analyzer-cargo-watch-command "check"
    lsp-rust-analyzer-cargo-watch-command "clippy"
-   lsp-rust-analyzer-cargo-watch-args ["--tests" "--" "-W" "clippy::pedantic"]
+   ;; lsp-rust-analyzer-cargo-watch-args ["--tests" "--" "-W" "clippy::pedantic"]
    ;; lsp-rust-analyzer-cargo-watch-args ["--" "-W" "clippy::pedantic"]
+   lsp-rust-analyzer-cargo-watch-args []
    lsp-rust-clippy-preference "on"
 
    lsp-rust-all-targets nil

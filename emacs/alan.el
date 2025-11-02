@@ -450,6 +450,9 @@
 (defun qemu-stop ()
   (interactive)
   (process-send-string nil "\C-ax"))
+(defun qemu-ps ()
+  (interactive)
+  (process-send-string nil "\C-p"))
 
 ;; (span-instrument company-capf)
 ;; (setq lsp-completion-sort-initial-results nil)

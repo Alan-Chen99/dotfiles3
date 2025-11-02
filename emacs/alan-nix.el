@@ -64,13 +64,12 @@
    (message "error adding guix to directory-abbrev-alist: %S" err)
    nil))
 
-(alan-startup-schedual-fn
- -1000
- (lambda ()
-   (unless (equal nix-directory-cache-old nix-directory-cache)
-     (span :update-nix-directory-cache
-       (span-notef "update-nix-directory-cache")
-       (alan-write-elisp-data-file nix-directory-cache-file nix-directory-cache)))))
+(alan-startup-schedual-fn -1000
+  (lambda ()
+    (unless (equal nix-directory-cache-old nix-directory-cache)
+      (span :update-nix-directory-cache
+        (span-notef "update-nix-directory-cache")
+        (alan-write-elisp-data-file nix-directory-cache-file nix-directory-cache)))))
 
 (eval-after-load! nix-ts-mode
 

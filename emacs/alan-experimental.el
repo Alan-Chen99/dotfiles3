@@ -53,6 +53,7 @@
 (alan-donot-debug-foreground #'outline-backward-same-level)
 (alan-donot-debug-foreground #'line-move)
 (alan-donot-debug-foreground #'company-quickhelp--show)
+(alan-donot-debug-foreground #'treesit-indent)
 
 ;; (alan-donot-debug-foreground #'lsp--on-idle)
 
@@ -197,5 +198,12 @@ This function expects to be in the right *tramp* buffer."
       (not (magit-rev-parse-safe "--show-toplevel"))))
 
 ;; (span-instrument all-completions :verbose t)
+
+(eval-after-load! asm-mode
+  (setq asm-comment-char (string-to-char "#"))
+  (add-hook! 'asm-mode-hook
+    (defun alan-setup-asm ()
+      (setq-local comment-start "#")
+      (setq-local format-all-formatters '(("Assembly" nasmfmt))))))
 
 (provide 'alan-experimental)

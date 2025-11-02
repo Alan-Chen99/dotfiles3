@@ -7,13 +7,15 @@
 (require-if-is-bytecompile outline)
 (pkg! '(auctex :repo "https://github.com/emacsmirror/auctex.git" :branch "master"))
 
+(add-to-list 'auto-mode-alist `(,(rx ".xtx" eos) . LaTeX-mode))
+
 (eval-after-load! format-all
   (define-format-all-formatter latexindent
     (:executable "latexindent.pl")
     (:install)
     (:languages "LaTeX")
     (:features)
-    (:format (format-all--buffer-easy executable)))
+    (:format (format-all--buffer-easy executable "-l")))
 
   (define-format-all-formatter prettier-latex
     (:executable "prettier")
