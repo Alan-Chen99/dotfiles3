@@ -2,6 +2,7 @@ name: CI
 
 on:
   push:
+  workflow_dispatch:
   # pull_request:
   schedule:
     # Runs at 08:00 UTC every day
@@ -141,26 +142,26 @@ jobs:
         run: emacs --batch --eval "(setq ci-build-verbose t)" -l emacs/ci.el --eval "(ci-wait-for-pkgs-build)"
         timeout-minutes: 5
 
-  # update-python:
-  #   if: ${{ github.event_name == 'schedule' && github.ref_name == 'master' }}
-  #   needs: setup
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #     - uses: ./.github/actions/setup
-  #     - run: (cd python && nix run ..#poetry -- lock && nix run ..#poetry -- up --latest --no-install)
-  #     - uses: peter-evans/create-pull-request@v7
-  #       with:
-  #         token: ${{ secrets.PAT }}
-  #         add-paths: |
-  #           python/pyproject.toml
-  #           python/poetry.lock
-  #         commit-message: "update python dependencies"
-  #         title: "update python dependencies"
-  #         branch: "update-python-deps"
+  update-python:
+    if: ${{ (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && github.ref_name == 'master' }}
+    needs: ["setup", "rust-bins"]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - run: (cd python && nix run ..#uv-upgrade -- lock --upgrade)
+      - uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.PAT }}
+          add-paths: |
+            python/pyproject.toml
+            python/uv.lock
+          commit-message: "update python dependencies"
+          title: "update python dependencies"
+          branch: "update-python-deps"
 
   update-nixpkgs:
-    if: ${{ github.event_name == 'schedule' && github.ref_name == 'master' }}
+    if: ${{ (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && github.ref_name == 'master' }}
     needs: setup
     runs-on: ubuntu-latest
     steps:
@@ -185,6 +186,10 @@ jobs:
       - uses: ./.github/actions/build_nix
         with:
           drv: .#schemat
+          CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
+      - uses: ./.github/actions/build_nix
+        with:
+          drv: .#uv
           CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
       - uses: ./.github/actions/build_nix
         with:
