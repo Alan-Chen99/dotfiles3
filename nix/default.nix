@@ -51,6 +51,7 @@
       inherit (prev) legacypkgs lib lib-orig std deps pkgs-unstable;
     }));
 
+  pub.callpackage = callpackage;
   callpackage = let
     aliases =
       (builtins.mapAttrs (name: _: self.deps."${name}") mod.deps.reexport.deps)

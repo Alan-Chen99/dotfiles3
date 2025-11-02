@@ -21,6 +21,7 @@
       base = base-init;
       default = attrs;
 
+      n = attrs.legacypkgs;
       p = attrs.legacypkgs;
       d = attrs.deps;
 
