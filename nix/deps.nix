@@ -89,7 +89,7 @@
       ripgrep
       taplo
       tree
-      tree-sitter
+      # tree-sitter
       tzdata
       which
       ;
@@ -123,12 +123,15 @@
 
     gcc = pkgs.gcc_latest;
 
-    llvmpkgs = pkgs.llvmPackages_18;
+    llvmpkgs = pkgs.llvmPackages_21;
     clangtools = self.deps.llvmpkgs.clang-tools;
 
     nodejs = pkgs.nodejs_latest;
 
-    python-nopkgs = pkgs.python313.override {
+    # python-nopkgs = pkgs.python313.override {
+    #   self = self.deps.python-nopkgs;
+    # };
+    python-nopkgs = pkgs.python313Full.override {
       self = self.deps.python-nopkgs;
     };
 
@@ -143,6 +146,10 @@
     };
 
     texlive = pkgs.texliveSmall;
+
+    # (2025/9/16)
+    # emacs tree sitter lang is using "abi 13" which needs an older tree-sitter
+    tree-sitter = self.deps.past-24-11-2.p.tree-sitter;
 
     past-24-11-1 = import (flakes.past-24-11-1 + "/nix/local.nix") {system = system;};
     past-24-11-2 = import flakes.past-24-11-2 {system = system;};
