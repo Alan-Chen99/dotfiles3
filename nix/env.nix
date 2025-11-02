@@ -86,12 +86,24 @@
     else (removeAttrs flakes ["self"]) // _nix-path;
 
   export.nixconf = {
+    # see also https://jackson.dev/post/nix-reasonable-defaults/
     nix-path =
       lib.concatStringsSep " " (builtins.attrValues
         (builtins.mapAttrs (name: value: "${name}=${value}") self.nix-path));
     flake-registry = "${self.flake-registry-file}/registry.json";
     allow-import-from-derivation = true;
     extra-experimental-features = "nix-command flakes recursive-nix";
+
+    # for binary cache
+    connect-timeout = 5;
+    fallback = true;
+
+    auto-optimise-store = true;
+
+    keep-outputs = true;
+
+    narinfo-cache-negative-ttl = 0;
+
     cores = "2";
   };
 

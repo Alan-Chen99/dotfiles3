@@ -33,19 +33,11 @@ in rec {
 
   export.craneLib = (crane.mkLib pkgs).overrideToolchain rust;
 
-  # this tries to solve a fetch fail but it seems to be only a cache bug in nix?
-  # does nothing, and then
-  # a manual call to fetchGit in a repl worked without allRefs
-  # TODO: look at narinfo-cache-negative-ttl=0
-  # craneLib_ = (crane.mkLib pkgs).overrideToolchain rust;
-  # export.craneLib = craneLib_.overrideScope (final: prev: {
-  #   downloadCargoPackageFromGit = args: let
-  #     ans = prev.downloadCargoPackageFromGit (
-  #       builtins.seq (dbg.pr args) (args // {allRefs = true;})
-  #     );
-  #   in
-  #     builtins.seq (dbg.pr ans) ans;
-  # });
+  mk-cranelib = pkgs:
+    (crane.mkLib pkgs).overrideScope (final: prev: {
+      # cranelib passes allRefs = true but that doesnt work: https://github.com/NixOS/nix/issues/14452
+      downloadCargoPackageFromGit = args: prev.downloadCargoPackageFromGit (args // {allRefs = false;});
+    });
 
   export.craneLib-dbg = craneLib.overrideScope (final: prev: {
     stdenv = std.keepDebugInfo std.stdenv;
@@ -60,7 +52,7 @@ in rec {
     src = flakes.uv;
 
     rust = pkgs.rust-bin.fromRustupToolchainFile "${src}/rust-toolchain.toml";
-    craneLib = (crane.mkLib pkgs).overrideToolchain rust;
+    craneLib = (mk-cranelib pkgs).overrideToolchain rust;
 
     name = craneLib.crateNameFromCargoToml {src = "${src}/crates/uv";};
   in
@@ -75,7 +67,7 @@ in rec {
     src = flakes.uv-upgrade;
 
     rust = pkgs.rust-bin.fromRustupToolchainFile "${src}/rust-toolchain.toml";
-    craneLib = (crane.mkLib pkgs).overrideToolchain rust;
+    craneLib = (mk-cranelib pkgs).overrideToolchain rust;
 
     name = craneLib.crateNameFromCargoToml {src = "${src}/crates/uv";};
   in
