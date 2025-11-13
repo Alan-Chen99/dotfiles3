@@ -48,6 +48,7 @@
             inherit
               (final)
               emacs
+              iperf3
               nixwrapper
               pdf-tools-epdfinfo
               pypkgs-all

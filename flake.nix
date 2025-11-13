@@ -83,6 +83,11 @@
       # inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    iperf3 = {
+      url = "github:davidBar-On/iperf/issue-1095-socks5-support";
+      flake = false;
+    };
+
     mini-compile-commands = {
       # nix flake update mini-compile-commands
       # url = "github:danielbarter/mini_compile_commands";

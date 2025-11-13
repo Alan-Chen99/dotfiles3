@@ -221,3 +221,14 @@ jobs:
       #   dbus-run-session: EOF reading address from bus daemon
       #   Error: Process completed with exit code 127.
       # - run: nix run .#home-manager -- switch --flake .
+
+  misc:
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - uses: ./.github/actions/build_nix
+        with:
+          drv: .#iperf3
+          CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}

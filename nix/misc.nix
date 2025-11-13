@@ -7,4 +7,6 @@
   # export.yaru-theme = legacypkgs.yaru-theme.overrideAttrs {
   #   src = flakes.yaru;
   # };
+
+  export.iperf3 = legacypkgs.iperf3.overrideAttrs {src = flakes.iperf3;};
 }

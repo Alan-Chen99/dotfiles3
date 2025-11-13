@@ -138,7 +138,7 @@
   }));
 
   mod.misc = callpackage ./misc.nix {} (reexport (prev: {
-    inherit (prev) yaru-theme;
+    inherit (prev) yaru-theme iperf3;
   }));
 
   mod.nixtools = callpackage ./nixtools.nix {} (reexport (prev: {

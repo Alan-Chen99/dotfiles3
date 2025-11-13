@@ -246,6 +246,23 @@
         "type": "github"
       }
     },
+    "iperf3": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1711397509,
+        "narHash": "sha256-2qW8BJJsN2dPrgkoDz/dvd8KFEnWhRI2LOl1CBgRt6k=",
+        "owner": "davidBar-On",
+        "repo": "iperf",
+        "rev": "197d8ba733f0502985abb5b0a22bf9f71c2596a7",
+        "type": "github"
+      },
+      "original": {
+        "owner": "davidBar-On",
+        "ref": "issue-1095-socks5-support",
+        "repo": "iperf",
+        "type": "github"
+      }
+    },
     "mini-compile-commands": {
       "flake": false,
       "locked": {
@@ -691,6 +708,7 @@
         "flake-utils": "flake-utils",
         "gitignore": "gitignore",
         "home-manager": "home-manager",
+        "iperf3": "iperf3",
         "mini-compile-commands": "mini-compile-commands",
         "nix-filter": "nix-filter",
         "nix-gl": "nix-gl",
