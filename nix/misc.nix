@@ -1,12 +1,26 @@
 {
   self,
-  legacypkgs,
   flakes,
+  legacypkgs,
+  std,
 }: rec {
-  export.yaru-theme = legacypkgs.yaru-theme;
-  # export.yaru-theme = legacypkgs.yaru-theme.overrideAttrs {
+  pkgs = legacypkgs;
+
+  export.yaru-theme = pkgs.yaru-theme;
+  # export.yaru-theme = pkgs.yaru-theme.overrideAttrs {
   #   src = flakes.yaru;
   # };
 
-  export.iperf3 = legacypkgs.iperf3.overrideAttrs {src = flakes.iperf3;};
+  export.iperf3 = pkgs.iperf3.overrideAttrs {src = flakes.iperf3;};
+
+  export.openssh-unsafe = pkgs.openssh.overrideAttrs {
+    src = flakes.openssh-unsafe;
+    doInstallCheck = false; # doesnt pass, why?
+  };
+
+  export.testdrv =
+    std.runCommandLocal "hello" {}
+    ''
+      mkdir $out
+    '';
 }

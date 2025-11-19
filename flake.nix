@@ -142,6 +142,12 @@
     nixpkgs24-05.url = "github:nixos/nixpkgs/nixos-24.05";
     nixpkgs24-11.url = "github:nixos/nixpkgs/nixos-24.11";
 
+    openssh-unsafe = {
+      # url = "git+file:///home/alan/repos/openssh-portable";
+      url = "github:Alan-Chen99/openssh-portable";
+      flake = false;
+    };
+
     past-24-11-1 = {
       url = "github:Alan-Chen99/dotfiles3/24.11.1";
       flake = false;

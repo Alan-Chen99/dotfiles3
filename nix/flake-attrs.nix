@@ -50,6 +50,7 @@
               emacs
               iperf3
               nixwrapper
+              openssh-unsafe
               pdf-tools-epdfinfo
               pypkgs-all
               yaru-theme

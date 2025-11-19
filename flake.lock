@@ -549,6 +549,22 @@
         "type": "github"
       }
     },
+    "openssh-unsafe": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1763520032,
+        "narHash": "sha256-gH9W13UiT3hqtunNi4/h7xrbSZZg4OJmoT0dhTDIQVY=",
+        "owner": "Alan-Chen99",
+        "repo": "openssh-portable",
+        "rev": "ff55a982140de5c143e45c889a1cfc176e9fa2e1",
+        "type": "github"
+      },
+      "original": {
+        "owner": "Alan-Chen99",
+        "repo": "openssh-portable",
+        "type": "github"
+      }
+    },
     "past-24-11-1": {
       "flake": false,
       "locked": {
@@ -724,6 +740,7 @@
         "nixpkgs23-11": "nixpkgs23-11",
         "nixpkgs24-05": "nixpkgs24-05",
         "nixpkgs24-11": "nixpkgs24-11",
+        "openssh-unsafe": "openssh-unsafe",
         "past-24-11-1": "past-24-11-1",
         "past-24-11-2": "past-24-11-2",
         "poetry2nix": "poetry2nix",

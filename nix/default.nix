@@ -138,7 +138,7 @@
   }));
 
   mod.misc = callpackage ./misc.nix {} (reexport (prev: {
-    inherit (prev) yaru-theme iperf3;
+    inherit (prev) yaru-theme iperf3 openssh-unsafe;
   }));
 
   mod.nixtools = callpackage ./nixtools.nix {} (reexport (prev: {
