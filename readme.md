@@ -100,5 +100,6 @@ mkdir ~/.emacs.d
 ln -s $(pwd)/emacs/.emacs ~/.emacs.d/init.el
 ln -s $(pwd)/emacs/early-init.el ~/.emacs.d/early-init.el
 
+nix shell .#p.cmake .#p.gnumake .#p.gcc .#p.libtool .#p.lilypond
 emacs --batch -l emacs/ci.el --eval "(ci-byte-compile)"
 ```

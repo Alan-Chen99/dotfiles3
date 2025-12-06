@@ -28,7 +28,8 @@
              (content (with-temp-buffer
                         (insert-file-contents f)
                         (buffer-string)))
-             (process-environment nil))
+             (process-environment nil)
+             (default-directory "/"))
         (setenv "__tmp_EMACS" (concat invocation-directory invocation-name))
         (elpaca-process-call "bash" "-c" content))
     (assert (= code 0))
