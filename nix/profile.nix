@@ -160,6 +160,7 @@
       ispell
       nixfmt-classic
       nixpkgs-fmt
+      ps
       shfmt
       stylua
       unzip
@@ -181,7 +182,7 @@
     # yaru-theme = yaru-theme;
     inherit
       (legacypkgs)
-      bear
+      # bear
       ffmpeg
       fontfinder
       jre
