@@ -296,5 +296,11 @@
 
 (add-to-list 'read-only-dir-list (expand-file-name "~/.cargo"))
 
+;;;;;;;;;;;;;;;;;;;;;;;;
+;; directory local variables
+
+(setq enable-local-variables :safe)
+
+
 
 (provide 'alan-simple)

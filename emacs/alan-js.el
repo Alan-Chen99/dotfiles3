@@ -22,7 +22,8 @@
   (setq-local format-all-formatters '(("TypeScript" prettierd)))
   ;; (alan-lsp-deferred 'lsp-javascript
   ;; (setq lsp-eslint-server-command '("eslint-lsp" "--stdio"))
-  (alan-lsp-deferred '(lsp-javascript lsp-eslint)
+  ;; (alan-lsp-deferred '(lsp-javascript lsp-eslint)
+  (alan-lsp-deferred '(lsp-javascript)
     (lsp-completion-mode)
     (setq-local completion-at-point-functions (list #'lsp-completion-at-point))))
 

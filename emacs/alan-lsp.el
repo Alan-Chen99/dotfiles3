@@ -149,4 +149,15 @@
     (let ((debug-on-error nil))
       (apply fn body args))))
 
+
+;; set project root with dir-local vars
+(defvar-local lsp-root nil)
+(setf (get 'lsp-root 'safe-local-variable) #'stringp)
+
+(defadvice! lsp--calculate-root-override (fn &rest args)
+  :around #'lsp--calculate-root
+  (if lsp-root
+      lsp-root
+    (apply fn args)))
+
 (provide 'alan-lsp)

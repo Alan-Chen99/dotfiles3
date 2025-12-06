@@ -17,6 +17,7 @@
     "j" #'smerge-next
     "k" #'smerge-prev
     "RET" #'smerge-keep-current
+    "#" #'smerge-keep-all
     )
 
   (clear-and-backup-keymap smerge-mode-map)
@@ -75,8 +76,9 @@
 
   (add-to-list 'debug-ignored-errors 'magit-outside-git-repo)
 
-  (put #'magit-log-mode 'magit-log-default-arguments
-       '("--graph" "-n256" "--decorate" "--color"))
+  (setf (get #'magit-log-mode 'magit-log-default-arguments)
+        '("--graph" "-n256" "--decorate" "--color"))
+
   )
 
 

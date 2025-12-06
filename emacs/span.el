@@ -818,6 +818,7 @@ designed to be created at compile time and used as constant"
 (defun span--backtrace--to-string (frames)
   (let* ((time-start (span--time))
          (backtrace-line-length 100)
+         (max-redisplay-ticks (* 10 max-redisplay-ticks))
          (bt-fmt (backtrace--to-string frames)))
     (format "backtrace(%.3fs):\n%s"
             (float-time (time-subtract (span--time) time-start))

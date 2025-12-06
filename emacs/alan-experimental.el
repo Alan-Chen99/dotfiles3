@@ -206,4 +206,9 @@ This function expects to be in the right *tramp* buffer."
       (setq-local comment-start "#")
       (setq-local format-all-formatters '(("Assembly" nasmfmt))))))
 
+(span-instrument transient-args :verbose t)
+(span-instrument transient--get-wrapped-value :verbose t)
+
+(span-instrument lsp--find-root-interactively :backtrace t)
+
 (provide 'alan-experimental)

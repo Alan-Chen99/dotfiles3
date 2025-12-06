@@ -7,6 +7,7 @@
  consult
  embark
  flycheck
+ gptel-context
  magit
  vertico
 
@@ -226,6 +227,7 @@
   "a d" #'shell-this-remote
   "a v" #'vterm
   "a g" #'gpt
+  "a a" #'gptel-context-add
   "a t" #'toggle-truncate-lines
   "a n" #'display-line-numbers-mode
 
@@ -351,6 +353,8 @@
   "j" #'evil-window-down
   "h" #'evil-window-left
   "l" #'evil-window-right
+
+  "]" #'toggle-frame-maximized
 
   "u" #'previous-buffer
   "i" #'next-buffer

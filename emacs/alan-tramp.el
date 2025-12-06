@@ -41,15 +41,21 @@
         (rx-to-string
          ;; this "group" is shown as prompt
          `(group
-           (: bos (* anything)
-              (| . ,password-word-equivalents)
-              (* nonl) (any . ,(or (bound-and-true-p tramp-compat-password-colon-equivalents)
-                                   '(?\N{COLON}
-                                     ?\N{FULLWIDTH COLON}
-                                     ?\N{SMALL COLON}
-                                     ?\N{PRESENTATION FORM FOR VERTICAL COLON}
-                                     ?\N{KHMER SIGN CAMNUC PII KUUH})))
-              (? "\^@") (* blank)))))
+           (or
+            ;; 2025/11/17
+            ;; MIT engaging: after this message requires a enter to continue
+            (: bos (* anything) "maintenance reservation midnight Tuesday morning." (* anything))
+            (: bos (* anything)
+               (| . ,password-word-equivalents)
+               (* nonl)
+               (any . ,(or (bound-and-true-p tramp-compat-password-colon-equivalents)
+                           '(?\N{COLON}
+                             ?\N{FULLWIDTH COLON}
+                             ?\N{SMALL COLON}
+                             ?\N{PRESENTATION FORM FOR VERTICAL COLON}
+                             ?\N{KHMER SIGN CAMNUC PII KUUH})))
+               (? "\^@") (* blank)))
+           )))
 
   ;; https://emacs.stackexchange.com/questions/62919/how-to-disable-magit-on-remote-files-with-tramp
   (setq vc-ignore-dir-regexp
@@ -134,7 +140,8 @@
 ;;     ans))
 
 (span-wrap tramp-maybe-open-connection)
-(span-wrap tramp-sh-handle-make-process)
+;; (span-wrap tramp-sh-handle-make-process)
+(span-instrument tramp-sh-handle-make-process :verbose t)
 (span-instrument tramp-process-actions :verbose t)
 (span-instrument tramp-action-password)
 (span-instrument tramp-open-shell)
