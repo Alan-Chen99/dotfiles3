@@ -40,6 +40,7 @@
     "o" #'dired-find-file-other-window
     ;; "+" 'dired-display-file ;; todo, readonly and fix buffer
     "RET" #'dired-find-file
+    "<.> <up>" #'dired-do-open
     "<right>" 'dired-find-alternate-directory
 
     "<left>" #'dired-up-directory

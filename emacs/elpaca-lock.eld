@@ -374,7 +374,7 @@
            :description "Go to last change" :date (26130 6720) :url
            "https://github.com/emacs-evil/goto-chg")
  (gptel :source "MELPA" :recipe
-        (:ref "40f6950e80676bb92a3a7e07656d87578439fbbe" :package
+        (:ref "a62d8baf01ed1d3e36c888e2922bbc140c2988a2" :package
               "gptel" :repo "karthink/gptel" :fetcher github :files
               ("*.el" "*.el.in" "dir" "*.info" "*.texi" "*.texinfo"
                "doc/dir" "doc/*.info" "doc/*.texi" "doc/*.texinfo"
