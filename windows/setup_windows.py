@@ -264,5 +264,20 @@ def main():
             winreg.SetValueEx(registry_key, name, unused, winreg.REG_DWORD, 0)
 
 
+def testfn():
+    # 2025/11/19
+    # disable efficiency mode
+    # https://learn.microsoft.com/en-us/answers/questions/3860984/turn-off-efficiency-mode-windows-11-forever
+    with winreg.OpenKey(
+        winreg.HKEY_LOCAL_MACHINE,
+        r"SYSTEM\CurrentControlSet\Control\Power",
+        access=winreg.KEY_ALL_ACCESS,
+    ) as registry_key:
+        winreg.SetValueEx(
+            registry_key, "PowerThrottlingOff", unused, winreg.REG_DWORD, 1
+        )
+
+
 if __name__ == "__main__":
-    main()
+    # main()
+    testfn()
