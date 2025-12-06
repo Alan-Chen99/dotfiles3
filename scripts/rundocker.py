@@ -41,7 +41,7 @@ flags: list[str | list[str]] = [
     "--interactive",
     "--tty",
     "--rm",
-    ["--gpus", "all"],
+    # ["--gpus", "all"],
     # ["--network", "none"],
     # "--privileged",
     # ["--security-opt", "seccomp=unconfined"],

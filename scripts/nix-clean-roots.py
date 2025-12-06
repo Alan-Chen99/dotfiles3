@@ -22,6 +22,6 @@ for path in paths:
         print(path)
 
 for path in paths:
-    if "result" in path.name:
+    if "result" in path.name and "persist" not in path.name:
         if get_yes_or_no(f"remove {str(path)!r} ? "):
             path.unlink()
