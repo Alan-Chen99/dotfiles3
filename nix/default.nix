@@ -164,6 +164,7 @@
       python-inject
       pythonlibs
       pythontools
+      uv-workspace
       ;
   }));
 

@@ -30,6 +30,17 @@
     )
     (import ./buildSystemOverrides.nix);
 
+  pyprojectOverrides = final: prev: {
+    python-magic = let
+      magic-nixpkgs = legacypkgs.python313Packages.python-magic;
+    in
+      (prev.python-magic.override {sourcePreference = "sdist";}).overrideAttrs (old:
+        assert old.version == magic-nixpkgs.version; {
+          src = magic-nixpkgs.src;
+          patches = magic-nixpkgs.patches;
+        });
+  };
+
   # Construct package set
   pythonSet =
     # Use base package set from pyproject.nix builders
@@ -42,11 +53,13 @@
         overlay
         buildSystemOverrides
         (flakes.uv2nix_hammer_overrides.overrides legacypkgs)
+        pyprojectOverrides
       ]
     );
 
   ####################
 
+  export.uv-workspace = workspace;
   export.pypkgs = pythonSet;
   export.pypkgs-all = pythonSet.mkVirtualEnv "venv-all-uv-packages" workspace.deps.all;
 
