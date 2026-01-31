@@ -147,13 +147,20 @@
 
         `(mode-line-buffer-id ((,c :foreground ,keyword)))
         ;; ansi-color-black ;; TODO?
+
         `(ansi-color-blue ((,c :background ,bg-blue-subtle :foreground ,fg-term-blue-bright)))
+        `(vterm-color-blue ((,c :background ,bg-blue-subtle :foreground ,fg-term-blue-bright)))
+
         ;; ansi-color-cyan
         `(ansi-color-green ((,c :background ,bg-green-subtle :foreground ,fg-term-green-bright)))
+        `(vterm-color-green ((,c :background ,bg-green-subtle :foreground ,fg-term-green-bright)))
+
         ;; ansi-color-magenta
         ;; ansi-color-red
         ;; ansi-color-white
         `(ansi-color-yellow ((,c :background ,bg-yellow-subtle :foreground ,fg-term-yellow-bright)))
+        `(vterm-color-yellow ((,c :background ,bg-yellow-subtle :foreground ,fg-term-yellow-bright)))
+
         `(markdown-code-face ((,c :inherit ef-themes-fixed-pitch :extend t)))))
 
 (eval-after-load! ef-themes

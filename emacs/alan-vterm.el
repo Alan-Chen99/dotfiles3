@@ -28,6 +28,33 @@
 (defmacro vterm-with-send-key (expr)
   `(lambda () (interactive) (vterm-send ,expr)))
 
+(defun vterm-scroll-up ()
+  (interactive)
+  (let ((col (1+ (current-column)))
+        (row (1+ (count-screen-lines (window-start) (point)))))
+    (vterm-send-string (format "\e[<64;%d;%dM" col row))))
+
+(defun vterm-scroll-down ()
+  (interactive)
+  (let ((col (1+ (current-column)))
+        (row (1+ (count-screen-lines (window-start) (point)))))
+    (vterm-send-string (format "\e[<65;%d;%dM" col row))))
+
+(defun vterm-scroll-up-mouse ()
+  (interactive)
+  (let* ((pos (mouse-position))
+         (col (or (cadr pos) 1))
+         (row (or (cddr pos) 1)))
+    (vterm-send-string (format "\e[<64;%d;%dM" col row))))
+
+(defun vterm-scroll-down-mouse ()
+  (interactive)
+  (let* ((pos (mouse-position))
+         (col (or (cadr pos) 1))
+         (row (or (cddr pos) 1)))
+    (vterm-send-string (format "\e[<65;%d;%dM" col row))))
+
+
 (evil-define-operator alan-vterm-delete-whole-line-without-yank (beg end type register)
   :motion evil-line-or-visual-line
   :type line
@@ -80,13 +107,15 @@
     [remap backward-paragraph] #'vterm-previous-prompt
     [remap forward-paragraph] #'vterm-next-prompt
     [remap alan-completion-at-point] (vterm-with-send-key "<tab>")
-    [remap end-of-buffer] #'vterm-reset-cursor-point
+    ;; [remap end-of-buffer] #'vterm-reset-cursor-point
+
     ;; "C-u C-k" sometimes dont work?
     ;; [remap evil-delete-whole-line] (vterm-with-send-key "C-u C-k")
     [remap evil-delete-whole-line] #'alan-vterm-delete-whole-line-without-yank
 
     [remap evil-append] #'evil-collection-vterm-append
     )
+
 
   (general-def vterm-mode-map
     :states 'insert
@@ -95,10 +124,28 @@
     "RET" #'vterm-send-return
     "TAB" #'vterm-send-tab
 
+    "C-k" #'vterm-scroll-up
+    "C-J" #'vterm-scroll-down
+    "<wheel-up>" #'vterm-scroll-up-mouse
+    "<wheel-down>" #'vterm-scroll-down-mouse
+
+    "<.> =" #'vterm-send-next-key
+    ;; "<S-.>" #'vterm-send-next-key
+
     [remap previous-line] (vterm-with-send-key "<up>")
     [remap next-line] (vterm-with-send-key "<down>")
     [remap move-beginning-of-line] (vterm-with-send-key "<start>")
     [remap move-end-of-line] (vterm-with-send-key "<end>")
+
+    "<home>" (vterm-with-send-key "<home>")
+    "<end>" (vterm-with-send-key "<end>")
+    "<prior>" (vterm-with-send-key "<prior>")
+    "<next>" (vterm-with-send-key "<next>")
+
+    "<.> <right>" (vterm-with-send-key "<escape>")
+
+    ;; "C-O" (vterm-with-send-key "C-O")
+    ;; "C-G" (vterm-with-send-key "C-G")
 
     [remap yank] #'vterm-yank)
 
@@ -107,7 +154,17 @@
     "SPC l" #'vterm-clear
 
     "SPC c" (vterm-with-send-key "C-c")
-    "<escape>" #'vterm--self-insert)
+
+    "<wheel-up>" #'vterm-scroll-up-mouse
+    "<wheel-down>" #'vterm-scroll-down-mouse
+
+    "SPC m" #'vterm-copy-mode
+    ;; "<escape>" #'vterm--self-insert
+    )
+
+  (general-def vterm-copy-mode-map
+    "SPC m" #'vterm-copy-mode-done
+    )
 
   (add-hook! 'vterm-mode-hook
     (defun alan-vterm-mode-setup ()
@@ -119,7 +176,7 @@
       (evil-normal-state)))
 
   (setq vterm-kill-buffer-on-exit t)
-  (setq vterm-max-scrollback 5000)
+  (setq vterm-max-scrollback 1000)
 
   (evil-collection-require-lazy 'vterm))
 
