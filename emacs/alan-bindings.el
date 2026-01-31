@@ -75,7 +75,7 @@
 
 (clear-and-backup-keymap evil-normal-state-map)
 (clear-and-backup-keymap evil-visual-state-map)
-;; (clear-and-backup-keymap evil-operator-state-map)
+(clear-and-backup-keymap evil-operator-state-map)
 (clear-and-backup-keymap evil-motion-state-map)
 (clear-and-backup-keymap evil-window-map)
 
@@ -95,6 +95,12 @@
 
   [remap backward-paragraph] #'evil-backward-paragraph
   [remap forward-paragraph] #'evil-forward-paragraph
+  )
+
+(general-def evil-operator-state-map
+  "i" evil-inner-text-objects-map
+  "a" evil-outer-text-objects-map
+  "x" evil-outer-text-objects-map
   )
 
 (general-def
