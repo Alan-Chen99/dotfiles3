@@ -11,7 +11,7 @@
 }: rec {
   export.profile-root = std.buildEnv {
     name = "profile-root";
-    checkCollisionContents = false;
+    # checkCollisionContents = false;
     paths = [
       bashInteractive
       cacert

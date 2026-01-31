@@ -2,11 +2,10 @@
   self,
   alejandra,
   flakes,
-  flamegraph,
   git,
+  legacypkgs,
   nix,
   nix-stable,
-  nix-tree,
   nixconf-file,
   nixd,
   std,
@@ -25,7 +24,7 @@
       nativeBuildInputs = [std.makeWrapper];
     } ''
       mkdir $out
-      makeWrapper ${nix-tree}/bin/nix-tree $out/bin/nix-tree \
+      makeWrapper ${legacypkgs.nix-tree}/bin/nix-tree $out/bin/nix-tree \
         --set PATH ${nix-stable}/bin:${git}/bin \
         --set NIX_USER_CONF_FILES ${nixconf-file}
     '';

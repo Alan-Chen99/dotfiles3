@@ -2,40 +2,40 @@
   self,
   bashInteractive,
   coreutils,
-  diffstat,
-  diffutils,
-  direnv,
-  fd,
-  file,
-  findutils,
+  # diffstat,
+  # diffutils,
+  # direnv,
+  # fd,
+  # file,
+  # findutils,
   flakes,
-  gawk,
-  gcc,
-  gdb,
+  # gawk,
+  # gcc,
+  # gdb,
   git,
-  glibcLocales,
-  gnugrep,
-  gnused,
+  # glibcLocales,
+  # gnugrep,
+  # gnused,
   home-manager-bin,
-  keychain,
+  # keychain,
   legacypkgs,
   lib,
   nix,
   nixmeta,
   nixrepl-wrapper,
   nixwrapper,
-  patch,
-  pdf-tools-epdfinfo,
+  # patch,
+  # pdf-tools-epdfinfo,
   pypkgs-bins,
-  ripgrep,
+  # ripgrep,
   source-ver,
   std,
-  taplo,
-  tree,
-  tree-sitter,
+  # taplo,
+  # tree,
+  # tree-sitter,
   tzdata,
   which,
-  yaru-theme,
+  # yaru-theme,
 }: rec {
   # TODO: add indirect deps, possibly from lock file, to prevent them from being garbage collected
   cmds-attrs = builtins.mapAttrs (name: val: "ln -s ${val} ${name}") (removeAttrs flakes ["self" "nixpkgs-lib"]);
@@ -66,10 +66,10 @@
     SSL_CERT_FILE = "${legacypkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
     # FONTCONFIG_FILE = "$HOME/.nix-profile/etc/fonts/fonts.conf";
 
-    XCURSOR_PATH = [
-      "$HOME/.nix-profile/share/icons"
-      "$XCURSOR_PATH"
-    ];
+    # XCURSOR_PATH = [
+    #   "$HOME/.nix-profile/share/icons"
+    #   "$XCURSOR_PATH"
+    # ];
   };
 
   profile-text = let
@@ -89,12 +89,21 @@
       env-str
     ));
 
-  export.profile = std.buildEnv {
-    name = "profile";
-    checkCollisionContents = false;
-    paths = [
+  pkgs-profile = {
+    inherit
       bashInteractive
+      home-manager-bin
+      nixmeta
+      nixrepl-wrapper
+      nixwrapper
       coreutils
+      git
+      which
+      ;
+
+    inherit
+      (legacypkgs)
+      cacert
       diffstat
       diffutils
       direnv
@@ -103,24 +112,25 @@
       findutils
       gawk
       gdb
-      git
       glibcLocales
       gnugrep
       gnused
-      home-manager-bin
       keychain
-      nix.doc
-      nixmeta
-      nixrepl-wrapper
-      nixwrapper
       patch
       ripgrep
       taplo
       tree
       tree-sitter
-      tzdata.out
-      which
-    ];
+      ;
+
+    nix_doc = nix.doc;
+    tzdata = tzdata.out;
+  };
+
+  export.profile = std.buildEnv {
+    name = "profile";
+    # checkCollisionContents = false;
+    paths = builtins.attrValues pkgs-profile;
     extraOutputsToInstall = ["man" "doc" "info"];
     pathsToLink = [
       "/bin"

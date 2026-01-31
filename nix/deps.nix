@@ -63,31 +63,31 @@
       (pkgs)
       alejandra
       bashInteractive
-      buildFHSUserEnv
+      # buildFHSUserEnv
       cacert
       cachix
-      diffstat
-      diffutils
-      direnv
-      fd
-      file
-      findutils
-      flamegraph
-      gawk
-      gdb
+      # diffstat
+      # diffutils
+      # direnv
+      # fd
+      # file
+      # findutils
+      # flamegraph
+      # gawk
+      # gdb
       git
-      glibcLocales
-      gnugrep
-      gnused
-      keychain
-      nix-doc
-      nix-plugins
-      nix-tree
-      openssl
-      patch
-      pyright
-      ripgrep
-      taplo
+      # glibcLocales
+      # gnugrep
+      # gnused
+      # keychain
+      # nix-doc
+      # nix-plugins
+      # nix-tree
+      # openssl
+      # patch
+      # pyright
+      # ripgrep
+      # taplo
       tree
       # tree-sitter
       tzdata

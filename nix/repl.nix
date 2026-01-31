@@ -1,8 +1,6 @@
 {
   self,
   callpackage,
-  nix-doc,
-  nix-plugins,
   std,
   nix,
 }: rec {
