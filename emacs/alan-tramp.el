@@ -70,7 +70,10 @@
                         (eval (cons 'or (mapcar #'car tramp-methods)))
                         ":"
                         (zero-or-more anything)))
-               eos))))
+               eos)))
+
+  (tramp-enable-flatpak-method)
+  )
 
 
 (require-if-is-bytecompile

@@ -79,6 +79,8 @@
   (setf (get #'magit-log-mode 'magit-log-default-arguments)
         '("--graph" "-n256" "--decorate" "--color"))
 
+  (setq magit-diff-extra-stat-arguments '("--stat-width" "200" "--compact-summary"))
+
   )
 
 

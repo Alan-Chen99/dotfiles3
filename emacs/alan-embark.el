@@ -50,6 +50,8 @@
     "l" #'embark-live
     "y" #'embark-copy-as-kill
 
+    "<.> <up>" #'embark-open-externally
+
     ;; "r" #'embark-history-remove
     )
 
