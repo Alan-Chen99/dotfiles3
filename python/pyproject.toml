@@ -36,7 +36,7 @@ dependencies = [
   # libraries
   "boto3>=1.42.2",
   "bs4>=0.0.2",
-  "cappa>=0.30.0",
+  "cappa>=0.31.0",
   "cchardet>=2.2.0a2",
   "fastapi>=0.119.1",
   "flask>=3.1.2",
@@ -65,6 +65,7 @@ dependencies = [
   "sympy>=1.14.0",
   "uvicorn[standard]>=0.37.0",
   "z3-solver>=4.15.3.0",
+  "pyahocorasick>=2.3.0",
 ]
 
 # [[tool.uv.index]]
