@@ -3,12 +3,15 @@
 (require 'alan-core)
 (require 'evil)
 
+(require-if-is-bytecompile backtrace)
 
 ;;; performance
 (setq read-process-output-max (* 1024 1024)) ;; 1mb
 (setq bidi-paragraph-direction 'left-to-right)
 
 (setq redisplay-skip-fontification-on-input t)
+;; (setq max-redisplay-ticks 100000)
+(setq backtrace-fontify nil)
 ;; (setq max-redisplay-ticks 500000)
 ;; (setq max-redisplay-ticks 1000000)
 (setq max-redisplay-ticks 2000000)
@@ -27,7 +30,9 @@
 (add-hook! 'alan-end-of-init-hook
   (setq warning-minimum-level :error))
 
-(setq backtrace-on-redisplay-error t)
+;; (setq backtrace-on-redisplay-error t)
+(setq backtrace-on-redisplay-error nil)
+(setq backtrace-line-length 100)
 ;; (setq inhibit-eval-during-redisplay nil)
 
 

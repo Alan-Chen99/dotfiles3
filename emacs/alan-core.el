@@ -119,6 +119,7 @@
 
 (add-to-list 'debug-ignored-errors 'minibuffer-quit)
 (add-to-list 'debug-ignored-errors 'search-failed)
+(setq debug-ignored-errors (remove 'buffer-read-only debug-ignored-errors))
 
 
 (make-lazy tree-sitter-hl-mode-lazy 'tree-sitter 'tree-sitter-hl-mode)

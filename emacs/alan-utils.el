@@ -66,9 +66,9 @@
   (setq alan--did-gc t)
   (let ((prev-gcs-done gcs-done) (prev-gc-elapsed gc-elapsed))
     (span :gc
-      (let ((garbage-collection-messages nil)
-            (gc-cons-threshold alan-gc-cons-threshold))
-        (eval '(ignore nil) t))
+      ;; (let ((garbage-collection-messages nil)
+      ;;       (gc-cons-threshold alan-gc-cons-threshold))
+      ;;   (eval '(ignore nil) t))
 
       (when (> gcs-done prev-gcs-done)
         (let ((time (- gc-elapsed prev-gc-elapsed)))
@@ -103,8 +103,12 @@
   (advice-add fn :around #'alan-set-ignore-debug-on-quit-advice))
 
 (defun alan-set-ignore-debug-on-error-advice (orig-fun &rest args)
-  (let ((debug-on-error nil))
-    (apply orig-fun args)))
+  ;; (let ((debug-on-error nil))
+  ;;   (apply orig-fun args))
+
+  (apply orig-fun args)
+
+  )
 (defun alan-set-ignore-debug-on-error (fn)
   (advice-add fn :around #'alan-set-ignore-debug-on-error-advice))
 

@@ -16,6 +16,7 @@
  comint
  company-quickhelp
  embark
+ evil-textobj-tree-sitter
  format-all
  lsp-mode
  magit
@@ -26,6 +27,7 @@
  tramp
  tramp-sh
  tree-sitter-langs-build
+ vterm
 
  alan-iflipb
  alan-simple
@@ -45,15 +47,19 @@
 (defun alan-donot-debug-foreground (fn)
   (advice-add fn :around #'alan-donot-debug-foreground-advice))
 
-(alan-donot-debug-foreground #'current-kill)
-(alan-donot-debug-foreground #'revert-buffer)
-(alan-donot-debug-foreground #'format-all--prompt-for-formatter)
-(alan-donot-debug-foreground #'elisp--local-variables)
-(alan-donot-debug-foreground #'outline-forward-same-level)
-(alan-donot-debug-foreground #'outline-backward-same-level)
-(alan-donot-debug-foreground #'line-move)
 (alan-donot-debug-foreground #'company-quickhelp--show)
+(alan-donot-debug-foreground #'current-kill)
+(alan-donot-debug-foreground #'delete-backward-char)
+(alan-donot-debug-foreground #'elisp--local-variables)
+(alan-donot-debug-foreground #'evil-textobj-tree-sitter--message-not-found)
+(alan-donot-debug-foreground #'format-all--prompt-for-formatter)
+(alan-donot-debug-foreground #'line-move)
+(alan-donot-debug-foreground #'outline-backward-same-level)
+(alan-donot-debug-foreground #'outline-forward-same-level)
+(alan-donot-debug-foreground #'revert-buffer)
 (alan-donot-debug-foreground #'treesit-indent)
+(alan-donot-debug-foreground #'vterm-previous-prompt)
+
 
 ;; (alan-donot-debug-foreground #'lsp--on-idle)
 
@@ -83,6 +89,8 @@
 ;; (span-wrap sclang-eval-string (string &optional print-p)
 ;;   (:sclang-eval-string "%s" (if print-p "print" ""))
 ;;   (span-notef "string:\n%s" (:unsafe  string)))
+
+(add-to-list 'auto-mode-alist `(,(rx ".service" eos) . conf-mode))
 
 (add-hook! 'sclang-mode-hook
   (defun alan-setup-sclang ()
@@ -210,5 +218,8 @@ This function expects to be in the right *tramp* buffer."
 (span-instrument transient--get-wrapped-value :verbose t)
 
 (span-instrument lsp--find-root-interactively :backtrace t)
+
+(setq default-input-method "chinese-py")
+;; (span-instrument command-execute)
 
 (provide 'alan-experimental)

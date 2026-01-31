@@ -391,15 +391,19 @@ designed to be created at compile time and used as constant"
 
 (defun span-format-one (e)
   (cl-destructuring-bind (depth s time . obj) e
-    (let* ((msg
-            (condition-case-unless-debug err
+    (let* ((inhibit-redisplay t)
+           (backtrace-on-redisplay-error nil)
+           (msg
+            ;; (condition-case-unless-debug err
+            (condition-case err
                 (funcall (span-s<-fmt-fn s) obj)
               (error
                (format
-                "error (span-format-one): %S\n%s\n%s"
+                "error (span-format-one): %S\n%s\n%s\n%s"
                 err
                 (span-fmt-to-string (span-s<-fmt-fn s))
-                (span-fmt-to-string obj)))))
+                (span-fmt-to-string obj)
+                (current-buffer)))))
            (lines (split-string msg "\n"))
            (prefix
             (format
@@ -439,8 +443,8 @@ designed to be created at compile time and used as constant"
        (insert-before-markers msg)))))
 
 (defun span--flush-log-impl (pending)
-  (let ((msg (mapconcat #'span-format-one pending "")))
-    (with-current-buffer (span--get-or-create-log-buf)
+  (with-current-buffer (span--get-or-create-log-buf)
+    (let ((msg (mapconcat #'span-format-one pending "")))
       (let ((span--handles-message nil)
             (debug-on-message nil))
         (funcall span-log-handler msg)))))
@@ -851,7 +855,7 @@ designed to be created at compile time and used as constant"
       (let* ((signal-args (car args))
              (err-sym (car-safe signal-args))
              (data (cdr-safe signal-args)))
-        (span (:span--debug "error: %S" `(list ,(:unsafe err-sym) ,(:unsafe data)))
+        (span (:span--debug "error: %S %S" `(list ,(:unsafe err-sym) ,(:unsafe data)) (buffer-name (current-buffer)))
           (span-flush)
           (span--backtrace #'span--debug)
           (let ((inhibit-debugger t))
