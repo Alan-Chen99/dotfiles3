@@ -1,6 +1,8 @@
 ;; -*- lexical-binding: t -*-
 
 (require 'alan-core)
+(require 'alan-evil)
+
 (require 'ts-movement)
 (require 'hydra)
 
@@ -38,8 +40,36 @@
       (setq ans (treesit-node-next-sibling node)))
     ans))
 
+(defun tsm/evil-visual-select (point)
+  "Select the current node overlay using evil visual mode."
+  (interactive "d")
+  (let* ((overlay (tsm/-overlay-at-point point))
+         (node (overlay-get overlay 'node))
+         (beg (treesit-node-start node))
+         (end (treesit-node-end node)))
+    (span-dbgf overlay node beg end)
+    (evil-visual-make-selection beg end))
+  (tsm/clear-overlays))
 
-(defhydra tsm/hydra (:body-pre (lambda () (tsm/-overlay-at-point (point))) :post tsm/clear-overlays)
+;; Make hydra `:post` conditional (skip for the `v` head)
+;; Hydra generates a head command name like:
+;; `tsm/hydra/tsm/evil-visual-select-and-exit`
+(defconst tsm/hydra--visual-head
+  (intern (format "%S/%s-and-exit" 'tsm/hydra 'tsm/evil-visual-select)))
+
+(defun tsm/hydra-post ()
+  ;; For most exits, clear overlays here.
+  ;; For "v", don't clear yet; tsm/evil-visual-select will clear after selection.
+  (unless (eq this-command tsm/hydra--visual-head)
+    (tsm/clear-overlays)))
+
+
+(defhydra tsm/hydra
+  (:body-pre
+   (lambda () (tsm/-overlay-at-point (point)))
+   ;; :post tsm/clear-overlays
+   :post tsm/hydra-post
+   )
   "TS Movement"
 
   ("<up>" #'tsm/alan-ts-prev-nostop)
@@ -52,6 +82,8 @@
 
   ("d" #'tsm/delete-overlay-at-point)
   ("<escape>" #'ignore :exit t)
+
+  ("v" #'tsm/evil-visual-select :exit t)
 
   ;; ("D" #'tsm/clear-overlays-of-type)
   ;; ("C-b" #'tsm/backward-overlay)

@@ -58,6 +58,11 @@
       yaml
       ))))
 
+(defmacro alan-treesitter-textobj (&rest args)
+  (declare (indent 1))
+  `(with-suppressed-warnings ((lexical nil))
+     (evil-textobj-tree-sitter-get-textobj ,@args)))
+
 (eval-after-load! evil-textobj-tree-sitter
   (defadvice! alan-evil-textobj-tree-sitter--range (&rest _)
     :before #'evil-textobj-tree-sitter--range
@@ -70,13 +75,20 @@
     (bound-and-true-p treesit-font-lock-settings))
 
   (general-def evil-inner-text-objects-map
-    "f" (with-no-warnings (evil-textobj-tree-sitter-get-textobj "function.inner")))
+    "f" (alan-treesitter-textobj "function.inner")
+    "b" (alan-treesitter-textobj ("conditional.outer" "loop.outer"))
+
+    "i" (alan-treesitter-textobj "leaf" `((,major-mode . ((_) @leaf))))
+    "a" (alan-treesitter-textobj "leaf2" `((,major-mode . ((_ (_)) @leaf2))))
+
+    "s" (alan-treesitter-textobj "statement"
+          '((python-mode . ((expression_statement) @statement))
+            ;; (rust-mode . ((use_declaration) @import))
+            ))
+    )
 
   (general-def evil-outer-text-objects-map
-    "f" (with-no-warnings (evil-textobj-tree-sitter-get-textobj "function.outer"))
-    "a" (with-no-warnings (evil-textobj-tree-sitter-get-textobj ("conditional.outer" "loop.outer"))))
-
-  ;; (alan-set-ignore-debug-on-error #'evil-textobj-tree-sitter--message-not-found)
+    "f" (alan-treesitter-textobj "function.outer"))
 
   )
 
