@@ -153,6 +153,7 @@
 
     past-24-11-1 = import (flakes.past-24-11-1 + "/nix/local.nix") {system = system;};
     past-24-11-2 = import flakes.past-24-11-2 {system = system;};
+    past-25-05-1 = import flakes.past-25-05-1 {system = system;};
 
     update-python = import flakes.update-python {system = system;};
   };

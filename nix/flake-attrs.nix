@@ -34,6 +34,7 @@
         (attrs.deps)
         past-24-11-1
         past-24-11-2
+        past-25-05-1
         update-python
         ;
 

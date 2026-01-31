@@ -39,7 +39,9 @@
     };
 
     emacs29 = {
-      url = "github:emacs-mirror/emacs/emacs-29";
+      # (26/1/31) pinned bc update test errors
+      # url = "github:emacs-mirror/emacs/emacs-29";
+      url = "github:emacs-mirror/emacs/75ca15f2a3146b17fde5e2a50ad9102c6108ba7f";
       flake = false;
     };
 
@@ -49,7 +51,9 @@
     };
 
     emacs31 = {
-      url = "github:emacs-mirror/emacs/master";
+      # (26/1/31) pinned bc update test errors
+      # url = "github:emacs-mirror/emacs/master";
+      url = "github:emacs-mirror/emacs/baf5908caaa63d74fb795ca865b918b08ffdd01a";
       flake = false;
     };
 
@@ -154,6 +158,10 @@
       flake = false;
     };
     past-24-11-2 = {
+      url = "github:Alan-Chen99/dotfiles3/24.11.2";
+      flake = false;
+    };
+    past-25-05-1 = {
       url = "github:Alan-Chen99/dotfiles3/24.11.2";
       flake = false;
     };
