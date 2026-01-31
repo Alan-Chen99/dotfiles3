@@ -54,7 +54,7 @@
 
 Today is %s.
 "
-         (format-time-string "%Y-%m-%d")))
+         (format-time-string "%Y/%m/%d")))
 
   (setq gptel-backend
         (gptel-make-openai "openrouter"
@@ -65,6 +65,7 @@ Today is %s.
           :models '(
                     gpt-5
                     gpt-5.1
+                    gpt-5.2
                     gpt-5-mini
                     gpt-5-nano
                     gpt-5-chat
@@ -72,6 +73,9 @@ Today is %s.
                     ;;
                     google/gemini-3-pro-preview
                     google/gemini-2.5-pro
+                    deepseek/deepseek-r1-0528
+                    deepseek/deepseek-v3.2-speciale
+                    test-noexist
                     )
           :request-params
           '(
@@ -79,7 +83,9 @@ Today is %s.
             ;; :reasoning (:summary "detailed")
             )))
 
-  (setq gptel-model 'google/gemini-2.5-pro)
+  (setq gptel-model 'google/gemini-3-pro-preview)
+
+  (setq gptel-use-context 'user)
 
   ;; (setq gptel-backend gptel--anthropic)
   ;; (setq gptel-model 'claude-sonnet-4-20250514)
