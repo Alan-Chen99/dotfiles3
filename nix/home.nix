@@ -1,7 +1,6 @@
 {
   self,
   git,
-  gnugrep,
   home-manager,
   home-manager-bin,
   legacypkgs,
@@ -48,6 +47,8 @@
           home.username = "${user}";
           home.homeDirectory = "/home/${user}";
 
+          nix.enable = false;
+
           # programs.git = {
           #   package = git;
           #   enable = true;
@@ -85,6 +86,9 @@
             # '';
           };
 
+          # does too much like setting NIX_PATH which cannot be overriden
+          # targets.genericLinux.enable = true;
+
           # Home Manager can also manage your environment variables through
           # 'home.sessionVariables'. If you don't want to manage your shell through Home
           # Manager then you have to manually source 'hm-session-vars.sh' located at
@@ -107,55 +111,55 @@
           # Let Home Manager install and manage itself.
           # programs.home-manager.enable = true;
 
-          gtk = {
-            enable = true;
+          # gtk = {
+          #   enable = true;
 
-            # iconTheme = {
-            #   name = "Adwaita";
-            #   # package = pkgs.papirus-icon-theme;
-            # };
+          #   # iconTheme = {
+          #   #   name = "Adwaita";
+          #   #   # package = pkgs.papirus-icon-theme;
+          #   # };
 
-            # font = {
-            #   name = "Hack Nerd Font";
-            #   size = 14;
-            # };
+          #   # font = {
+          #   #   name = "Hack Nerd Font";
+          #   #   size = 14;
+          #   # };
 
-            # theme = {
-            #   name = "palenight";
-            #   package = pkgs.palenight-theme;
-            # };
+          #   # theme = {
+          #   #   name = "palenight";
+          #   #   package = pkgs.palenight-theme;
+          #   # };
 
-            # cursorTheme = {
-            #   # name = "Hackneyed";
-            #   name = "Adwaita";
-            #   # package = legacypkgs.numix-cursor-theme;
-            # };
-          };
+          #   # cursorTheme = {
+          #   #   # name = "Hackneyed";
+          #   #   name = "Adwaita";
+          #   #   # package = legacypkgs.numix-cursor-theme;
+          #   # };
+          # };
 
           # dconf dump /
           # gsettings list-recursively
-          dconf.settings = {
-            # "org/gnome/shell" = {
-            # };
-            "org/gnome/desktop/interface" = let
-              theme = "Yaru";
-            in {
-              gtk-theme = theme;
-              icon-theme = theme;
-              cursor-theme = theme;
-              # cursor-theme = "Adwaita";
-              # cursor-theme = "Hackneyed";
+          # dconf.settings = {
+          #   # "org/gnome/shell" = {
+          #   # };
+          #   "org/gnome/desktop/interface" = let
+          #     theme = "Yaru";
+          #   in {
+          #     gtk-theme = theme;
+          #     icon-theme = theme;
+          #     cursor-theme = theme;
+          #     # cursor-theme = "Adwaita";
+          #     # cursor-theme = "Hackneyed";
 
-              document-font-name = "Cantarell 14";
-              font-name = "Cantarell 14";
-              monospace-font-name = "Hack Nerd Font 20";
-            };
-            # TODO: dont work
-            "org/gnome/desktop/wm/preferences" = {
-              titlebar-font = "Cantarell Bold 10";
-              titlebar-uses-system-font = false;
-            };
-          };
+          #     document-font-name = "Cantarell 14";
+          #     font-name = "Cantarell 14";
+          #     monospace-font-name = "Hack Nerd Font 20";
+          #   };
+          #   # TODO: dont work
+          #   "org/gnome/desktop/wm/preferences" = {
+          #     titlebar-font = "Cantarell Bold 10";
+          #     titlebar-uses-system-font = false;
+          #   };
+          # };
         }
       )
     ];
