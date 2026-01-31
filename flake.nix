@@ -134,6 +134,7 @@
     # nixpkgs-lib.url = "github:nixos/nixpkgs/ae584d90cbd0396a422289ee3efb1f1c9d141dc3?dir=lib";
     nixpkgs-lib.url = "github:nix-community/nixpkgs.lib";
 
+    nixpkgs-next.url = "github:nixos/nixpkgs/nixos-25.11";
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixpkgs-unstable";
 
     nixpkgs21-11.url = "github:nixos/nixpkgs/nixos-21.11";

@@ -48,7 +48,16 @@
       lib-orig = prev.lib;
       lib = final.lib-orig.extend mod.printing-overlay.lib-overlay;
     }) (reexport (prev: {
-      inherit (prev) legacypkgs lib lib-orig std deps pkgs-unstable;
+      inherit
+        (prev)
+        deps
+        legacypkgs
+        lib
+        lib-orig
+        nixpkgs-src
+        pkgs-unstable
+        std
+        ;
     }));
 
   pub.callpackage = callpackage;

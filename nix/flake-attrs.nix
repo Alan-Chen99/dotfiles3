@@ -25,6 +25,9 @@
       p = attrs.legacypkgs;
       d = attrs.deps;
 
+      pkgs = attrs.legacypkgs;
+      pkgs-next = with-nixpkgs-next.legacypkgs;
+
       inputs = inputs_;
 
       inherit
@@ -119,9 +122,15 @@
           }
       );
 
+      with-nixpkgs-next = add-overlay (final: prev: {
+        nixpkgs-src = inputs.nixpkgs-next;
+      });
+
       with-unstable = add-overlay (final: prev: {
         nixpkgs-src = inputs.nixpkgs-unstable;
       });
+
+      extend-pkgs.vscode = with-nixpkgs-next.legacypkgs.vscode;
 
       homeConfigurations."alan" = attrs.home;
       # for github actions
