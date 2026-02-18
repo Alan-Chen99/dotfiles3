@@ -132,7 +132,7 @@
 
     nixpkgs = {
       # nix flake update nixpkgs
-      url = "github:nixos/nixpkgs/nixos-25.05";
+      url = "github:nixos/nixpkgs/nixos-25.11";
       # url = "github:nixos/nixpkgs/ae584d90cbd0396a422289ee3efb1f1c9d141dc3";
     };
     # nixpkgs-lib.url = "github:nixos/nixpkgs/ae584d90cbd0396a422289ee3efb1f1c9d141dc3?dir=lib";
@@ -146,6 +146,7 @@
     nixpkgs23-11.url = "github:nixos/nixpkgs/nixos-23.11";
     nixpkgs24-05.url = "github:nixos/nixpkgs/nixos-24.05";
     nixpkgs24-11.url = "github:nixos/nixpkgs/nixos-24.11";
+    nixpkgs25-05.url = "github:nixos/nixpkgs/nixos-25.05";
 
     openssh-unsafe = {
       # url = "git+file:///home/alan/repos/openssh-portable";

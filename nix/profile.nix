@@ -2,40 +2,20 @@
   self,
   bashInteractive,
   coreutils,
-  # diffstat,
-  # diffutils,
-  # direnv,
-  # fd,
-  # file,
-  # findutils,
   flakes,
-  # gawk,
-  # gcc,
-  # gdb,
   git,
-  # glibcLocales,
-  # gnugrep,
-  # gnused,
   home-manager-bin,
-  # keychain,
   legacypkgs,
   lib,
   nix,
   nixmeta,
   nixrepl-wrapper,
   nixwrapper,
-  # patch,
-  # pdf-tools-epdfinfo,
   pypkgs-bins,
-  # ripgrep,
   source-ver,
   std,
-  # taplo,
-  # tree,
-  # tree-sitter,
   tzdata,
   which,
-  # yaru-theme,
 }: rec {
   # TODO: add indirect deps, possibly from lock file, to prevent them from being garbage collected
   cmds-attrs = builtins.mapAttrs (name: val: "ln -s ${val} ${name}") (removeAttrs flakes ["self" "nixpkgs-lib"]);
@@ -199,7 +179,6 @@
       kavita
       libtool
       racket
-      thefuck
       yaru-theme
       ;
   };

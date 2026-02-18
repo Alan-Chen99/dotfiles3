@@ -45,8 +45,8 @@
         };
       };
     } (final: prev: {
-      lib-orig = prev.lib;
-      lib = final.lib-orig.extend mod.printing-overlay.lib-overlay;
+      # lib-orig = prev.lib;
+      # lib = final.lib-orig.extend mod.printing-overlay.lib-overlay;
     }) (reexport (prev: {
       inherit
         (prev)
@@ -153,8 +153,6 @@
   mod.nixtools = callpackage ./nixtools.nix {} (reexport (prev: {
     inherit (prev) nixtools;
   }));
-
-  mod.printing-overlay = callpackage ./printing-overlay.nix {};
 
   mod.profile = callpackage ./profile.nix {} (reexport (prev: {
     inherit (prev) profile pkgs-small pkgs-big;

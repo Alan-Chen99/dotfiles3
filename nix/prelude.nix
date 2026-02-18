@@ -11,4 +11,5 @@ in
     df-inputs = dotfiles.inputs;
     inherit (dotfiles) dbg lib deps std;
     pkgs = dotfiles.legacypkgs;
+    flakes = dotfiles.__args.flakes;
   }

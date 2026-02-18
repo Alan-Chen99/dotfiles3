@@ -35,10 +35,13 @@
     builtins.mapAttrs (name: val: hash-to-source-mapping."${val.narHash}---${val.dir or ""}")
     (removeAttrs flakes ["self"]);
 
+  # extra things added to flake inputs
   _flake-registry = {
-    p = "${source-ver}";
-    n = "${nixpkgs-flakes}";
+    df = "${source-ver}";
     dotfiles = "${source-ver}";
+    n = "${nixpkgs-flakes}";
+    nixpkgs = "${nixpkgs-flakes}";
+    p = "${source-ver}";
   };
 
   export.flake-registry =
@@ -73,17 +76,15 @@
       registry remove --registry $out/registry.json dummy-nonexistent
   '';
 
+  # added that is not in _flake-registry
   _nix-path = {
-    n = "${nixpkgs-flakes}";
-    nixpkgs = "${nixpkgs-flakes}";
-    df = "${source-ver}";
     prelude = "${source-ver}/nix/prelude.nix";
   };
 
   export.nix-path =
     if self.less-download-flakes
     then _nix-path
-    else (removeAttrs flakes ["self"]) // _nix-path;
+    else (removeAttrs flakes ["self"]) // _nix-path // _flake-registry;
 
   export.nixconf = {
     # see also https://jackson.dev/post/nix-reasonable-defaults/

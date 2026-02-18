@@ -24,7 +24,7 @@
     };
     overlays = [
       flakes.emacs-overlay.overlays.emacs
-      flakes.nix-ros-overlay.overlays.default
+      # flakes.nix-ros-overlay.overlays.default
       rust-overlay
     ];
   };
@@ -116,7 +116,7 @@
     home-manager-bin = self.deps.home-manager.packages.${system}.home-manager;
     coreutils = pkgs.coreutils-full;
 
-    emacs-base = pkgs.emacs-git-pgtk.overrideAttrs {
+    emacs-base = (pkgs.emacs-pgtk.override {srcRepo = true;}).overrideAttrs {
       version = "31.0.50";
       src = flakes.emacs31;
     };
@@ -128,10 +128,7 @@
 
     nodejs = pkgs.nodejs_latest;
 
-    # python-nopkgs = pkgs.python313.override {
-    #   self = self.deps.python-nopkgs;
-    # };
-    python-nopkgs = pkgs.python313Full.override {
+    python-nopkgs = pkgs.python313.override {
       self = self.deps.python-nopkgs;
     };
 
