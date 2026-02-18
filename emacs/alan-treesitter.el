@@ -9,7 +9,7 @@
         :remotes ("alan" :repo "Alan-Chen99/tree-sitter-langs" :branch "master"))
   (startup-queue-package 'tree-sitter-langs 0))
 
-(pkg! 'evil-textobj-tree-sitter
+(pkg! '(evil-textobj-tree-sitter :remotes ("alan" :repo "Alan-Chen99/evil-textobj-tree-sitter" :tag "v2026-02-17"))
   (startup-queue-package 'evil-textobj-tree-sitter 0))
 
 (pkg! '(ts-movement
@@ -60,6 +60,11 @@
 
 (defmacro alan-treesitter-textobj (&rest args)
   (declare (indent 1))
+
+  ;; silence `function .. is not known to be defined` warnings
+  (when (bound-and-true-p byte-compile-current-file)
+    (eval `(evil-textobj-tree-sitter-get-textobj ,@args)))
+
   `(with-suppressed-warnings ((lexical nil))
      (evil-textobj-tree-sitter-get-textobj ,@args)))
 

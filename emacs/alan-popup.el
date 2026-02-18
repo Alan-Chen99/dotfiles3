@@ -2,7 +2,8 @@
 
 (require 'alan-core)
 
-(pkg! '(popup :host github :repo "Alan-Chen99/popup-el"))
+(pkg! '(popup
+        :remotes ("alan" :repo "Alan-Chen99/popup-el" :tag "v2026-02-17")))
 
 (eval-after-load! popup
   (general-def popup-menu-keymap

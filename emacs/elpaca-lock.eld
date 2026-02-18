@@ -236,7 +236,7 @@
             :description "Anzu for evil-mode" :date (25373 23872) :url
             "https://github.com/syohex/emacs-evil-anzu")
  (evil-collection :source "MELPA" :recipe
-                  (:ref "7ab9179591bc2f9474f480f52ec8dc44cf0a05f1"
+                  (:ref "bb5eb2ae1e77f87979571d4ad3357f38e932dfb5"
                         :package "evil-collection" :fetcher github
                         :repo "emacs-evil/evil-collection" :files
                         (:defaults "modes"))
@@ -282,7 +282,7 @@
                                "https://github.com/7696122/evil-terminal-cursor-changer")
  (evil-textobj-tree-sitter :source "MELPA" :recipe
                            (:ref
-                            "bce236e5d2cc2fa4eae7d284ffd19ad18d46349a"
+                            "70e53c6804a2a61d40d8ce1b351f8162c1f34d35"
                             :package "evil-textobj-tree-sitter"
                             :fetcher github :repo
                             "meain/evil-textobj-tree-sitter" :files
@@ -641,7 +641,7 @@
            :description "Major mode for editing PHP code" :date
            (26495 22480) :url "https://github.com/emacs-php/php-mode")
  (popup :source "MELPA" :recipe
-        (:ref "265e6ba20f049c0f9f7e098282e087461fc3ca4e" :package
+        (:ref "cb81d5d4b9a14f39a95edf225bc3447560bcdffe" :package
               "popup" :fetcher github :repo "auto-complete/popup-el"
               :files
               ("*.el" "*.el.in" "dir" "*.info" "*.texi" "*.texinfo"
@@ -804,14 +804,14 @@
                           :package "visual-basic-mode")
                     :source "Init file")
  (vterm :source "MELPA" :recipe
-        (:ref "57e953c79ff4da2cc70913c6f93693c9e354f107" :package
+        (:ref "6e7ae7c0617b1069c934c0f7a393f40b6ef244a0" :package
               "vterm" :fetcher github :repo "akermu/emacs-libvterm"
               :files
               ("CMakeLists.txt" "elisp.c" "elisp.h" "emacs-module.h"
                "etc" "utf8.c" "utf8.h" "vterm.el" "vterm-module.c"
                "vterm-module.h"))
         :description "Fully-featured terminal emulator" :date
-        (26466 22224) :url "https://github.com/akermu/emacs-libvterm")
+        (26909 20176) :url "https://github.com/akermu/emacs-libvterm")
  (vundo :source "GNU ELPA" :url
         "https://elpa.gnu.org/packages/vundo.html" :description
         "Visual undo tree" :recipe
