@@ -63,6 +63,9 @@ vterm_prompt_end() {
 export -f vterm_prompt_end
 
 vterm_prompt_command() {
+	if [[ "$INSIDE_EMACS" == *vterm* ]] && [[ "$PS1" != *"[vterm]"* ]]; then
+		PS1='[vterm] '$PS1
+	fi
 	if [[ "$PS1" != *"vterm_prompt_end"* ]]; then
 		PS1=$PS1'\[$(vterm_prompt_end)\]'
 	fi

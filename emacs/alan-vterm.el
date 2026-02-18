@@ -12,7 +12,7 @@
 ;;     "SPC l" 'mistty-clear))
 
 (pkg! '(vterm
-        :remotes ("alan" :repo "Alan-Chen99/emacs-libvterm" :branch "master")
+        :remotes ("alan" :repo "Alan-Chen99/emacs-libvterm" :tag "v2026-02-17")
         :pre-build
         (progn
           ;; otherwise it will prompt for user interaction
@@ -29,30 +29,54 @@
   `(lambda () (interactive) (vterm-send ,expr)))
 
 (defun vterm-scroll-up ()
+  "Scroll up in vterm.
+When the application has enabled mouse reporting, send the SGR
+mouse scroll-up escape sequence.  Otherwise, fall back to
+`scroll-down-command' (which scrolls the viewport up)."
   (interactive)
-  (let ((col (1+ (current-column)))
-        (row (1+ (count-screen-lines (window-start) (point)))))
-    (vterm-send-string (format "\e[<64;%d;%dM" col row))))
+  (if (vterm-mouse-reporting-p)
+      (let ((col (1+ (current-column)))
+            (row (1+ (count-screen-lines (window-start) (point)))))
+        (vterm-send-string (format "\e[<64;%d;%dM" col row)))
+    (scroll-down-command)))
 
 (defun vterm-scroll-down ()
+  "Scroll down in vterm.
+When the application has enabled mouse reporting, send the SGR
+mouse scroll-down escape sequence.  Otherwise, fall back to
+`scroll-up-command' (which scrolls the viewport down)."
   (interactive)
-  (let ((col (1+ (current-column)))
-        (row (1+ (count-screen-lines (window-start) (point)))))
-    (vterm-send-string (format "\e[<65;%d;%dM" col row))))
+  (if (vterm-mouse-reporting-p)
+      (let ((col (1+ (current-column)))
+            (row (1+ (count-screen-lines (window-start) (point)))))
+        (vterm-send-string (format "\e[<65;%d;%dM" col row)))
+    (scroll-up-command)))
 
 (defun vterm-scroll-up-mouse ()
+  "Handle mouse scroll-up in vterm.
+When the application has enabled mouse reporting, send the SGR
+mouse scroll-up escape sequence at the mouse position.  Otherwise,
+fall back to `scroll-down-command'."
   (interactive)
-  (let* ((pos (mouse-position))
-         (col (or (cadr pos) 1))
-         (row (or (cddr pos) 1)))
-    (vterm-send-string (format "\e[<64;%d;%dM" col row))))
+  (if (vterm-mouse-reporting-p)
+      (let* ((pos (mouse-position))
+             (col (or (cadr pos) 1))
+             (row (or (cddr pos) 1)))
+        (vterm-send-string (format "\e[<64;%d;%dM" col row)))
+    (scroll-down-command)))
 
 (defun vterm-scroll-down-mouse ()
+  "Handle mouse scroll-down in vterm.
+When the application has enabled mouse reporting, send the SGR
+mouse scroll-down escape sequence at the mouse position.  Otherwise,
+fall back to `scroll-up-command'."
   (interactive)
-  (let* ((pos (mouse-position))
-         (col (or (cadr pos) 1))
-         (row (or (cddr pos) 1)))
-    (vterm-send-string (format "\e[<65;%d;%dM" col row))))
+  (if (vterm-mouse-reporting-p)
+      (let* ((pos (mouse-position))
+             (col (or (cadr pos) 1))
+             (row (or (cddr pos) 1)))
+        (vterm-send-string (format "\e[<65;%d;%dM" col row)))
+    (scroll-up-command)))
 
 
 (evil-define-operator alan-vterm-delete-whole-line-without-yank (beg end type register)
@@ -61,12 +85,55 @@
   (interactive "<R><x>")
   (evil-collection-vterm-delete beg end type ?_))
 
+(defun alan-vterm--evil-follow-term-cursor-insert ()
+  "Enable terminal cursor ownership while in Evil insert state."
+  (when (and (derived-mode-p 'vterm-mode)
+             (not vterm-copy-mode))
+    ;; (vterm-set-follow-cursor-shape t)
+    (vterm-set-follow-cursor t)
+    (vterm--redraw vterm--term)))
+
+;; in some apps including claude code, cursor is fake (just a character with background)
+;; so going to normal mode will put cursor at the end (the real cursor is always at the end)
+
+(defun alan-vterm--evil-freeze-term-cursor-normal ()
+  "Disable terminal cursor ownership while in non-insert Evil states."
+  (when (and (derived-mode-p 'vterm-mode)
+             (not vterm-copy-mode))
+    ;; Keep point where the terminal cursor currently is when leaving insert.
+    (vterm-set-follow-cursor nil)
+    ;; (vterm-set-follow-cursor-shape nil)
+    ))
+
 (eval-after-load! vterm
+  (setq vterm-min-window-width 60)
+
+  (setq vterm-copy-mode-remove-fake-newlines nil)
+
+  (setq vterm-enable-manipulate-selection-data-by-osc52 t)
+
+  (setq vterm-ignore-blink-cursor nil)
+  (setq vterm-follow-cursor nil)
+  (setq vterm-follow-cursor-shape nil)
+
+  (setq vterm-follow-window-size nil)
+
+  ;; (setq vterm-kill-buffer-on-exit t)
+  (setq vterm-kill-buffer-on-exit nil)
+
+  ;; (setq vterm-max-scrollback 1000)
+  (setq vterm-max-scrollback 200)
+  (setq vterm-clear-scrollback-when-clearing t)
+
+  (setq vterm-timer-delay 0.1)
+
   (setq vterm-environment
         (append alan-bash-fns-env-vars
                 (list
                  ;; TODO: append instead
                  "PROMPT_COMMAND=vterm_prompt_command")))
+
+  (setq vterm-shell "/bin/bash")
 
   (defadvice! alan-vterm--get-shell ()
     :override #'vterm--get-shell
@@ -96,10 +163,9 @@
   (clear-and-backup-keymap vterm-mode-map)
   (clear-and-backup-keymap vterm-copy-mode-map)
 
-  (setq vterm-clear-scrollback-when-clearing t)
-  (setq vterm-timer-delay 0.01)
 
-  ;; (setq vterm-buffer-name-string "*vterm %s*")
+  ;; (setq vterm-buffer-name-string "* %s")
+  (setq vterm-buffer-name-string nil)
 
   (evil-set-initial-state 'vterm-mode 'insert)
 
@@ -129,11 +195,14 @@
     "<wheel-up>" #'vterm-scroll-up-mouse
     "<wheel-down>" #'vterm-scroll-down-mouse
 
-    "<.> =" #'vterm-send-next-key
+    "S-SPC" #'vterm-send-next-key
     ;; "<S-.>" #'vterm-send-next-key
 
     [remap previous-line] (vterm-with-send-key "<up>")
     [remap next-line] (vterm-with-send-key "<down>")
+    [remap left-char] (vterm-with-send-key "<left>")
+    [remap right-char] (vterm-with-send-key "<right>")
+
     [remap move-beginning-of-line] (vterm-with-send-key "<start>")
     [remap move-end-of-line] (vterm-with-send-key "<end>")
 
@@ -152,6 +221,9 @@
   (general-def vterm-mode-map
     :states 'motion
     "SPC l" #'vterm-clear
+    "SPC s" #'vterm-sync-window-size
+    "SPC t" #'vterm-toggle-follow-cursor
+    "SPC <up>" #'alan-vterm-kill-process
 
     "SPC c" (vterm-with-send-key "C-c")
 
@@ -169,14 +241,24 @@
   (add-hook! 'vterm-mode-hook
     (defun alan-vterm-mode-setup ()
       (span-msg "alan-vterm-mode-setup")
-      ;; (setq-local alan--inhibit-motion-state-on-ro t)
       ;; Vterm sets buffer-read-only to t but some commands complains;
       ;; nil seems to do fine?
       (setq-local buffer-read-only nil)
-      (evil-normal-state)))
 
-  (setq vterm-kill-buffer-on-exit t)
-  (setq vterm-max-scrollback 1000)
+      (setq-local truncate-lines t)
+
+      ;; (setq-local evil-move-cursor-back nil)
+
+      (add-hook 'evil-insert-state-entry-hook
+                #'alan-vterm--evil-follow-term-cursor-insert nil t)
+      (add-hook 'evil-insert-state-exit-hook
+                #'alan-vterm--evil-freeze-term-cursor-normal nil t)
+
+      ;; (alan-vterm--evil-freeze-term-cursor-normal)
+      ;; (span-dbg hl-line-mode)
+      (setq-local global-hl-line-mode nil)
+      (hl-line-mode -1)))
+
 
   (evil-collection-require-lazy 'vterm))
 
@@ -189,5 +271,34 @@
   ;; (general-def vterm-mode-map)
   )
 
+
+(defun alan-vterm (&optional arg)
+  ;; compared to original, this restarts if the process died
+  (interactive "P")
+  (require 'vterm)
+  (let* ((name (cond
+                ((numberp arg) (format "%s<%d>" vterm-buffer-name arg))
+                ((stringp arg) arg)
+                (arg vterm-buffer-name)
+                (t vterm-buffer-name))))
+
+    (if (and (get-buffer name) (process-live-p (with-current-buffer (get-buffer name) vterm--process)))
+        (switch-to-buffer (get-buffer name))
+      (let ((dir default-directory))
+        (when (get-buffer name)
+          (setq dir (with-current-buffer (get-buffer name) default-directory))
+          (kill-buffer (get-buffer name)))
+        (pop-to-buffer-same-window (let ((default-directory dir)) (get-buffer-create name)))
+        (vterm-mode)))))
+
+(defun alan-vterm-run (command)
+  (interactive
+   (list (read-shell-command "Vterm: ")))
+  (let ((vterm-shell command))
+    (vterm t)))
+
+(defun alan-vterm-kill-process ()
+  (interactive)
+  (kill-process (get-buffer-process (current-buffer)) 'current-group))
 
 (provide 'alan-vterm)
