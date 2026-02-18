@@ -19,7 +19,7 @@
 ;; allowed entries in "span--stack":
 ;; (span-s . time)
 ;; (span-s . (time . obj))
-;; (span-s . span) ; "normalized"
+;; (span-s . span) ; "normalized" per span--unsafe-top-obj-normalized
 
 ;; allowed entries in "notes":
 ;; (span-s . time)
@@ -109,8 +109,9 @@ designed to be created at compile time and used as constant"
      ,@forms))
 
 
+;; see span-s docs
 (defvar span--stack (list
-                     (cons (eval-when-compile (span-s<-create :tag :dummy))
+                     (cons (eval-when-compile (span-s<-create :tag ::))
                            (span<-create :depth -1 :logged t))))
 
 (defvar span--cur-context :redisplay)
@@ -173,8 +174,8 @@ designed to be created at compile time and used as constant"
       (setq tag (pop args)))
     `(span--note-and-flush ,(span--parse-fmt-spec args tag))))
 
-(defmacro span-msg (&rest args)
-  `(span-notef (:unsafe (format-message ,@args))))
+(defun span-msg (&rest args)
+  (span-notef (:unsafe (apply #'format-message args))))
 
 (eval-and-compile
   (defun span--macro-backquote (arg)
@@ -213,11 +214,12 @@ designed to be created at compile time and used as constant"
   `(span-notef
      ,(span--handle-dbg-args args)))
 
+(defvar span-blocking-log-limit 0.05)
 (defun span--toggle-blocking ()
   (if span--blocking-time
       (progn
         (let ((time (float-time (time-subtract (span--time) span--blocking-time))))
-          (when (> time 0.05)
+          (when (> time span-blocking-log-limit)
             ;; (span-fmt-parse '("blocking: %.3f" time))
             (span-notef "blocking: %.3f" time)))
         (setq span--blocking-time nil))
@@ -330,6 +332,7 @@ designed to be created at compile time and used as constant"
       `(span--with-cb ,(span--parse-span-spec obj) ,blocking ,flush-on-err (lambda () ,@rest)))))
 
 
+;; see span--log-note
 (defvar span--pending-log-list nil)
 (defvar span--pending-log-list-len 0)
 (defvar span--n-backtrace-made-this-cycle 0)
@@ -389,6 +392,13 @@ designed to be created at compile time and used as constant"
   (let ((inhibit-quit t))
     (span--unsafe-flush-stack)))
 
+(defvar span-max-width nil)
+(defun span--maybe-truncate-str (s)
+  (declare (indent 0))
+  (if (and span-max-width (length> s span-max-width))
+      (substring s 0 span-max-width)
+    s))
+
 (defun span-format-one (e)
   (cl-destructuring-bind (depth s time . obj) e
     (let* ((inhibit-redisplay t)
@@ -410,15 +420,18 @@ designed to be created at compile time and used as constant"
              "%.3f %s%s"
              (float-time (time-subtract time before-init-time))
              (make-string (* depth 2) (eval-when-compile (string-to-char " ")))
-             (or (span-s<-tag s) "%"))))
-      (apply #'concat (format "%s %s\n" prefix (car lines))
-             (mapcar
-              (lambda (x)
-                (format
-                 "%s> %s\n"
-                 (make-string (1- (length prefix)) (eval-when-compile (string-to-char " ")))
-                 x))
-              (cdr lines))))))
+             (or (span-s<-tag s) "%")))
+
+           (first-str (format "%s %s" prefix (car lines)))
+           (rest-str (mapcar
+                      (lambda (x)
+                        (span--maybe-truncate-str
+                          (format
+                           "%s> %s"
+                           (make-string (1- (length prefix)) (eval-when-compile (string-to-char " ")))
+                           x)))
+                      (cdr lines))))
+      (concat (mapconcat #'span--maybe-truncate-str (cons first-str rest-str) "\n") "\n"))))
 
 
 (defvar span--log-buf nil)
@@ -436,18 +449,20 @@ designed to be created at compile time and used as constant"
 
 (defvar span-log-handler #'span-default-log-handler)
 (defun span-default-log-handler (msg)
-  (let ((buffer-read-only nil))
-    (span-with-no-minibuffer-message
-     (save-excursion
-       (goto-char (point-max))
-       (insert-before-markers msg)))))
+  (with-current-buffer (span--get-or-create-log-buf)
+    (let ((buffer-read-only nil))
+      (span-with-no-minibuffer-message
+       (save-excursion
+         (goto-char (point-max))
+         (insert-before-markers msg))))))
 
 (defun span--flush-log-impl (pending)
-  (with-current-buffer (span--get-or-create-log-buf)
+  (with-temp-buffer ;; prevent accidental interference with current buffer
     (let ((msg (mapconcat #'span-format-one pending "")))
       (let ((span--handles-message nil)
             (debug-on-message nil))
-        (funcall span-log-handler msg)))))
+        (span :span-log-handler
+          (funcall span-log-handler msg))))))
 
 (defvar span--is-flushing nil)
 
@@ -524,7 +539,10 @@ designed to be created at compile time and used as constant"
 
 (defun span--kill-emacs-hook ()
   (span-notef :span--kill-emacs-hook)
-  (span-flush-log))
+  ;; kill emacs hook should not hang or throw
+  (with-demoted-errors "error in span-flush-log during kill-emacs-hook: %S"
+    (let ((inhibit-interaction t))
+      (with-timeout (1) (span-flush-log)))))
 
 (add-hook 'kill-emacs-hook #'span--kill-emacs-hook 100)
 
@@ -897,6 +915,7 @@ designed to be created at compile time and used as constant"
 (span-wrap kill-emacs (&rest args)
   (_ (:seq args))
   (span-flush)
-  (span-flush-log))
+  ;; log flused in #'span--kill-emacs-hook
+  )
 
 (provide 'span)
