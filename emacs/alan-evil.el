@@ -15,28 +15,36 @@
  ;; this is extremely slow
  evil-indent-convert-tabs nil)
 
-(defvar alan--inhibit-motion-state-on-ro nil)
+;; tie motion/normal to buffer-read-only
+
 (add-hook! 'read-only-mode-hook
   (defun read-only-toggle-evil-state ()
-    ;; (span-notef "read-only-mode-hook: %S" buffer-read-only)
-    (unless alan--inhibit-motion-state-on-ro
-      (if buffer-read-only
-          (unless (or (eq evil-state 'emacs) (eq evil-state 'motion))
-            (evil-motion-state))
-        (when (eq evil-state 'motion)
-          (evil-initialize-state))))))
+    ;; (span-dbgf 'read-only-mode-hook (current-buffer) buffer-read-only)
+    (if buffer-read-only
+        (unless (or (eq evil-state 'emacs) (eq evil-state 'motion))
+          (evil-motion-state))
+      (when (eq evil-state 'motion)
+        (evil-normal-state)))))
 
 (defadvice! evil-initial-state-for-buffer-adv (orig-fn &optional buffer)
   :around #'evil-initial-state-for-buffer
   (span (:evil-initial-state-for-buffer (buffer-name buffer))
-    ;; (span-flush)
     (let ((res (funcall orig-fn buffer)))
-      (when (and
-             (not alan--inhibit-motion-state-on-ro)
-             (not (eq res 'emacs))
-             (buffer-local-value 'buffer-read-only (or buffer (current-buffer))))
-        (setq res 'motion))
+      (when (or (eq res 'motion) (eq res 'normal))
+        (if (buffer-local-value 'buffer-read-only (or buffer (current-buffer)))
+            (setq res 'motion)
+          (setq res 'normal)))
       res)))
+
+(advice-add #'revert-buffer-restore-read-only :override #'alan-revert-buffer-restore-read-only)
+(defun alan-revert-buffer-restore-read-only ()
+  (when-let* ((state (and (boundp 'read-only-mode--state)
+                          (list read-only-mode--state))))
+    (lambda ()
+      (setq buffer-read-only (car state))
+      (setq-local read-only-mode--state (car state))
+      ;; added, set evil state
+      (evil-initialize-state))))
 
 (span-wrap evil-initialize-state)
 (span-wrap evil-initialize)
