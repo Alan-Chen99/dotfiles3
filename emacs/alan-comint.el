@@ -151,20 +151,24 @@
   ;; (span-dbgf :alan-comint-exec-1 name buffer command switches)
   (if (eq system-type 'windows-nt)
       (funcall fn name buffer command switches)
-    (let* ((proc (funcall
-                  fn name buffer
-                  ;; "bash"
-                  "sh"
-                  `("-c"
-                    "stty echo; exec \"$@\""
-                    ;; "stty echo onlcr; exec \"$@\""
-                    ".."
-                    ,command ,@switches)
-                  ))
-           ;; (code (call-process "stty" nil nil nil "-F" (process-tty-name proc) "echo"))
+    (let* ((proc
+            (funcall fn name buffer command switches)
+            ;; (funcall
+            ;;  fn name buffer
+            ;;  ;; "bash"
+            ;;  "sh"
+            ;;  `("-c"
+            ;;    "stty echo; exec \"$@\""
+            ;;    ;; "stty echo onlcr; exec \"$@\""
+            ;;    ".."
+            ;;    ,command ,@switches)
+            ;;  )
+            )
+           ;; possible race, but cleaner than the "sh" wrapping which have more problems
+           (code (call-process "stty" nil nil nil "-F" (process-tty-name proc) "echo"))
            )
-      ;; (unless (= code 0)
-      ;;   (error "stty failed"))
+      (unless (= code 0)
+        (error "stty failed"))
       proc)
     ))
 
