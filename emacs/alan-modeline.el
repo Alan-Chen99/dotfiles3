@@ -13,6 +13,7 @@
 (put 'alan-modeline-rhs 'risky-local-variable t)
 
 (defun alan-right-align-space (rhs-width &optional frame)
+  ;; if frame, apply to frame (tabline), otherwise its for window (modeline)
   (propertize
    " "
    'display
@@ -31,20 +32,44 @@
     (* (string-width str) (window-font-width nil 'mode-line)
        (if (display-graphic-p) 1.05 1.0))))
 
+;;      (lhs-limit (- (frame-width) (string-width rhs))))
+;; (when (< lhs-limit 0)
+;;   (setq lhs-limit 0))
+
+(defun alan-modeline-from-left-right (lhs rhs frame)
+  ;; (setq rhs (concat " " rhs))
+  ;; lhs and rhs are strings
+  (let* ((rhs-width (doom-modeline-string-pixel-width rhs))
+         lhs-limit)
+
+    ;; tabbar not allowed to overflow
+    ;; we truncate left of tabbar
+    (when frame
+      (setq lhs-limit (1- (- (frame-width) (string-width rhs))))
+      (when (< lhs-limit 0)
+        (setq lhs-limit 0)
+        (setq lhs "")
+        (setq rhs (substring rhs 0 (1- (frame-width))))
+        (setq rhs-width (doom-modeline-string-pixel-width rhs))
+        )
+      (when (length> lhs lhs-limit)
+        (setq lhs (substring lhs 0 lhs-limit))))
+
+    (concat
+     (if frame
+         (propertize " " 'display '(space :align-to (+ left left-fringe left-margin)))
+       (propertize " " 'display '(space :align-to 0)))
+     lhs
+     (alan-right-align-space rhs-width frame)
+     rhs)))
+
 (defun alan-format-modeline ()
   (span :alan-format-modeline
     (with-demoted-errors "error in alan-format-modeline: %S"
-      ;; (with-demoted-errors
-      ;; (span-msg "%s" (current-buffer))
-      ;; (span--backtrace)
-      (let* ((lhs (format-mode-line alan-modeline-lhs))
-             (rhs (format-mode-line alan-modeline-rhs))
-             (rhs-width (doom-modeline-string-pixel-width rhs)))
-        (concat
-         lhs
-         (alan-right-align-space rhs-width)
-         rhs)))))
-
+      (alan-modeline-from-left-right
+       (format-mode-line alan-modeline-lhs)
+       (format-mode-line alan-modeline-rhs)
+       nil))))
 
 (defvar-local alan-formatted-modeline nil)
 (put 'alan-formatted-modeline 'risky-local-variable t)
@@ -54,17 +79,16 @@
   (setq-local alan-formatted-modeline (alan-format-modeline))
   nil)
 
-(setq-default mode-line-format
-              `(
-                ;; whitespace to pad to first column
-                ,(eval-when-compile
-                   (let* ((text (copy-sequence " ")))
-                     (put-text-property 0 1 'display '(space :align-to 0) text)
-                     text))
-                ;; eldoc want its thing at the top level
-                (eldoc-mode-line-string ("" eldoc-mode-line-string " "))
-                (:eval (alan-format-modeline-wrapper))
-                alan-formatted-modeline))
+(setq-default
+ mode-line-format
+ `(
+   ;; eldoc will insert this unless its already here
+   ;; this never renders anything; the lhs part below has eldoc-mode-line-string
+   (eldoc-mode-line-string (""))
+
+   ;; whitespace to pad to first column
+   (:eval (alan-format-modeline-wrapper))
+   alan-formatted-modeline))
 
 (mapc
  (lambda (buf)
@@ -357,9 +381,9 @@
            ;;                      (doom-modeline-column beg)))))
            ;;    (format "%dx%dB" lines cols)))
 
-           ((and (bound-and-true-p evil-visual-selection)
-                 (eq evil-visual-selection 'line))
-            (format "%dL" lines))
+           ;; ((and (bound-and-true-p evil-visual-selection)
+           ;;       (eq evil-visual-selection 'line))
+           ;;  (format "%dL" lines))
            ((> lines 1)
             (format "%dC %dL" (- end beg) lines))
            (t
@@ -440,6 +464,7 @@
 (setq alan-modeline-lhs
       `(
         "%e"
+        (eldoc-mode-line-string ("" eldoc-mode-line-string " | "))
         mode-line-position
         ;; ("" mode-line-client)
 
@@ -519,9 +544,9 @@
           (setq alan--displayed-keys (concat alan--displayed-keys "  ")))
         (setq alan--last-key-time (current-time))
         (mapc #'alan--handle-key-pressed ans)
-        (when (length> alan--displayed-keys 50)
+        (when (length> alan--displayed-keys 20)
           (setq alan--displayed-keys
-                (substring alan--displayed-keys (- (length alan--displayed-keys) 25))))
+                (substring alan--displayed-keys (- (length alan--displayed-keys) 15))))
         ;; TODO: perhaps not do this in pre-command-hook?
         (span :force-mode-line-update
           (force-mode-line-update t)))
@@ -541,46 +566,72 @@
       (format "%s" cmd)
     (format "[%s]" (type-of cmd))))
 
-(clear-and-backup-keymap tab-bar-map)
-(defvar alan-tabbar-count 0)
+(defun alan-modeline-l1 ()
+  (alan-modeline-from-left-right
+   ;; left
+   (concat
+    ;; (propertize (buffer-name) 'face 'modeline-file-or-buffer-name)
+    ;; (format-message "%s" (buffer-name))
+    ;; (propertize (format "%-8s" (upcase (symbol-name evil-state))) 'face 'modeline-evil)
+    ;; (propertize (buffer-name) 'face 'modeline-file-or-buffer-name)
+    ;; " "
+    ;; (propertize (format "%-20s" (buffer-name)) 'face 'modeline-file-or-buffer-name)
+    "% "
+    (format "%-21s" alan--displayed-keys)
+    (if (> (time-to-seconds (time-subtract (current-time) alan--last-key-time)) 1)
+        ""
+      (let ((cmd (cdr alan--last-seen-command)))
+        ;; (span-dbgf alan--last-seen-command real-last-command)
+        (if (eq cmd real-last-command)
+            (format "| %s" (alan-fmt-cmd cmd))
+          (format "| %s -> %s" (alan-fmt-cmd cmd) (alan-fmt-cmd real-last-command))))))
+   ;; right
+   (concat
+    (propertize (format "%s@%s" user-real-login-name (system-name)) 'face 'modeline-mode)
+    ":"
+    command-line-default-directory
+    )
+   t))
+
+(defun alan-modeline-l2 ()
+  (alan-modeline-from-left-right
+   (concat
+    ;; (doom-modeline--bar)
+    (propertize (format "%-8s" (upcase (symbol-name evil-state))) 'face 'modeline-linenum)
+    "\u3164" ;; taller space so chinese char in the line dont change height
+    "["
+    (propertize (buffer-name) 'face 'modeline-file-or-buffer-name)
+    "] "
+    (mapconcat (lambda (x) (format "%s" (span-s<-tag (car x)))) (cdr (reverse (cdr span--stack))) " > ")
+    )
+   ;; (emacs-uptime "%D, %z%2h:%.2m")
+   (concat
+    (alan-update-time t)
+    )
+   ;; (propertize (buffer-name) 'face 'modeline-file-or-buffer-name)
+   t))
+
 (defun alan-do-format-tab-bar ()
   (span :alan-do-format-tab-bar
-    (let* ((lhs
-            (concat
-             (eval-when-compile
-               (let* ((text (copy-sequence " %")))
-                 (put-text-property 0 1 'display '(space :align-to (+ left left-fringe left-margin)) text)
-                 (put-text-property 1 2 'face 'font-lock-warning-face text)
-                 ;; (put-text-property 1 2 'help-echo "hello" text)
-                 text))
-             (format-message "%s" (cl-incf alan-tabbar-count))
-             " "
-             ;; buffer-file-name
-             (format "%-52s" alan--displayed-keys)
-             (if (> (time-to-seconds (time-subtract (current-time) alan--last-key-time)) 1)
-                 ""
-               (let ((cmd (cdr alan--last-seen-command)))
-                 ;; (span-dbgf alan--last-seen-command real-last-command)
-                 (if (eq cmd real-last-command)
-                     (format "| %s" (alan-fmt-cmd cmd))
-                   (format "| %s -> %s" (alan-fmt-cmd cmd) (alan-fmt-cmd real-last-command)))))))
+    (if (display-graphic-p)
+        (concat
+         (alan-modeline-l1)
+         "\n"
+         (alan-modeline-l2))
+      (alan-modeline-l2))))
 
-           (rhs (concat (alan-update-time t) ""))
-
-           (lhs-limit (- (frame-width) (string-width rhs))))
-      (when (< lhs-limit 0)
-        (setq lhs-limit 0))
-      ;; here we force truncation bc overflowing cause the buffer to move
-      ;; but perhaps we can make it not move the buffer and let it overflow
-      (when (length> lhs lhs-limit)
-        (setq lhs (substring lhs 0 lhs-limit)))
-      (concat
-       lhs
-       (alan-right-align-space (doom-modeline-string-pixel-width rhs) t)
-       rhs
-       ))))
+(clear-and-backup-keymap tab-bar-map)
 
 ;; See (info "(elisp) Defining Menus")
+
+;; Note: if observed [tab-bar] empty,
+;; (frame-parameter nil 'tab-bar-lines) will be set to 0 by c,
+;; and tab bar disappears until (frame-parameter nil 'tab-bar-lines) is reverted manually
+;; noticed due to a bug where popup.el temporarily bound [tab-bar] to empty
+
+;; (frame-parameter nil 'tab-bar-lines)
+;; (set-frame-parameter nil 'tab-bar-lines 1)
+;; (key-binding [tab-bar])
 (global-set-key [tab-bar]
                 '(keymap "tab-bar-this-str-should-do-nothing"
                          (any-sym menu-item (alan-do-format-tab-bar) nil :help "..")))
@@ -591,5 +642,8 @@
 
 (tab-bar-mode)
 
+;; default:  (multiple-frames "%b" ("" "%b - GNU Emacs at " system-name))
+(setq frame-title-format
+      '("" command-line-default-directory " | " system-name))
 
 (provide 'alan-modeline)
