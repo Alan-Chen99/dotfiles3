@@ -54,6 +54,19 @@
         buildSystemOverrides
         (flakes.uv2nix_hammer_overrides.overrides legacypkgs)
         pyprojectOverrides
+        # pkgs.callPackage flakes.pyproject-nix.build.hacks {}
+
+        (
+          # from uv2nix/templates/hello-tkinter
+          final: _prev: let
+            inherit (final) pkgs;
+            hacks = pkgs.callPackage flakes.pyproject-nix.build.hacks {};
+          in {
+            tkinter = hacks.nixpkgsPrebuilt {
+              from = python-nopkgs.pkgs.tkinter;
+            };
+          }
+        )
       ]
     );
 
@@ -61,7 +74,7 @@
 
   export.uv-workspace = workspace;
   export.pypkgs = pythonSet;
-  export.pypkgs-all = pythonSet.mkVirtualEnv "venv-all-uv-packages" workspace.deps.all;
+  export.pypkgs-all = pythonSet.mkVirtualEnv "venv-all-uv-packages" (workspace.deps.all // {tkinter = [];});
 
   export.pythonlibs = std.buildEnv {
     name = "python libs";
