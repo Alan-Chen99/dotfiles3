@@ -5,7 +5,7 @@
 
 (defvar elpaca-installer-version 0.9)
 (defvar elpaca-order '(elpaca :repo "https://github.com/Alan-Chen99/elpaca.git"
-                              :ref nil :depth 1
+                              :tag "v2026-03-02" :depth 1
                               :files (:defaults "elpaca-test.el" (:exclude "extensions"))
                               :build (:not elpaca--activate-package)))
 (defvar elpaca-core-date '(-1))
@@ -28,7 +28,7 @@
                                 (list (format "--depth=%d" depth) "--no-single-branch"))
                             ,(plist-get order :repo) ,repo))))
           (assert (zerop (call-process "git" nil buffer t "checkout"
-                                       (or (plist-get order :ref) "--"))))
+                                       (or (plist-get order :ref) (plist-get order :tag) "--"))))
           (setq emacs (assert (concat invocation-directory invocation-name)))
           (assert (zerop (call-process emacs nil buffer nil "-Q" "-L" "." "--batch"
                                        "--eval" "(byte-recompile-directory \".\" 0 'force)")))

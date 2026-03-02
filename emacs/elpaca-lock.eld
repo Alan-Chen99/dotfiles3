@@ -199,7 +199,7 @@
                    (:exclude ".git" "COPYING" "doclicense.texi"
                              "contrast-ratios.org"))))
  (elpaca :recipe
-   (:ref "0b9a81409e615c92c35bc55cc616f8d3b37a7256" :package "elpaca")
+   (:ref "6eb8f44461e1c14d5cc49bb3ec2138abe35e085f" :package "elpaca")
    :source "Init file")
  (embark :source "MELPA" :recipe
          (:ref "89c7610fa7988b6c93029f87afa4ba6b7768bf81" :package
