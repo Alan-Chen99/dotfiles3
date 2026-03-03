@@ -144,25 +144,22 @@
 ;; (get 'mode-line 'face-override-spec)
 ;; (get 'mode-line 'theme-face)
 
-(face-spec-set 'mode-line-active '((t :box unspecified :foreground unspecified)))
-(face-spec-set 'mode-line-inactive '((t :box unspecified :foreground unspecified)))
+(face-spec-set 'mode-line-active '((t :box unspecified :foreground unspecified)) 'face-override-spec)
+(face-spec-set 'mode-line-inactive '((t :box unspecified :foreground unspecified)) 'face-override-spec)
 
 (add-hook! 'after-load-theme-hook
   (defun modeline-set-faces-spec ()
-    ;; we want to set a :distant-foreground for mode-line
-    ;; in case any is too close to :background of mode-line
-    ;; whatever color the buffer name is for the default modeline will surely work
-    ;; so we use that
-    ;; this need to go before the direct attribute settings below
+    ;; mode-line: remove box/foreground, add distant-foreground from
+    ;; mode-line-buffer-id (a color known readable against mode-line bg)
     (face-spec-set
      'mode-line
      (alan-map-spec-from-face-for 'mode-line-buffer-id
        (lambda (p)
-         (let ((ans '(:box unspecified :foreground unspecified)))
-           (unless (plist-get p :distant-foreground)
-             (when (plist-get p :foreground)
-               (setf (plist-get ans :distant-foreground) (plist-get p :foreground))))
-           ans))))))
+         `(:box unspecified :foreground unspecified
+                ,@(when (and (plist-get p :foreground)
+                             (not (plist-get p :distant-foreground)))
+                    `(:distant-foreground ,(plist-get p :foreground))))))
+     'face-override-spec)))
 
 (modeline-set-faces-spec)
 
