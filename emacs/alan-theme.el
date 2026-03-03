@@ -29,9 +29,20 @@
                   (run-hooks hook)))))
 
 (defun transfer-face-attr (to from &rest attrs)
-  (--map
-   (set-face-attribute to nil it (face-attribute from it nil t))
-   attrs))
+  "Copy ATTRS from FROM face to TO face, preserving display conditions.
+Uses face-spec-set (override layer) so values survive face-spec-recalc.
+Reads FROM's theme spec and extracts only the requested attributes."
+  (face-spec-set
+   to
+   (alan-map-spec-from-face-for from
+     (lambda (p)
+       (let (result)
+         (dolist (attr attrs)
+           (let ((val (plist-get p attr)))
+             (when val
+               (setq result (plist-put result attr val)))))
+         result)))
+   'face-override-spec))
 
 ;; (seq-filter (lambda (el) (not (eq (face-attribute el :height) 'unspecified))) (face-list))
 
@@ -223,8 +234,8 @@
 
 (pkg! 'modus-themes)
 
-(face-spec-set 'font-lock-operator-face '((t :weight bold)))
-(face-spec-set 'font-lock-bracket-face '((t :weight bold)))
+(face-spec-set 'font-lock-operator-face '((t :weight bold)) 'face-override-spec)
+(face-spec-set 'font-lock-bracket-face '((t :weight bold)) 'face-override-spec)
 
 ;; (setq-default face-near-same-color-threshold 70000)
 ;; (setq-default face-near-same-color-threshold 50000)
@@ -240,51 +251,67 @@
 	attrs))
 
 (defun alan-map-spec-from-face-for (face fn)
-  (declare (indent 1))
-  ;; see `face-spec-choose' and `face-spec-recalc'
-  (let* ((default-spec (cadar (get 'default 'theme-face)))
-         (face-spec (copy-alist (cadar (get face 'theme-face)))))
-    (setf (alist-get t face-spec) (alist-get t face-spec))
-    (mapcar
-     (lambda (entry)
-       (let* ((display (car entry))
-	          (attrs
-               (alan-normalize-facespec-attrs (cdr entry)))
-              (default-attrs
-               (alan-normalize-facespec-attrs
-                (alist-get display default-spec nil nil #'equal)))
-              (ans-attrs (copy-sequence default-attrs))
-              key val)
-         (while attrs
-           (setq key (pop attrs))
-           (setq val (pop attrs))
-           (setf (plist-get ans-attrs key) val))
-         (cons display (funcall fn ans-attrs))))
-     face-spec)))
+  "Build a face spec by mapping FN over FACE's theme spec entries.
 
+Read the active theme's spec for FACE, merge each display entry's
+attributes with the `default' face's attributes for that display,
+then call FN with the merged plist. FN should return a plist of
+attributes to set, or nil to skip that entry.
+
+The result is a display-conditional spec suitable for `face-spec-set'
+\(override layer), preserving terminal vs GUI display conditions.
+
+Example — set :distant-foreground to match :foreground:
+  (face-spec-set \\='default
+    (alan-map-spec-from-face-for \\='default
+      (lambda (p)
+        (when-let ((fg (plist-get p :foreground)))
+          \\=`(:distant-foreground ,fg))))
+    SPEC-TYPE)"
+  (declare (indent 1))
+  (seq-filter
+   #'cdr
+   (mapcar
+    (lambda (entry)
+      (let* ((display (car entry))
+             (attrs (alan-normalize-facespec-attrs (cdr entry)))
+             (default-attrs
+              (alan-normalize-facespec-attrs
+               (alist-get display
+                          (cadar (get 'default 'theme-face))
+                          nil nil #'equal)))
+             (ans-attrs (copy-sequence default-attrs))
+             key val)
+        (while attrs
+          (setq key (pop attrs))
+          (setq val (pop attrs))
+          (setf (plist-get ans-attrs key) val))
+        (cons display (funcall fn ans-attrs))))
+    (let ((spec (copy-alist (cadar (get face 'theme-face)))))
+      (if (assq t spec)
+          spec
+        (append spec '((t))))))))
 
 (add-hook! 'after-load-theme-hook
   (defun set-standard-faces-spec ()
     (span-notef "set-standard-faces-spec")
-
-    ;; ensures that, as long as background is visible against default foreground, the text is visible
-    (face-spec-set
-     'default
-     (alan-map-spec-from-face-for 'default
-       (lambda (p)
-         (unless (plist-get p :distant-foreground)
-           (when (plist-get p :foreground)
-             `(:distant-foreground ,(plist-get p :foreground)))))))
-
-    ;; make vertical-border always same color
-    (face-spec-set
-     'vertical-border
-     (alan-map-spec-from-face-for 'vertical-border
-       (lambda (p)
-         (when (plist-get p :foreground)
-           `(:distant-foreground ,(plist-get p :foreground))))))
-
-    ))
+    ;; Set :distant-foreground to match :foreground so text stays readable
+    ;; when background is near-same-color as foreground.
+    ;; Uses override layer (face-spec-set) to survive face-spec-recalc.
+    ;; Skips faces where the theme already sets :distant-foreground.
+    ;;
+    ;; BUG: customize-face won't show :distant-foreground due to Emacs C
+    ;; bug: face-attr-construct omits it (custom-face-attributes-get does
+    ;; not). Verify with (face-attribute FACE :distant-foreground).
+    (dolist (face '(default vertical-border mode-line-buffer-id))
+      (face-spec-set
+       face
+       (alan-map-spec-from-face-for face
+         (lambda (p)
+           (when (and (plist-get p :foreground)
+                      (not (plist-get p :distant-foreground)))
+             `(:distant-foreground ,(plist-get p :foreground)))))
+       'face-override-spec))))
 
 (set-standard-faces-spec)
 
