@@ -78,6 +78,18 @@ fall back to `scroll-up-command'."
         (vterm-send-string (format "\e[<65;%d;%dM" col row)))
     (scroll-up-command)))
 
+(defun alan-vterm-send-ctrl-next-key ()
+  "Read the next key and send it to vterm with Control added.
+For example, pressing x sends C-x to the terminal."
+  (interactive)
+  (let* ((key (read-key "C-"))
+         (desc (key-description (vector key))))
+    (vterm-send (concat "C-" desc))))
+
+(evil-define-operator alan-vterm-delete-char-without-yank (beg end type register)
+  :motion evil-forward-char
+  (interactive "<R><x>")
+  (evil-collection-vterm-delete beg end type ?_))
 
 (evil-define-operator alan-vterm-delete-whole-line-without-yank (beg end type register)
   :motion evil-line-or-visual-line
@@ -177,6 +189,7 @@ fall back to `scroll-up-command'."
 
     ;; "C-u C-k" sometimes dont work?
     ;; [remap evil-delete-whole-line] (vterm-with-send-key "C-u C-k")
+    [remap evil-delete-char] #'alan-vterm-delete-char-without-yank
     [remap evil-delete-whole-line] #'alan-vterm-delete-whole-line-without-yank
 
     [remap evil-append] #'evil-collection-vterm-append
@@ -195,7 +208,7 @@ fall back to `scroll-up-command'."
     "<wheel-up>" #'vterm-scroll-up-mouse
     "<wheel-down>" #'vterm-scroll-down-mouse
 
-    "S-SPC" #'vterm-send-next-key
+    "S-SPC" #'alan-vterm-send-ctrl-next-key
     ;; "<S-.>" #'vterm-send-next-key
 
     [remap previous-line] (vterm-with-send-key "<up>")
@@ -220,6 +233,8 @@ fall back to `scroll-up-command'."
 
   (general-def vterm-mode-map
     :states 'motion
+    "SPC a" #'alan-vterm-send-ctrl-next-key
+
     "SPC l" #'vterm-clear
     "SPC s" #'vterm-sync-window-size
     "SPC t" #'vterm-toggle-follow-cursor
@@ -259,8 +274,7 @@ fall back to `scroll-up-command'."
       (setq-local global-hl-line-mode nil)
       (hl-line-mode -1)))
 
-
-  (evil-collection-require-lazy 'vterm))
+  (startup-queue-package 'evil-collection-vterm 80))
 
 (eval-after-load! evil-collection-vterm
   (span-msg "evil-collection-vterm (eval-after-load!)")

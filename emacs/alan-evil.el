@@ -5,7 +5,8 @@
 (require 'evil)
 (require 'general)
 
-(pkg! 'evil-collection
+(pkg! '(evil-collection
+        :files (:defaults "modes/*/*.el"))
   (startup-queue-package 'evil-collection 80))
 
 (setq
@@ -163,8 +164,8 @@
 (eval-after-load! evil-collection
   (setq evil-collection-key-blacklist '("s")))
 
-(defun evil-collection-require-lazy (sym)
-  (eval-after-load! evil-collection
-    (evil-collection-require sym)))
+;; (defun evil-collection-require-lazy (sym)
+;;   (eval-after-load! evil-collection
+;;     (evil-collection-require sym)))
 
 (provide 'alan-evil)

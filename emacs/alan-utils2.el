@@ -9,16 +9,9 @@
 
 (defvar alan-dotemacs-dir nil)
 
-;; (string-prefix-p "evil-collection-" (symbol-name 'evil-collection-rg))
-
-(declare-function evil-collection-require "evil-collection")
-
 (eval-and-compile
   (defun require-if-is-bytecompile--one (feature)
     (when (bound-and-true-p byte-compile-current-file)
-      (when (string-prefix-p "evil-collection-" (symbol-name feature))
-        (require 'evil-collection)
-        (evil-collection-require (intern (string-remove-prefix "evil-collection-" (symbol-name feature)))))
       (require feature))
     nil))
 
