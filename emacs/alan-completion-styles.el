@@ -27,9 +27,9 @@
         orderless
         ;; basic
         hotfuzz
-        basic
+        ;; basic
         ;; flex
-        abgbadc
+        ;; abgbadc
         ))
 
 (defun alan-update-completion-styes ()

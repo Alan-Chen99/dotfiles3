@@ -26,7 +26,7 @@
 
 (defun nix-list-directory-rec (path)
   (setq path (file-truename path))
-  (cl-assert (or (string-prefix-p "/nix/" path) (string-prefix-p "/gnu/" path)))
+  ;; (cl-assert (or (string-prefix-p "/nix/" path) (string-prefix-p "/gnu/" path)))
   (let ((ans (alist-get path nix-directory-cache-old nil nil #'string=)))
     (unless ans
       (dolist (x (directory-files-recursively path "" t))
@@ -86,8 +86,8 @@
       :major-modes '(nix-ts-mode)
       :initialized-fn (lambda (workspace)
                         (with-lsp-workspace workspace
-                                            (lsp--set-configuration
-                                             (lsp-configuration-section "nixd"))))
+                          (lsp--set-configuration
+                           (lsp-configuration-section "nixd"))))
       :synchronize-sections '("nixd")
       :server-id 'nix-nixd)))
 

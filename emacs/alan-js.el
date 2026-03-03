@@ -18,6 +18,8 @@
 
 (add-to-list 'auto-mode-alist '("\\.mjs\\'" . typescript-ts-mode))
 
+(add-to-list 'auto-mode-alist (cons (rx ".jsonc" eos) #'json-ts-mode))
+
 (defun alan-setup-typescript ()
   (setq-local format-all-formatters '(("TypeScript" prettierd)))
   ;; (alan-lsp-deferred 'lsp-javascript

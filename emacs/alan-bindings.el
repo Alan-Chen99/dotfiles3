@@ -9,6 +9,7 @@
  flycheck
  gptel-context
  magit
+ profiler
  vertico
 
  alan-commands
@@ -99,7 +100,7 @@
 
 (general-def evil-operator-state-map
   "i" evil-inner-text-objects-map
-  "a" evil-outer-text-objects-map
+  ;; "a" evil-outer-text-objects-map
   "x" evil-outer-text-objects-map
   )
 
@@ -208,6 +209,8 @@
 
   "<.> }" #'revert-buffer
 
+  "<.> t" #'read-only-mode
+
   ;; not needed or now have different key, can be bound to something else
   ;; "M" 'ignore ;;evil-window-middle
   ;; "_" 'ignore ;;evil-next-line-1-first-non-blank
@@ -236,6 +239,10 @@
   "a a" #'gptel-context-add
   "a t" #'toggle-truncate-lines
   "a n" #'display-line-numbers-mode
+
+  "a p" (lambda () (interactive) (profiler-start 'cpu))
+  "a -" #'profiler-stop
+  "a P" #'profiler-report
 
   "S-SPC" #'embark-act
 

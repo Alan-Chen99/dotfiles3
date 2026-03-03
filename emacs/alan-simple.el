@@ -135,7 +135,7 @@
 (setq split-width-threshold 80)
 (setq truncate-partial-width-windows 40)
 
-(setq line-number-display-limit-width 2000)
+(setq line-number-display-limit-width 20000)
 
 (setq use-dialog-box nil)
 

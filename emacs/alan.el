@@ -255,7 +255,7 @@
 ;;   ;; (span-flush)
 ;;   )
 
-(span-wrap jit-lock-function)
+;; (span-wrap jit-lock-function)
 
 
 
