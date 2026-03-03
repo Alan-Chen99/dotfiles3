@@ -17,8 +17,9 @@ This section is incomplete. If anyone actually wants to try this, please send an
 To start, make symlinks
 
 ```
-emacs/.emacs -> ~/.emacs
-emacs/early-init.el ~/.emacs.d/early-init.el (optional)
+mkdir ~/.emacs.d
+ln -s $(pwd)/emacs/.emacs ~/.emacs.d/init.el
+ln -s $(pwd)/emacs/early-init.el ~/.emacs.d/early-init.el
 ```
 
 remove `emacs/alan-base-bindings.el` and replace with `emacs/alan-base-bindings.example.el`
@@ -100,5 +101,7 @@ mkdir ~/.emacs.d
 ln -s $(pwd)/emacs/.emacs ~/.emacs.d/init.el
 ln -s $(pwd)/emacs/early-init.el ~/.emacs.d/early-init.el
 
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+nix shell .#p.cmake .#p.gnumake .#p.gcc .#p.libtool .#p.lilypond
 emacs --batch -l emacs/ci.el --eval "(ci-byte-compile)"
 ```
