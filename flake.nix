@@ -53,7 +53,8 @@
     emacs31 = {
       # (26/1/31) pinned bc update test errors
       # url = "github:emacs-mirror/emacs/master";
-      url = "github:emacs-mirror/emacs/baf5908caaa63d74fb795ca865b918b08ffdd01a";
+      # url = "git+file:///home/alan/repos/emacs";
+      url = "github:Alan-Chen99/emacs/v2026-02-10";
       flake = false;
     };
 
