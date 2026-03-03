@@ -19,7 +19,7 @@
  alan-iflipb
  alan-minibuffer
  alan-theme
- (vterm . (not (eq system-type 'windows-nt))))
+ (alan-vterm . (not (eq system-type 'windows-nt))))
 
 (general-def
   "C-," #'help-command
@@ -231,7 +231,7 @@
 
   "a s" #'alan-shell-command
   "a d" #'shell-this-remote
-  "a v" #'vterm
+  "a v" #'alan-vterm
   "a g" #'gpt
   "a a" #'gptel-context-add
   "a t" #'toggle-truncate-lines
