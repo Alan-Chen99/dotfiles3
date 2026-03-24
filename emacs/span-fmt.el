@@ -31,6 +31,9 @@
 (defsubst span-fmt--immutable-or-replace-seq (obj)
   (cl-map (type-of obj) #'span-fmt--immutable-or-replace obj))
 
+;; specify `form` to be evaluated at log time and result saved
+;; return a symbol which holds the saved value at callback time
+;;
 ;; state is (count . (arglist . args))
 (defun span-fmt--push (form state)
   (push form (cddr state))
@@ -78,6 +81,15 @@
    (t
     form)))
 
+;; expr -> expr (mutable props discarded at timer callback)
+;; (:seq expr) -> (copy-sequence expr) (mutable props discarded at timer callback)
+;; (:ts expr) -> (span-fmt-to-string expr)
+;;
+;; Assumes expr wont change until format timer callback:
+;; (:unsafe expr) -> expr
+;;
+;; (:ts expr) -> (:unsafe (span-fmt-to-string expr))
+;; (:unsafe-ts expr) -> `(span-fmt-to-string ,(:unsafe expr))
 
 (defun span-fmt--parse-obj (form state)
   (cond

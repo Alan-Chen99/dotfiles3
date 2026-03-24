@@ -46,6 +46,9 @@
 ;; check if things are running and whether we are at top-level or no
 (run-with-timer 0 1 #'span-msg "heartbeat")
 
+;; log flushes every 0.5 seconds, at most this many entries
+(setq span-message-limit-per-cycle 100000)
+
 ;; --- WORK SECTION (example) ---------------------------------------
 
 (run-with-timer

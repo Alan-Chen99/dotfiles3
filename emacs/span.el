@@ -189,8 +189,8 @@ designed to be created at compile time and used as constant"
          (if first
              (progn
                (setq first nil)
-               (concat (cl-prin1-to-string x) ": "))
-           (concat "; " (cl-prin1-to-string x) ": ")))
+               (concat (span-fmt-to-string x) ": "))
+           (concat "; " (span-fmt-to-string x) ": ")))
        args)))
 
   (defun span--handle-dbg-args (args)
@@ -392,7 +392,7 @@ designed to be created at compile time and used as constant"
   (let ((inhibit-quit t))
     (span--unsafe-flush-stack)))
 
-(defvar span-max-width nil)
+(defvar span-max-width 1000)
 (defun span--maybe-truncate-str (s)
   (declare (indent 0))
   (if (and span-max-width (length> s span-max-width))
@@ -409,8 +409,8 @@ designed to be created at compile time and used as constant"
                 (funcall (span-s<-fmt-fn s) obj)
               (error
                (format
-                "error (span-format-one): %S\n%s\n%s\n%s"
-                err
+                "error (span-format-one): %s\n%s\n%s\n%s"
+                (span-fmt-to-string err)
                 (span-fmt-to-string (span-s<-fmt-fn s))
                 (span-fmt-to-string obj)
                 (current-buffer)))))
@@ -506,6 +506,9 @@ designed to be created at compile time and used as constant"
 
             (span--context-locals nil)
             (span--handles-message t))
+
+       ,@(if is-redisp '((setq internal-when-entered-debugger -1)) nil)
+
        (span--always-debug
         ,@body))))
 
@@ -588,11 +591,12 @@ designed to be created at compile time and used as constant"
     (let* ((verbose (get sym 'span--instrument-verbose))
            (backtrace (get sym 'span--instrument-backtrace))
            (callback (get sym 'span--instrument-callback))
+           (time (get sym 'span--instrument-time))
            (buffer (current-buffer))
            (msg
             (if verbose
                 (span-fmt-to-string (cons sym args))
-              (span-fmt `(cl-prin1-to-string ,(:seq (cons sym args)))))))
+              (span-fmt `(span-fmt-to-string ,(:seq (cons sym args)))))))
       (span (:: (:unsafe msg))
         (span-msg "buf: %s" buffer)
         (when backtrace
@@ -600,32 +604,38 @@ designed to be created at compile time and used as constant"
         (when callback
           (funcall callback))
         ;; (span-msg "args: %s" args)
-        (let ((res
-               (unwind-protect (apply fn args)
-                 (unless (eq (current-buffer) buffer)
-                   (span-msg "buf (changed): %s" (current-buffer))))))
+        (let* ((start-time (span--time))
+               (res
+                (unwind-protect (apply fn args)
+                  (when time
+                    (span-notef "took: %.3f" (float-time (time-subtract (span--time) start-time))))
+                  (unless (eq (current-buffer) buffer)
+                    (span-msg "buf (changed): %s" (current-buffer))))))
           (if verbose
               (span-msg "%s -> %s" sym (span-fmt-to-string res))
             (span-notef "%s -> %S" sym res))
           res)))))
 
-(defun span-add-instrument (sym verbose backtrace callback)
+(defun span-add-instrument (sym verbose backtrace time callback)
   (setf (get sym 'span--instrument-verbose) verbose)
   (setf (get sym 'span--instrument-backtrace) backtrace)
   (setf (get sym 'span--instrument-callback) callback)
+  (setf (get sym 'span--instrument-time) time)
   (advice-add sym :around (span--instrument-with sym)))
 
 (defmacro span-instrument (sym &rest rest)
   (declare (indent 1))
   (cl-assert (symbolp sym))
   (let ((verbose nil)
-        (backtrace nil))
+        (backtrace nil)
+        (time nil))
     (while (keywordp (car-safe rest))
       (pcase (pop rest)
         (:verbose (setq verbose (pop rest)))
         (:backtrace (setq backtrace (pop rest)))
+        (:time (setq time (pop rest)))
         (_ (error "invalid"))))
-    `(span-add-instrument #',sym ,verbose, backtrace (lambda () ,@rest))))
+    `(span-add-instrument #',sym ,verbose ,backtrace ,time (lambda () ,@rest))))
 
 (defun span-uninstrument (sym)
   (advice-remove sym (span--instrument-with sym)))
@@ -674,15 +684,15 @@ designed to be created at compile time and used as constant"
 (advice-add #'timer-event-handler :around #'span--wrap-timer-event-handler)
 (defun span--wrap-timer-event-handler (orig-fun timer)
   (span--context :timer
-    (span--unchecked (:timer `(cl-prin1-to-string ,(:unsafe (timer--function timer))))
+    (span--unchecked (:timer (:unsafe-ts (timer--function timer)))
       (funcall orig-fun timer))))
 
 
 (advice-add #'command-execute :around #'span--wrap-command-execute)
 (defun span--wrap-command-execute (orig-fun cmd &rest args)
   (span--context :command
-    (span--unchecked (:command-execute "%s(%s)" `(cl-prin1-to-string ,(:unsafe cmd)) (buffer-name (current-buffer)))
-      :flush-on-err nil
+    (span--unchecked (:command-execute "%s(%s)" (:unsafe-ts cmd) (buffer-name (current-buffer)))
+      ;; :flush-on-err nil
       (let (inhibit-quit)
         (apply orig-fun cmd args)))))
 
@@ -780,11 +790,11 @@ designed to be created at compile time and used as constant"
 
 (defun span--wrap-accept-process-output (orig-fn &optional process seconds millisec just-this-one)
   (let ((inhibit-quit-old inhibit-quit))
-    (span--unchecked (:accept-process-output (:unsafe process))
+    (span--unchecked (:accept-process-output (:unsafe-ts process))
       :blocking (or inhibit-quit-old (not non-essential))
 
       (span-note
-        "seconds:%S millisec:%S just-this-one:%S"
+        "seconds:%s millisec:%s just-this-one:%s"
         seconds millisec just-this-one)
 
       (when (and (not inhibit-quit-old) non-essential (input-pending-p))
@@ -815,7 +825,7 @@ designed to be created at compile time and used as constant"
 
 (advice-add #'redisplay--pre-redisplay-functions :around #'span--wrap-redisplay--pre-redisplay-functions)
 (defun span--wrap-redisplay--pre-redisplay-functions (orig-fn windows)
-  (span-wrap-redisplay (:pre-redisplay-functions (:unsafe windows))
+  (span-wrap-redisplay (:pre-redisplay-functions (:unsafe-ts windows))
     :flush-on-err t
     :blocking t
     (let ((pre-redisplay-function #'ignore))
@@ -828,8 +838,8 @@ designed to be created at compile time and used as constant"
         (let* ((signal-args (car args))
                (err-sym (car-safe signal-args))
                (data (cdr-safe signal-args)))
-          (span-notef "error: %S" `(list ,(:unsafe err-sym) ,(:unsafe data))))
-      (span-notef "debug: %S %S" type (:unsafe args)))
+          (span-notef "error: %s" (:unsafe-ts (cons err-sym data))))
+      (span-notef "debug: %s %s" (:unsafe-ts type) (:unsafe-ts args)))
     (if (or noninteractive
             (and (eq t (framep (selected-frame)))
                  (equal "initial_terminal" (terminal-name))))
@@ -837,11 +847,28 @@ designed to be created at compile time and used as constant"
         (apply #'span--debug type args)
       (apply orig-fn type args))))
 
+(defun span--get-frames (base)
+  "Collect backtrace frames using `mapbacktrace' directly.
+Returns a list of (EVALD FUN ARGS FLAGS), avoiding the autoload
+of `backtrace.el' that `backtrace-get-frames' would trigger."
+  (let ((frames nil))
+    ;; mapbacktrace have no additional lisp callbacks
+    (mapbacktrace (lambda (evald fun args flags)
+                    (push (list evald fun args flags) frames))
+                  (or base 'span--get-frames))
+    (nreverse frames)))
+
 (defun span--backtrace--to-string (frames)
   (let* ((time-start (span--time))
          (backtrace-line-length 100)
          (max-redisplay-ticks (* 10 max-redisplay-ticks))
-         (bt-fmt (backtrace--to-string frames)))
+         ;; convert (evald fun args flags) lists to backtrace-frame records
+         (bt-frames (mapcar (lambda (f)
+                              (backtrace-make-frame
+                               :evald (nth 0 f) :fun (nth 1 f)
+                               :args (nth 2 f) :flags (nth 3 f)))
+                            frames))
+         (bt-fmt (backtrace--to-string bt-frames)))
     (format "backtrace(%.3fs):\n%s"
             (float-time (time-subtract (span--time) time-start))
             bt-fmt)))
@@ -863,25 +890,38 @@ designed to be created at compile time and used as constant"
               (span-notef
                 (:unsafe
                  (span--backtrace--to-string
-                  (cdr (backtrace-get-frames base)))))
+                  (cdr (span--get-frames base)))))
             (span-notef
               `(span--backtrace--to-string
-                ,(:unsafe (cdr (backtrace-get-frames base)))))))))))
+                ,(:unsafe (cdr (span--get-frames base)))))))))))
 
 (defun span--debug (type &rest args)
-  (if (eq type 'error)
-      (let* ((signal-args (car args))
-             (err-sym (car-safe signal-args))
-             (data (cdr-safe signal-args)))
-        (span (:span--debug "error: %S %S" `(list ,(:unsafe err-sym) ,(:unsafe data)) (buffer-name (current-buffer)))
-          (span-flush)
-          (span--backtrace #'span--debug)
-          (let ((inhibit-debugger t))
-            (signal err-sym data))))
-    (span-notef "debug: %S %S" type (:unsafe args))
-    ;; TODO: should quit here if is here too many times, since might hang
-    )
-  nil)
+  ;; Noninteractive debugger. Re-raises immediately; defers backtrace formatting on a timer.
+  ;; Does NOT:
+  ;;  - call any hooks or callbacks
+  ;;  - create temporary buffers
+  ;;  - autoload backtrace.el (deferred to timer)
+  ;;  - invoke span-log-handler (deferred to timer)
+  (let (
+        ;; (2026/3/11)
+        ;; observed segfault in message3_nolog here: `FRAME_MINIBUF_WINDOW(SELECTED_FRAME())` turns out nil in gc somehow
+        ;; message have other side effects so we disable
+        (garbage-collection-messages nil)
+        (inhibit-debugger t))
+    (if (eq type 'error)
+        (let* ((signal-args (car args))
+               (err-sym (car-safe signal-args))
+               (data (cdr-safe signal-args)))
+          (span (:span--debug "error: %s %s" (:unsafe-ts (cons err-sym data)) (:unsafe-ts (buffer-name (current-buffer))))
+            (span-flush)
+            (span--backtrace #'span--debug)
+            ;; otherwise, the debugger gets disabled until the next key press
+            (setq internal-when-entered-debugger -1)
+            (signal err-sym data)))
+      (span-notef "debug: %s %s" (:unsafe-ts type) (:unsafe-ts args))
+      ;; TODO: should quit here if is here too many times, since might hang
+      )
+    nil))
 
 (defun span--signal-hook-function (error-symbol data)
   (let ((signal-hook-function nil))
