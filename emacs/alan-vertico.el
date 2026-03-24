@@ -1,6 +1,7 @@
 ;; -*- lexical-binding: t -*-
 
 (require 'alan-core)
+(require 'alan-minibuffer)
 
 (pkg! '(vertico :files (:defaults "extensions/*"))
   (startup-queue-package 'vertico 80))

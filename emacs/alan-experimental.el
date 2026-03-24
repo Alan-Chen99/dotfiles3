@@ -10,6 +10,8 @@
 (pkg! 'embark-consult)
 (pkg! 'bash-completion)
 
+;; (pkg! '(claude-code :repo "https://github.com/stevemolitor/claude-code.el"))
+
 (require-if-is-bytecompile
  arc-mode
  backtrace
@@ -29,6 +31,8 @@
  tree-sitter-langs-build
  vterm
 
+ alan-commands
+ alan-flyspell
  alan-iflipb
  alan-simple
  )
@@ -59,6 +63,7 @@
 (alan-donot-debug-foreground #'revert-buffer)
 (alan-donot-debug-foreground #'treesit-indent)
 (alan-donot-debug-foreground #'vterm-previous-prompt)
+(alan-donot-debug-foreground #'self-insert-command)
 
 
 ;; (alan-donot-debug-foreground #'lsp--on-idle)
@@ -92,9 +97,10 @@
 
 (add-to-list 'auto-mode-alist `(,(rx ".service" eos) . conf-mode))
 
-(add-hook! 'sclang-mode-hook
-  (defun alan-setup-sclang ()
-    (kill-local-variable 'mode-line-format)))
+(eval-after-load! sclang-mode
+  (add-hook! 'sclang-mode-hook
+    (defun alan-setup-sclang ()
+      (kill-local-variable 'mode-line-format))))
 
 ;; (span-instrument comint-send-string)
 ;; (span-instrument comint-send-region)
@@ -221,5 +227,132 @@ This function expects to be in the right *tramp* buffer."
 
 (setq default-input-method "chinese-py")
 ;; (span-instrument command-execute)
+
+;; (defadvice! jit-lock-function--throw-on-input (fn &rest args)
+;;   :around #'jit-lock-function
+;;   (alan-quit-on-input
+;;    (span :jit-lock-function
+;;      (apply fn args))))
+
+(span-instrument comint-term-environment :verbose t)
+(span-instrument start-process :verbose t)
+
+;; (eval-after-load! claude-code
+;;   (setq claude-code-terminal-backend 'vterm))
+
+;; (span-instrument tab-bar-mode)
+;; (span-instrument command-execute)
+
+;; (span-instrument modify-frame-parameters)
+;; (span-instrument set-window-configuration)
+;; (span-instrument set-frame-configuration)
+;; (span-instrument window-state-put)
+;; (span-instrument force-mode-line-update)
+;; (span-instrument popup-menu)
+
+;; (span-instrument flyspell-emacs-popup-textual)
+;; (span-instrument popup-menu* :verbose t :backtrace t)
+
+;; (span-instrument help--symbol-completion-table :verbose t)
+
+;; (span-wrap complete-with-action (action collection string predicate)
+;;   (:complete-with-action "%s %S %S %s" (:ts action) collection string (:ts predicate))
+;;   (span-flush))
+
+;; (advice-add #'tramp-wait-for-output :around #'span--wrap-tramp-wait-for-output)
+
+;; (defadvice! complete-with-action--log (orig-fn action collection string predicate)
+;;   :around #'complete-with-action
+;;   (span :complete-with-action
+;;     (span-dbg action)
+;;     (span-note collection)
+;;     (span-dbg string)
+;;     (span-dbg predicate)
+;;     (let* ((time-start (span--time)))
+;;       (unwind-protect
+;;           (funcall orig-fn action collection string predicate)
+;;         (let ((time (float-time (time-subtract (span--time) time-start))))
+;;           (when (> time span-blocking-log-limit)
+;;             (span-notef "took: %.3f" time)))))))
+
+;; (defadvice! completion-all-completions--log (orig-fn string table pred point &optional metadata)
+;;   :around #'completion-all-completions
+;;   (span :completion-all-completions
+;;     ;; (span-dbgf action)
+;;     ;; (span-notef collection)
+;;     ;; (span-dbgf string)
+;;     ;; (span-dbgf predicate)
+;;     (let* ((time-start (span--time)))
+;;       (unwind-protect
+;;           (funcall orig-fn string table pred point metadata)
+;;         (let ((time (float-time (time-subtract (span--time) time-start))))
+;;           (when (> time span-blocking-log-limit)
+;;             (span-notef "took: %.3f" time)))))))
+
+;; (span-instrument hotfuzz-all-completions :verbose t)
+
+;; (defun completion-all-completions (string table pred point &optional metadata)
+;; (defun completion-all-completions (string table pred point &optional metadata)
+
+
+;; (span :tramp-wait-for-output
+;;   (let* ((time-start (span--time)))
+;;     (unwind-protect
+;;         (let ((ans (funcall orig-fn proc timeout)))
+;;           (with-current-buffer (process-buffer proc)
+;;             (span-notef "%s" (buffer-string)))
+;;           ans)
+;;       (let ((time (float-time (time-subtract (span--time) time-start))))
+;;         (span-notef "took: %.3f" time)))))
+
+;; (span-instrument replace-region-contents :time t)
+
+(defun my-git-diff-strings (str1 str2)
+  "Return the `git diff` of STR1 and STR2 as a string with colored text properties."
+  (let ((time-start (span--time))
+        (file1 (make-temp-file "diff1"))
+        (file2 (make-temp-file "diff2")))
+    (unwind-protect
+        (with-temp-buffer
+          ;; Write strings to temporary files
+          (with-temp-file file1 (insert str1))
+          (with-temp-file file2 (insert str2))
+
+          ;; Run git diff: --no-index for files, --color=always for ANSI codes
+          (call-process "git" nil t nil
+                        "diff" "--no-index" "--color=always" file1 file2)
+
+          ;; Convert ANSI color codes to Emacs text properties
+          (ansi-color-apply (buffer-string)))
+      ;; Cleanup
+      (when (file-exists-p file1) (delete-file file1))
+      (when (file-exists-p file2) (delete-file file2))
+      (span-notef "git diff took: %.3f" (float-time (time-subtract (span--time) time-start))))))
+
+(defadvice! replace-region-contents--log (orig-fn beg end source &optional max-secs max-costs inherit)
+  :around #'replace-region-contents
+  (span :replace-region-contents
+
+    (span-dbg beg end max-secs max-costs inherit)
+    (span-dbg (current-buffer))
+    ;; (span-note "PREV:\n>>>>>>>>>>\n%s\n<<<<<<<<<<" (buffer-substring-no-properties beg end))
+    ;; (span-note "REPLACEMENT:\n>>>>>>>>>>\n%s\n<<<<<<<<<<" source)
+
+    (let* ((old (buffer-substring-no-properties beg end))
+           (time-start (span--time)))
+      (unwind-protect
+          (funcall orig-fn beg end source max-secs max-costs inherit)
+        (let ((time (float-time (time-subtract (span--time) time-start))))
+          (when (> time span-blocking-log-limit)
+            (span-notef "took: %.3f" time)
+            (span-msg "diff:\n%s\n"
+                      (with-timeout (0.05 "timeout")
+                        (my-git-diff-strings old source)))))))))
+
+(defun alan-show-file-json ()
+  (interactive)
+  (shell-command
+   (combine-and-quote-strings
+    `("json_show.py" ,(thing-at-point 'filename)))))
 
 (provide 'alan-experimental)

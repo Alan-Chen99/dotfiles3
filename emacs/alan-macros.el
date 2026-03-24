@@ -4,6 +4,12 @@
 (eval-when-compile
   (setq byte-compile-docstring-max-column 160))
 
+(defmacro var (v)
+  (pcase v
+    (`(quote ,sym) (setq v sym)))
+  (cl-assert (symbolp v))
+  `(progn ,v (quote ,v)))
+
 ;; from doom https://github.com/doomemacs/doomemacs/blob/master/lisp/doom-lib.el
 (eval-and-compile
   (defun doom-unquote (exp)
@@ -24,13 +30,9 @@
     If a mode is quoted, it is left as is. If the entire HOOKS list is quoted, the
     list is returned as-is."
   (declare (pure t) (side-effect-free t))
-  (let ((hook-list (ensure-list (doom-unquote hooks))))
-    (if (eq (car-safe hooks) 'quote)
-        hook-list
-      (cl-loop for hook in hook-list
-               if (eq (car-safe hook) 'quote)
-               collect (cadr hook)
-               else collect (intern (format "%s-hook" (symbol-name hook)))))))
+  (if (symbolp hooks)
+      `(list (var ,(intern (format "%s-hook" (symbol-name hooks)))))
+    `(ensure-list (var ,hooks))))
 (defmacro add-hook-once! (hook-or-function &rest forms)
   "Attaches a self-removing function to HOOK-OR-FUNCTION.
     FORMS are evaluated once, when that function/hook is first invoked, then never
@@ -108,7 +110,7 @@
               func-forms)))
     `(progn
        ,@defn-forms
-       (dolist (hook (reverse ',hook-forms))
+       (dolist (hook (reverse ,hook-forms))
          (dolist (func (list ,@func-forms))
            ,(if remove-p
                 `(remove-hook hook func ,local-p)

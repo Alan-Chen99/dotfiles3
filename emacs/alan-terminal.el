@@ -1,7 +1,7 @@
 ;; -*- lexical-binding: t -*-
 
 (require 'alan-core)
-
+(require 'alan-theme)
 
 (pkg! 'evil-terminal-cursor-changer
   (unless (display-graphic-p)

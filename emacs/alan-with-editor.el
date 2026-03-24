@@ -4,8 +4,11 @@
 
 (pkg! 'with-editor)
 
+(eval-after-load! server
+  (setq server-log t))
+
 (eval-after-load! with-editor
-  (alan-startup-schedual-fn -1000
+  (alan-startup-schedual-fn 0
     (lambda ()
       ;; delaying with timer makes it less likely to throw
       ;; (file-error "Cannot bind server socket" "Interrupted system call")

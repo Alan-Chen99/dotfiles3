@@ -83,7 +83,8 @@ Today is %s.
             ;; :reasoning (:summary "detailed")
             )))
 
-  (setq gptel-model 'google/gemini-3-pro-preview)
+  ;; (setq gptel-model 'google/gemini-3-pro-preview)
+  (setq gptel-model 'gpt-5.2)
 
   (setq gptel-use-context 'user)
 

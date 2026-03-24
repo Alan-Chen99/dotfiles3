@@ -89,6 +89,7 @@
   (run-with-idle-timer 1 t #'alan-do-gc)
   (run-at-time nil 60 #'alan-do-gc-long))
 
+(defvar alan-start-of-init-hook nil)
 ;; so that we can load the entire init file after startup and still work
 (defvar alan-end-of-init-hook nil)
 (defvar alan-inhibit-end-of-init-hook nil)
