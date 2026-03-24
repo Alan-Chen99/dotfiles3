@@ -1,6 +1,7 @@
 ;; -*- lexical-binding: t -*-
 
 (require 'alan-core)
+(require 'alan-evil)
 
 
 (pkg! 'company
@@ -72,19 +73,12 @@
     "<down>" #'company-select-next
     "<up>" #'company-select-previous
     "<.> j" #'alan-company-complete-common-or-select
-    ;; recursion caused by <escape> after company-complete in normal state
-    ;; TODO: why?
     "<escape>"
-    (let ((company-abort-recursion-guard nil)) ;lexical let
-      (lambda ()
-        (interactive)
-        (unless company-abort-recursion-guard
-          (setq company-abort-recursion-guard t)
-          (unwind-protect
-              (progn
-                (company-abort)
-                (execute-kbd-macro (kbd "<escape>")))
-            (setq company-abort-recursion-guard nil)))))
+    (defun alan-company-abort-and-forward-esc ()
+      (interactive)
+      (company-abort)
+      (evil-save-repeat-info
+        (execute-kbd-macro (kbd "<escape>"))))
     "<.> <up>" #'company-show-doc-buffer)
 
   (eval-after-load! eldoc

@@ -33,8 +33,11 @@
 
 (eval-after-load! magit
 
+  (setq magit-log-color-graph-limit 1024)
+
   (clear-and-backup-keymap magit-section-mode-map)
   (clear-and-backup-keymap magit-mode-map)
+  ;; (clear-and-backup-keymap magit)
 
   (general-def magit-diff-section-map
     ;; by defualt, magit-do-async-shell-command
@@ -83,6 +86,9 @@
 
   )
 
+
+(eval-after-load! git-rebase
+  (clear-and-backup-keymap git-rebase-mode-map))
 
 
 (provide 'alan-magit)

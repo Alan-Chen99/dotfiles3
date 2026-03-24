@@ -19,8 +19,11 @@
  alan-gpt
  alan-iflipb
  alan-minibuffer
+ alan-simple
  alan-theme
- (alan-vterm . (not (eq system-type 'windows-nt))))
+ (alan-vterm . (not (eq system-type 'windows-nt)))
+
+ alan-experimental)
 
 (general-def
   "C-," #'help-command
@@ -28,7 +31,7 @@
   "<x>" #'yank
 
   ;; TODO: end up using those rarely, should put something more useful here
-  ;; "<w>" #'move-beginning-of-line
+  ;; "<home>" #'move-beginning-of-line
   "<z>" #'undo-only
   "<y>" #'evil-redo
   ;; "<q>" #'evil-delete-line
@@ -101,8 +104,10 @@
 (general-def evil-operator-state-map
   "i" evil-inner-text-objects-map
   ;; "a" evil-outer-text-objects-map
-  "x" evil-outer-text-objects-map
+  "b" evil-outer-text-objects-map
   )
+
+
 
 (general-def
   :states 'motion
@@ -118,17 +123,21 @@
   "g h" #'consult-history
   "g l" #'consult-line
 
-  "g <right>" #'consult-line-multi
-  "g m" (lambda () (interactive) (consult-line-multi t))
+  "g m" #'consult-line-multi
+  "g ]" (defun consult-line-multi--all () (interactive) (consult-line-multi t))
 
-  ;; "g m" #'consult-mark
+  "g k" #'consult-mark
 
   "g r" #'consult-ripgrep
-  "g SPC" (lambda () (interactive)
+  "g SPC" (defun consult-ripgrep--full ()
+            (interactive)
             (let ((consult-ripgrep-args (append consult-ripgrep-args '("--no-ignore"))))
               (consult-ripgrep default-directory)))
 
-  "g f" (lambda () (interactive) (consult-fd default-directory))
+  "g f" #'consult-fd
+  "g =" (defun consult-fd--here () (interactive) (consult-fd default-directory))
+
+  "g j" #'alan-show-file-json
 
   "s" #'execute-extended-command
 
@@ -223,7 +232,7 @@
 
   "g u" #'evil-scroll-line-to-top
   "g i" #'evil-scroll-line-to-bottom
-  "g s" #'evil-scroll-line-to-center
+  ;; "g s" #'evil-scroll-line-to-center
 
   "g c" #'copy-cur-filename
   "g C" #'copy-wsl-windows-filename
@@ -305,6 +314,8 @@
 
   "g a" #'save-buffer
 
+  "<.> i" #'insert-char
+
   ;; needs to be bound to (maybe) something different
 
   ;; "\"" 'nil ;;evil-use-register
@@ -338,7 +349,7 @@
 
   "<escape>" #'evil-exit-visual-state
   "i" evil-inner-text-objects-map
-  "x" evil-outer-text-objects-map
+  "b" evil-outer-text-objects-map
 
   ;; ")" 'evil-insert
   ;; "A" 'evil-append

@@ -3,6 +3,8 @@
 (require 'alan-core)
 (require 'alan-evil)
 (require 'alan-shell)
+(require 'alan-theme)
+(require 'alan-modeline)
 
 (require-if-is-bytecompile evil-collection-vterm)
 ;; (pkg! 'mistty)
@@ -103,7 +105,9 @@ For example, pressing x sends C-x to the terminal."
              (not vterm-copy-mode))
     ;; (vterm-set-follow-cursor-shape t)
     (vterm-set-follow-cursor t)
-    (vterm--redraw vterm--term)))
+    (let ((inhibit-redisplay t)
+          (inhibit-read-only t))
+      (vterm--redraw vterm--term))))
 
 ;; in some apps including claude code, cursor is fake (just a character with background)
 ;; so going to normal mode will put cursor at the end (the real cursor is always at the end)
@@ -116,6 +120,8 @@ For example, pressing x sends C-x to the terminal."
     (vterm-set-follow-cursor nil)
     ;; (vterm-set-follow-cursor-shape nil)
     ))
+
+(defvar-local alan-vterm-current-title "")
 
 (eval-after-load! vterm
   (setq vterm-min-window-width 60)
@@ -137,7 +143,8 @@ For example, pressing x sends C-x to the terminal."
   (setq vterm-max-scrollback 200)
   (setq vterm-clear-scrollback-when-clearing t)
 
-  (setq vterm-timer-delay 0.1)
+  ;; does not alias with a 30fps frame rate
+  (setq vterm-timer-delay 0.15)
 
   (setq vterm-environment
         (append alan-bash-fns-env-vars
@@ -170,6 +177,10 @@ For example, pressing x sends C-x to the terminal."
     :override #'vterm--get-directory
     ;; (span-dbgf path)
     (concat (file-remote-p default-directory) (file-name-as-directory path)))
+
+  (defadvice! alan-vterm--set-title (title)
+    :override #'vterm--set-title
+    (setq-local alan-vterm-current-title title))
 
   ;; (span-instrument vterm--set-directory)
   (clear-and-backup-keymap vterm-mode-map)
@@ -256,18 +267,22 @@ For example, pressing x sends C-x to the terminal."
   (add-hook! 'vterm-mode-hook
     (defun alan-vterm-mode-setup ()
       (span-msg "alan-vterm-mode-setup")
-      ;; Vterm sets buffer-read-only to t but some commands complains;
-      ;; nil seems to do fine?
-      (setq-local buffer-read-only nil)
 
       (setq-local truncate-lines t)
+      ;; (setq-local header-line-format (var alan-vterm-current-title))
+      ;; (setq-local header-line-format '(:eval (alan-vterm-format-header-line)))
 
       ;; (setq-local evil-move-cursor-back nil)
 
-      (add-hook 'evil-insert-state-entry-hook
+      (add-hook (var 'evil-insert-state-entry-hook)
                 #'alan-vterm--evil-follow-term-cursor-insert nil t)
-      (add-hook 'evil-insert-state-exit-hook
+      (add-hook (var 'evil-insert-state-exit-hook)
                 #'alan-vterm--evil-freeze-term-cursor-normal nil t)
+
+      (add-hook (var 'after-load-theme-hook)
+                #'vterm--invalidate nil t)
+
+      ;; (add-hook 'vterm--invalidate
 
       ;; (alan-vterm--evil-freeze-term-cursor-normal)
       ;; (span-dbg hl-line-mode)
@@ -284,6 +299,14 @@ For example, pressing x sends C-x to the terminal."
 
   ;; (general-def vterm-mode-map)
   )
+
+(defun alan-vterm-format-header-line ()
+  (span :alan-vterm-format-header-line
+    (alan-with-demoted-errors
+     (alan-modeline-from-left-right
+      (concat "[" (or alan-vterm-current-title "...") "]")
+      "rhs"
+      nil))))
 
 
 (defun alan-vterm (&optional arg)

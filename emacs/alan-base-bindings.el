@@ -126,7 +126,7 @@
   "M-\"" "DEL")
 
 (general-def key-translation-map
-  "Q" "<q>"
+  "Q" "<home>"
   "W" "<w>"
   "E" "{"
   "R" "}"
