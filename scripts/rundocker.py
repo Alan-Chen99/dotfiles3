@@ -4,15 +4,18 @@ import shlex
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Annotated
+from typing import Annotated, Sequence
 
 import cappa
 from cappa import Arg
+from rich import print
 
 
 @dataclass
 class Args:
-    image: Annotated[str, Arg(short=True)] = "shinsenter/scratch"
+    # image: Annotated[str, Arg(short=True)] = "shinsenter/scratch"
+    # image: Annotated[str, Arg(short=True)] = "gcr.io/distroless/static-debian12"
+    image: Annotated[str, Arg(short=True)] = "ubuntu"
 
     uid: Annotated[int, Arg(short=True)] = 1000
 
@@ -35,7 +38,42 @@ extra_path2 = HOME / ".local/docker_static_bin"
 
 host_bin_path = "/docker_host_prof/bin"
 
-flags: list[str | list[str]] = [
+share_home = [
+    #
+    ".local/share/uv",
+    #
+    ".config/opencode",
+    ".local/share/opencode",
+    ".local/state/opencode",
+    ".opencode",
+    #
+    ".claude",
+    ".claude.json",
+    ".local/bin/claude",
+    ".local/share/claude",
+]
+
+PATH = [
+    "/home/dockeruser/.opencode/bin",
+    "/home/dockeruser/.local/bin",
+    host_bin_path,
+    "/host_static_bin",
+]
+
+envs = {
+    "DISPLAY": DISPLAY,
+    "HOME": "/home/alan",
+    "SSL_CERT_FILE": SSL_CERT_FILE,
+    "PS1": r"${debian_chroot:+($debian_chroot)}\u@\H:\w\$ ",
+    "PATH:": ":".join(PATH),
+}
+
+
+CWD = Path.cwd()
+
+type FlagsT = str | Sequence[FlagsT]
+
+flags: FlagsT = [
     "docker",
     "run",
     "--interactive",
@@ -58,20 +96,24 @@ flags: list[str | list[str]] = [
     # ["-v", f"{extra_path1}/bash:/bin/bash:ro"],
     # ["-v", f"{extra_path1}/ls:/bin/ls:ro"],
     ["-v", f"{extra_path2}:/host_static_bin:ro"],
-    ["-v", f"{HOME}:{HOME}"],
+    # ["-v", f"{HOME}:{HOME}"],
+    ["-v", f"{CWD}:{CWD}:rw"],
+    #
+    [["-v", f"{HOME}/{x}:/home/dockeruser/{x}"] for x in share_home],
+    #
     ["--tmpfs", "/tmp:exec,mode=1777"],
     ["--tmpfs", f"/home/dockeruser:exec,mode=1777,uid={args.uid},gid=0"],
     ["-v", f"{HOME}/.cache/nix:/home/dockeruser/.cache/nix"] if args.uid == 0 else [],
     ["--user", f"{args.uid}:0"],
     ["--workdir", os.getcwd()],
     ["-e", f"DISPLAY={DISPLAY}"],
-    ["-e", "HOME=/home/dockeruser"],
+    ["-e", "HOME=/home/alan"],
     ["-e", f"SSL_CERT_FILE={SSL_CERT_FILE}"],
     ["-e", r"PS1=${debian_chroot:+($debian_chroot)}\u@\H:\w\$ "],
-    ["-e", f"PATH={host_bin_path}:/host_static_bin"],
+    ["-e", f"PATH={':'.join(PATH)}"],
     ["-v", "/tmp/.X11-unix:/tmp/.X11-unix"],
     ["--entrypoint", f"{host_bin_path}/bash"],
-    *args.docker_flags,
+    args.docker_flags,
     args.image,
     ["--norc", "--noprofile", "-i"],
     # [
@@ -86,15 +128,17 @@ flags: list[str | list[str]] = [
 ]
 
 
-def gen():
-    for x in flags:
-        if isinstance(x, list):
-            yield from x
-        else:
-            yield x
+def resolve(flags: FlagsT):
+    if isinstance(flags, str):
+        yield flags
+    else:
+        for x in flags:
+            yield from resolve(x)
 
 
-str_args = list(gen())
+str_args = list(resolve(flags))
+
+# print(flags)
 # print(" ".join(shlex.quote(x) for x in str_args))
 
 os.execlp("docker", *str_args)
