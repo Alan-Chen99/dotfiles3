@@ -6,6 +6,13 @@ Nix flake-based dotfiles repo. Manages a full development environment
 including a custom Emacs build, Python/Rust/JS toolchains, and
 home-manager config. Target system is x86_64-linux (Pop!\_OS/NixOS).
 
+## Nix store
+
+NEVER search or `find` the entire `/nix/store` — it contains millions
+of files and will hang indefinitely. Instead, use specific known store
+paths, `nix path-info`, `nix eval`, or query Emacs
+(`(locate-library ...)`) to find what you need.
+
 ## Nix structure
 
 - `flake.nix` — entry point, ~30 inputs including multiple nixpkgs
@@ -73,17 +80,17 @@ preserves compiler-emitted debug sections.
 
 ## Interactive Emacs
 
-Agents running debugging should ALWAYS use `emacs/agent_work_template.el` for interactive emacs.
+Agents running debugging MUST use `emacs/agent_work_template.el` for interactive emacs.
 Run Emacs on a virtual display so it does not appear on the user's screen:
 
 ```sh
 nix shell nixpkgs#xvfb-run -c xvfb-run -a -s "-screen 0 1920x1080x24" env GDK_BACKEND=x11 emacs -l /tmp/agent-work.el 2>/dev/null
 ```
 
-Agents MUST verify that they can run emacs BEFORE starting/thinking using the command above.
-DO NOT use `--batch` — it skips normal config loading and `(require 'alan)` will fail.
-DO NOT ask users to run your scripts for interactive emacs.
-Never use code to find something that can be found by running emacs.
+MUST verify that they can run emacs BEFORE exploring code or starting any related work.
+SHOULD NOT use `--batch` — it skips normal config loading and `(require 'alan)` will fail.
+MUST NOT ask users to run your scripts for interactive emacs.
+MUST NOT use code to find something that can be found by running emacs.
 
 After Emacs exits, read the log filtered to work output (skip startup trace):
 
