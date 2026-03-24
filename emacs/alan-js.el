@@ -18,6 +18,8 @@
 
 (add-to-list 'auto-mode-alist '("\\.mjs\\'" . typescript-ts-mode))
 
+(add-to-list 'auto-mode-alist '("\\.mjs\\'" . typescript-ts-mode))
+
 (add-to-list 'auto-mode-alist (cons (rx ".jsonc" eos) #'json-ts-mode))
 
 (defun alan-setup-typescript ()
@@ -32,14 +34,15 @@
 (add-hook 'typescript-ts-mode-hook #'alan-setup-typescript)
 (add-hook 'tsx-ts-mode-hook #'alan-setup-typescript)
 
+(eval-after-load! json-ts-mode
+  (add-hook! 'json-ts-mode-hook
+    (defun alan-setup-json ()
+      (setq-local format-all-formatters '(("JSON" prettierd))))))
 
-(add-hook! 'json-ts-mode-hook
-  (defun alan-setup-json ()
-    (setq-local format-all-formatters '(("JSON" prettierd)))))
-
-(add-hook! 'css-ts-mode-hook
-  (defun alan-setup-css ()
-    (setq-local format-all-formatters '(("CSS" prettierd)))))
+(eval-after-load!  css-mode
+  (add-hook! 'css-ts-mode-hook
+    (defun alan-setup-css ()
+      (setq-local format-all-formatters '(("CSS" prettierd))))))
 
 (eval-after-load! typescript-ts-mode
   (seq-doseq (p "_#")

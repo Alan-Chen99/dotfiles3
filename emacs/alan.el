@@ -100,9 +100,10 @@
 (pkg! 'php-mode)
 
 (add-to-list 'auto-mode-alist '("\\.ya?ml\\'" . yaml-ts-mode))
-(add-hook! 'yaml-ts-mode-hook
-  (setq-local evil-shift-width 2)
-  (setq-local format-all-formatters '(("YAML" prettierd))))
+(eval-after-load! yaml-ts-mode
+  (add-hook! 'yaml-ts-mode-hook
+    (setq-local evil-shift-width 2)
+    (setq-local format-all-formatters '(("YAML" prettierd)))))
 
 (pkg! '(visual-basic-mode :host github :repo "emacsmirror/visual-basic-mode")
   (autoload 'visual-basic-mode "visual-basic-mode" "Visual Basic mode." t)

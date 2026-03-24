@@ -55,14 +55,15 @@
             (goto-char prevpoint)))
       (evil-forward-paragraph count))))
 
-(add-hook! 'TeX-mode-hook
-  (defun alan-setup-tex ()
+(eval-after-load! tex
+  (add-hook! 'TeX-mode-hook
+    (defun alan-setup-tex ()
 
-    ;; (setq-local format-all-formatters '(("LaTeX" prettier-latex)))
-    (setq-local format-all-formatters '(("LaTeX" latexindent)))
-    (setq-local TeX-command-extra-options "-shell-escape")
+      ;; (setq-local format-all-formatters '(("LaTeX" prettier-latex)))
+      (setq-local format-all-formatters '(("LaTeX" latexindent)))
+      (setq-local TeX-command-extra-options "-shell-escape")
 
-    (alan-lsp-deferred 'lsp-tex)))
+      (alan-lsp-deferred 'lsp-tex))))
 
 (eval-after-load! latex
   (clear-and-backup-keymap LaTeX-mode-map)

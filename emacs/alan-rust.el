@@ -10,22 +10,6 @@
 ;; (pkg! 'rust-mode)
 ;; (setq-default rust-load-optional-libraries nil)
 
-(add-hook! 'rust-ts-mode-hook :depth -100
-  (defun alan-setup-rust ()
-    (alan-lsp-deferred 'lsp-rust)
-
-    (treesit-font-lock-recompute-features
-     '()
-     ;; this marks invalid ast with error face
-     ;; disabled since markdown docs often have invalid partial ast
-     ;; and we dont want them to be all in error face
-     ;; error
-     '(error))
-
-    ;; (setq-local format-all-formatters '(("Rust" cargo-fmt)))
-
-    ))
-
 (eval-after-load! rust-ts-mode
   (require 'tree-sitter-langs)
   ;; (startup-queue-package 'rust-cargo 94)
@@ -77,7 +61,25 @@
   ;;   :states 'normal
   ;;   "'" #'rust-format-buffer)
 
-  (setq-default lsp-rust-analyzer-macro-expansion-method #'lsp-rust-analyzer-macro-expansion-custom))
+  (setq-default lsp-rust-analyzer-macro-expansion-method #'lsp-rust-analyzer-macro-expansion-custom)
+
+  (add-hook! 'rust-ts-mode-hook :depth -100
+    (defun alan-setup-rust ()
+      (alan-lsp-deferred 'lsp-rust)
+
+      (treesit-font-lock-recompute-features
+       '()
+       ;; this marks invalid ast with error face
+       ;; disabled since markdown docs often have invalid partial ast
+       ;; and we dont want them to be all in error face
+       ;; error
+       '(error))
+
+      ;; (setq-local format-all-formatters '(("Rust" cargo-fmt)))
+
+      ))
+
+  )
 
 (defun lsp-rust-analyzer-macro-expansion-custom (result)
   "Default method for displaying macro expansion."

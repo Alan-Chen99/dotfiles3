@@ -78,6 +78,26 @@
 
   (modify-syntax-entry (string-to-char "_") "w" comint-mode-syntax-table)
   (modify-syntax-entry (string-to-char "-") "w" comint-mode-syntax-table)
+
+  (add-hook! 'comint-mode-hook
+    (defun alan-comint-setup ()
+      ;; (setq-local company-minimum-prefix-length 1)
+      (ansi-color-for-comint-mode-on)
+
+      (setq-local completion-at-point-functions '(comint-completion-at-point))
+      (setq-local company-backends '(company-capf))
+      ;; FIXME: race
+      (when (fboundp 'company-mode)
+        (company-mode +1))
+      (setq-local company-idle-delay nil)
+
+      (kill-local-variable 'indent-line-function)
+
+      ;; (when (file-remote-p default-directory)
+      ;;   ;; (setq-local shell-dirtrackp nil)
+      ;;   )
+
+      ))
   )
 
 
@@ -315,27 +335,6 @@
                        (eq comint-input-ring-index
                            (1- (ring-length comint-input-ring))))
                 (< arg 0))))
-
-
-(add-hook! 'comint-mode-hook
-  (defun alan-comint-setup ()
-    ;; (setq-local company-minimum-prefix-length 1)
-    (ansi-color-for-comint-mode-on)
-
-    (setq-local completion-at-point-functions '(comint-completion-at-point))
-    (setq-local company-backends '(company-capf))
-    ;; FIXME: race
-    (when (fboundp 'company-mode)
-      (company-mode +1))
-    (setq-local company-idle-delay nil)
-
-    (kill-local-variable 'indent-line-function)
-
-    ;; (when (file-remote-p default-directory)
-    ;;   ;; (setq-local shell-dirtrackp nil)
-    ;;   )
-
-    ))
 
 
 (provide 'alan-comint)

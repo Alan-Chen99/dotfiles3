@@ -179,23 +179,23 @@
     (setq regexp (rx "1__dummy_completion__" (* anychar))))
   (funcall-interactively fn process timeout regexp))
 
-(add-hook! 'inferior-python-mode-hook
-  (defun alan-setup-inferior-python ()
-    (setq-local comint-output-filter-functions
-                '(comint-osc-process-output
-                  ansi-color-process-output
-                  python-shell-comint-watch-for-first-prompt-output-filter
-                  comint-watch-for-password-prompt))
+(eval-after-load! python
+  (add-hook! 'inferior-python-mode-hook
+    (defun alan-setup-inferior-python ()
+      (setq-local comint-output-filter-functions
+                  '(comint-osc-process-output
+                    ansi-color-process-output
+                    python-shell-comint-watch-for-first-prompt-output-filter
+                    comint-watch-for-password-prompt))
 
-    ;; ;; note: the modification in #'inferior-python-mode got overriden
-    ;; ;; in our comint hook
-    (add-hook 'completion-at-point-functions
-              #'python-shell-completion-at-point nil 'local)
+      ;; ;; note: the modification in #'inferior-python-mode got overriden
+      ;; ;; in our comint hook
+      (add-hook 'completion-at-point-functions
+                #'python-shell-completion-at-point nil 'local)
 
-    (setq-local alan-comint-keep-inputs t)
+      (setq-local alan-comint-keep-inputs t)
 
-    ))
-
+      )))
 
 ;; (alan-set-ignore-debug-on-error #'python-indent-line)
 
