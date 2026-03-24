@@ -50,6 +50,15 @@
   };
 
   export.jspkgs-bins = {
+    claude-code = jspkg {
+      name = "@anthropic-ai/claude-code";
+      postInstall = ''
+        wrapProgram $out/bin/claude \
+          --set DISABLE_AUTOUPDATER 1 \
+          --unset DEV
+      '';
+      nativeBuildInputs = [pkgs.makeWrapper];
+    };
     nvm = jspkg {name = "nvm";};
     password-generator = jspkg {name = "@sebastienrousseau/password-generator";};
     prettier = prettier;

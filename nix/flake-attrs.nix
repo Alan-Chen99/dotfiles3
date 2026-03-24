@@ -26,6 +26,7 @@
       d = attrs.deps;
 
       pkgs = attrs.legacypkgs;
+      pkgs-unstable = with-unstable.legacypkgs;
       pkgs-next = with-nixpkgs-next.legacypkgs;
 
       inputs = inputs_;
@@ -184,6 +185,6 @@
       });
     };
   in
-    attrs // res;
+    attrs // res.extend-pkgs // res;
 in
   base-init.default-pkgs.with-extend-pkgs.set-versions

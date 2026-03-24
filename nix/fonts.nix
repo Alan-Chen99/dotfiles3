@@ -23,12 +23,14 @@
 
     inherit
       (legacypkgs.nerd-fonts)
-      fira-code
+      dejavu-sans-mono
       droid-sans-mono
-      iosevka
+      fira-code
       hack
       inconsolata
-      dejavu-sans-mono
+      iosevka
+      meslo-lg
+      noto
       ;
   };
 
