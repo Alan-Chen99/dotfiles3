@@ -3,6 +3,7 @@
 (require 'alan-core)
 (require 'alan-theme)
 (require 'evil)
+(require 'ansi-color)
 
 ;; xdisp.c > decode_mode_spec
 
@@ -63,13 +64,60 @@
      (alan-right-align-space rhs-width frame)
      rhs)))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; default:  (multiple-faces "%b" ("" "%b - GNU Emacs at " system-name))
+;; One-shot PS1 expansion for environment identity (container/remote distinction)
+;; Raw ANSI kept; ansi-color-apply reapplied each call so faces resolve against current theme
+(defvar alan-env-label-raw nil)
+
+(setq alan-env-label-raw
+      (alan-with-demoted-errors
+       (let* ((default-directory command-line-default-directory)
+              (raw
+               ;; \x01/\x02 are readline markers from PS1's \[...\]
+               (replace-regexp-in-string
+                "[\x01\x02]" ""
+                (shell-command-to-string
+                 "bash -ic 'echo \"${PS1@P}\"' 2>/dev/null")))
+              (trimmed (string-trim (substring (string-trim raw) 0 -1))))
+         (if (length> raw 0)
+             trimmed
+           nil))))
+
+(defun alan--font-lock-face-to-face (str)
+  "Promote font-lock-face to face in STR.
+ansi-color-apply sets font-lock-face which the display engine skips
+in certain redisplay contexts (e.g. minibuffer active)."
+  (let ((i 0)
+        (len (length str)))
+    (while (< i len)
+      (let ((flf (get-text-property i 'font-lock-face str))
+            (next (or (next-single-property-change i 'font-lock-face str) len)))
+        (when flf
+          (put-text-property i next 'face flf str)
+          (remove-text-properties i next '(font-lock-face nil) str))
+        (setq i next)))
+    str))
+
+(defun alan-env-label ()
+  "Recompute env label from raw ANSI each call so face colors track current theme."
+  (if alan-env-label-raw
+      (alan--font-lock-face-to-face (ansi-color-apply alan-env-label-raw))
+    (concat
+     (propertize (format "%s@%s" user-real-login-name (system-name)) 'face 'modeline-mode)
+     ":"
+     command-line-default-directory)))
+
+(setq frame-title-format '(:eval (alan-env-label)))
+
 (defun alan-format-modeline ()
   (span :alan-format-modeline
-    (with-demoted-errors "error in alan-format-modeline: %S"
-      (alan-modeline-from-left-right
-       (format-mode-line alan-modeline-lhs)
-       (format-mode-line alan-modeline-rhs)
-       nil))))
+    (alan-with-demoted-errors
+     (alan-modeline-from-left-right
+      (format-mode-line alan-modeline-lhs)
+      (format-mode-line alan-modeline-rhs)
+      nil))))
 
 (defvar-local alan-formatted-modeline nil)
 (put 'alan-formatted-modeline 'risky-local-variable t)
@@ -583,11 +631,12 @@
             (format "| %s" (alan-fmt-cmd cmd))
           (format "| %s -> %s" (alan-fmt-cmd cmd) (alan-fmt-cmd real-last-command))))))
    ;; right
-   (concat
-    (propertize (format "%s@%s" user-real-login-name (system-name)) 'face 'modeline-mode)
-    ":"
-    command-line-default-directory
-    )
+   ;; (concat
+   ;;  (propertize (format "%s@%s" user-real-login-name (system-name)) 'face 'modeline-mode)
+   ;;  ":"
+   ;;  command-line-default-directory
+   ;;  )
+   (alan-env-label)
    t))
 
 (defun alan-modeline-l2 ()
@@ -638,9 +687,5 @@
 ;; (setq use-system-tooltips nil)
 
 (tab-bar-mode)
-
-;; default:  (multiple-frames "%b" ("" "%b - GNU Emacs at " system-name))
-(setq frame-title-format
-      '("" command-line-default-directory " | " system-name))
 
 (provide 'alan-modeline)

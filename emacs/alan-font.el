@@ -9,6 +9,26 @@
   (when (find-font (font-spec :family name))
     name))
 
+;; ;; Iosevka's vertical metrics (ascent+descent) are ~15-20% taller than Hack's
+;; ;; at the same point size. Rescale so fallback lines don't grow taller.
+;; ;; Tune the value: M-: (query-font (face-attribute 'default :font)) then compare
+;; ;; ascent+descent between Hack and Iosevka at the same :size.
+;; (setq face-font-rescale-alist
+;;       '(("Iosevka Nerd Font" . 0.85)))
+
+(defun alan--apply-symbol-fontset (&optional frame)
+  (let ((frame (or frame (selected-frame)))
+        (fontset (face-attribute 'default :fontset frame)))
+    (dolist (target '(symbol mathematical))
+      ;; Iosevka first (higher coverage), then DejaVuSansM on top (matching height).
+      ;; Lookup order: DejaVuSansM → Iosevka (rescaled) → default fallback.
+      (set-fontset-font fontset target
+                        (font-spec :family "Iosevka Nerd Font")
+                        frame 'prepend)
+      (set-fontset-font fontset target
+                        (font-spec :family "DejaVuSansM Nerd Font")
+                        frame 'prepend))))
+
 (defvar alan-default-font-height)
 (setq alan-default-font-height 25)
 
@@ -19,8 +39,10 @@
                  ;; https://github.com/ryanoasis/nerd-fonts/discussions/1103
                  ;;x©x©xxxx
                  ;;xxxxxxxx
-                 ;;x😀x😀xx
-                 ;;x󰊤x󰊤xx
+                 ;;x·✢*✻xxx ;; claude code progress blink
+                 ;;x󰊤x󰊤xxx
+                 ;;x★x★xx
+                 ;;x😀x😀xxxx
                  ((alan-font-exist "Hack Nerd Font Propo"))
                  ((alan-font-exist "Iosevka NFP"))
                  ((alan-font-exist "FiraCode NFP"))
@@ -30,6 +52,7 @@
                  (t nil))))
       (when font
         (set-face-attribute 'default frame :font (font-spec :family font :size alan-default-font-height))
+        (alan--apply-symbol-fontset frame)
 
         ;; seems to work even though doc of tooltip-frame-parameters claims otherwise
         ;; the "inherit" dont take effect since we only set font size for one frame
@@ -58,6 +81,7 @@
 (defun alan-set-font-size (newsz &optional silent)
   (when (display-graphic-p)
     (set-face-attribute 'default (selected-frame) :font (font-spec :size newsz))
+    (alan--apply-symbol-fontset)
 
     ;; so that resizing also changes tooltip size
     (setf (alist-get 'font tooltip-frame-parameters) (face-attribute 'default :font))
