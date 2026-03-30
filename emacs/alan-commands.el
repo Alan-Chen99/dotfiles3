@@ -300,7 +300,7 @@
 
 (defun copy-default-directory ()
   (interactive)
-  (let ((v (abbreviate-file-name default-directory)))
+  (let ((v (expand-file-name default-directory)))
     (message "%s" v)
     (kill-new v)))
 
