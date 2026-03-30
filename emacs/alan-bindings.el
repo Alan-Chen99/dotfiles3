@@ -30,6 +30,8 @@
   "<ignore>" #'ignore
   "<x>" #'yank
 
+  "<.> i" #'insert-char
+
   ;; TODO: end up using those rarely, should put something more useful here
   ;; "<home>" #'move-beginning-of-line
   "<z>" #'undo-only
@@ -314,8 +316,6 @@
 
   "g a" #'save-buffer
 
-  "<.> i" #'insert-char
-
   ;; needs to be bound to (maybe) something different
 
   ;; "\"" 'nil ;;evil-use-register
@@ -423,6 +423,7 @@
   :states 'insert
   ;; "TAB" 'self-insert-command
   ;; "TAB" (lambda () (interactive) (insert-tab))
+
   "<.> <down>" #'alan-completion-at-point
   "C-<.> J" #'alan-consult-complete)
 
