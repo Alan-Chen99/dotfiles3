@@ -506,7 +506,7 @@
                  "lua-mode" :repo "immerrr/lua-mode" :fetcher github
                  :files (:defaults (:exclude "init-tryout.el")))
            :description "A major-mode for editing Lua scripts" :date
-           (25909 61376) :url "https://immerrr.github.io/lua-mode")
+           (26574 25536) :url "https://immerrr.github.io/lua-mode")
  (lv :source "MELPA" :recipe
      (:ref "317e1de33086637579a7aeb60f77ed0405bf359b" :package "lv"
            :repo "abo-abo/hydra" :fetcher github :files ("lv.el"))
@@ -639,7 +639,7 @@
                             "*-test.el" "*-tests.el" "LICENSE"
                             "README*" "*-pkg.el")))
            :description "Major mode for editing PHP code" :date
-           (26495 22480) :url "https://github.com/emacs-php/php-mode")
+           (26685 8640) :url "https://github.com/emacs-php/php-mode")
  (popup :source "MELPA" :recipe
         (:ref "cb81d5d4b9a14f39a95edf225bc3447560bcdffe" :package
               "popup" :fetcher github :repo "auto-complete/popup-el"
@@ -804,7 +804,7 @@
                           :package "visual-basic-mode")
                     :source "Init file")
  (vterm :source "MELPA" :recipe
-        (:ref "6e7ae7c0617b1069c934c0f7a393f40b6ef244a0" :package
+        (:ref "f4aa06b19135c33d41365a7d4cffeea7981a8c9f" :package
               "vterm" :fetcher github :repo "akermu/emacs-libvterm"
               :files
               ("CMakeLists.txt" "elisp.c" "elisp.h" "emacs-module.h"

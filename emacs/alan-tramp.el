@@ -28,6 +28,9 @@
 
   ;; use by rundocker.py script in this repo
   (add-to-list 'tramp-remote-path "/docker_host_prof/bin")
+  ;; newer, easy to run stuff in prior generations
+  (add-to-list 'tramp-remote-path "/nix-host-profiles/profile/bin")
+  ;; /nix-host-profiles
 
   (connection-local-set-profile-variables
    'alan-custom-vars

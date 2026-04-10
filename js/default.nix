@@ -12,6 +12,12 @@
 
   pkgs = legacypkgs;
 
+  packageJson = builtins.fromJSON (builtins.readFile ./package.json);
+
+  # Strip semver constraint operators: "^3.4.2" → "3.4.2", "==2.1.79" → "2.1.79"
+  cleanVersion = v:
+    builtins.replaceStrings ["^" "~" ">=" "<=" "==" ">" "<" " "] ["" "" "" "" "" "" "" ""] v;
+
   corepack = pkgs.corepack.override {nodejs = nodejs;};
 
   postInstall = ''
@@ -22,7 +28,9 @@
     name,
     publishBinsFor ? [name],
     ...
-  } @ attrs:
+  } @ attrs: let
+    version = cleanVersion (packageJson.dependencies.${name} or "0");
+  in
     std.buildEnv {
       name = name;
       paths = [
@@ -35,7 +43,8 @@
           // (builtins.removeAttrs attrs ["name" "publishBinsFor"])))
       ];
       pathsToLink = ["/bin"];
-    };
+    }
+    // {inherit version;};
 
   export.basedpyright = jspkg {name = "basedpyright";};
   export.pyright = jspkg {name = "pyright";};
