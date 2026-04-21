@@ -34,6 +34,7 @@
     "<.> m" #'lsp-goto-type-definition
     "<.> <up>" #'lsp-execute-code-action
     "`" #'lsp-rename
+    "<.> h" #'lsp-inlay-hints-mode
     )
 
   (add-hook! 'lsp-mode-hook #'evil-normalize-keymaps)

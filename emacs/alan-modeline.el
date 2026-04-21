@@ -102,12 +102,14 @@ in certain redisplay contexts (e.g. minibuffer active)."
 
 (defun alan-env-label ()
   "Recompute env label from raw ANSI each call so face colors track current theme."
-  (if alan-env-label-raw
-      (alan--font-lock-face-to-face (ansi-color-apply alan-env-label-raw))
-    (concat
-     (propertize (format "%s@%s" user-real-login-name (system-name)) 'face 'modeline-mode)
-     ":"
-     command-line-default-directory)))
+  (alan-with-demoted-errors
+   (span :alan-env-label
+     (if alan-env-label-raw
+         (alan--font-lock-face-to-face (ansi-color-apply alan-env-label-raw))
+       (concat
+        (propertize (format "%s@%s" user-real-login-name (system-name)) 'face 'modeline-mode)
+        ":"
+        command-line-default-directory)))))
 
 (setq frame-title-format '(:eval (alan-env-label)))
 

@@ -49,8 +49,14 @@
 ;; (add-to-list 'yank-excluded-properties 'face)
 (setq yank-excluded-properties t)
 
-;; UTF8_STRING goes before text/plain\;charset=utf-8 or else cannot paste into emacs in docker
-(setq-default x-select-request-type '(UTF8_STRING text/plain\;charset=utf-8 COMPOUND_TEXT TEXT STRING))
+(eval-after-load! select
+  ;; UTF8_STRING goes before text/plain\;charset=utf-8 or else cannot paste into emacs in docker
+  (setq x-select-request-type '(UTF8_STRING text/plain\;charset=utf-8 COMPOUND_TEXT TEXT STRING))
+
+  ;; fixes pasting out from x11 emacs into chrome
+  (setq selection-converter-alist
+        (cl-remove-if (lambda (e) (memq (car e) '(STRING text/plain COMPOUND_TEXT TEXT)))
+                      selection-converter-alist)))
 
 ;; TODO: this can hang, if the other prog is not responding
 (setq save-interprogram-paste-before-kill 10000)
