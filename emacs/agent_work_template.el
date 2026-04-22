@@ -20,6 +20,11 @@
 ;;   - This file must RETURN before Emacs startup completes.
 ;;     All work MUST go on timers (run-with-timer), not at top level.
 ;;   - Always end with (kill-emacs 0) inside your work timer.
+;;   - NEVER use condition-case. Use condition-case-unless-debug, which logs the error.
+;;
+;; logging framework:
+;;   - A span is logged if there are any messages within it
+;;   - `!` at the end of the span indicate a non-local exit (error or throw). It is otherwise a normal exit.
 
 ;; --- setup (do not modify) -------------------------------------------
 
