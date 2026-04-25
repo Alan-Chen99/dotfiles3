@@ -65,7 +65,7 @@ Today is %s.
           :models '(
                     gpt-5
                     gpt-5.1
-                    gpt-5.2
+                    gpt-5.4
                     gpt-5-mini
                     gpt-5-nano
                     gpt-5-chat
@@ -84,7 +84,7 @@ Today is %s.
             )))
 
   ;; (setq gptel-model 'google/gemini-3-pro-preview)
-  (setq gptel-model 'gpt-5.2)
+  (setq gptel-model 'gpt-5.4)
 
   (setq gptel-use-context 'user)
 

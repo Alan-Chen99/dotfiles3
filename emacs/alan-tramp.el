@@ -40,6 +40,9 @@
      (shell-command-switch . "-c")))
   (connection-local-set-profiles nil 'alan-custom-vars)
 
+  ;; tramp-search-regexp searches backward from point-max within the
+  ;; last 256 chars.  bos anchors are unreachable when SSH banner text
+  ;; pushes the prompt beyond that window.
   (setq tramp-password-prompt-regexp
         (rx-to-string
          ;; this "group" is shown as prompt
@@ -47,8 +50,8 @@
            (or
             ;; 2025/11/17
             ;; MIT engaging: after this message requires a enter to continue
-            (: bos (* anything) "maintenance reservation midnight Tuesday morning." (* anything))
-            (: bos (* anything)
+            (: (* anything) "maintenance reservation midnight Tuesday morning." (* anything))
+            (: (* anything)
                (| . ,password-word-equivalents)
                (* nonl)
                (any . ,(or (bound-and-true-p tramp-compat-password-colon-equivalents)
