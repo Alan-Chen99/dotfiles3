@@ -134,7 +134,7 @@
 
       extend-pkgs.vscode = with-nixpkgs-next.legacypkgs.vscode;
 
-      homeConfigurations."alan" = attrs.home;
+      homeConfigurations."${attrs.user-name}" = attrs.home;
       # for github actions
       homeConfigurations."runner" = with-username-runner.home;
       with-username-runner = add-overlay (final: prev: {

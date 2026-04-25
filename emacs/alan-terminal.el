@@ -9,7 +9,10 @@
 
 (pkg! 'clipetty
   (unless (display-graphic-p)
-    (startup-queue-package 'clipetty 70)))
+    (startup-queue-package 'clipetty 70)
+
+    ;; (global-clipetty-mode)
+    ))
 
 
 (eval-after-load! evil-terminal-cursor-changer
@@ -32,10 +35,6 @@
     ;; maybe i should add a cursor setting to prompt as someone said here
     ;; https://github.com/7696122/evil-terminal-cursor-changer/issues/12
     ))
-
-(eval-after-load! clipetty
-  (unless (display-graphic-p)
-    (global-clipetty-mode)))
 
 
 (provide 'alan-terminal)
