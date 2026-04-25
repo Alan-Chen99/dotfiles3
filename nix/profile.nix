@@ -148,6 +148,7 @@
       html-tidy
       hyperfine
       ispell
+      jq
       nixfmt-classic
       nixpkgs-fmt
       ps

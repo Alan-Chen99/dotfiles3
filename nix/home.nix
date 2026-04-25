@@ -22,7 +22,7 @@
   #       --set PATH ${nix-stable}/bin:${git}/bin:${gnugrep}/bin
   #   '';
 
-  export.user-name = "alan";
+  export.user-name = "chenxy";
   user = self.user-name;
 
   # home-manager switch --flake .
