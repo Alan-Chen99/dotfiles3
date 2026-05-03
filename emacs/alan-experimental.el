@@ -355,4 +355,6 @@ This function expects to be in the right *tramp* buffer."
    (combine-and-quote-strings
     `("json_show.py" ,(thing-at-point 'filename)))))
 
+(span-instrument vterm-send)
+
 (provide 'alan-experimental)
