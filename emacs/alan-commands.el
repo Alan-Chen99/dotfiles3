@@ -269,14 +269,16 @@
 
 (defun copy-cur-filename ()
   (interactive)
-  (let ((v
-         (if buffer-file-name
-             buffer-file-name
-           default-directory)))
-    (setq v (file-truename v))
+  (let ((v (if buffer-file-name buffer-file-name default-directory)))
     (message "%s" v)
     (kill-new v)))
 
+(defun copy-cur-file-truename ()
+  (interactive)
+  (let ((v (if buffer-file-name buffer-file-name default-directory)))
+    (setq v (file-truename v))
+    (message "%s" v)
+    (kill-new v)))
 
 (defun copy-wsl-windows-filename ()
   (interactive)

@@ -236,7 +236,8 @@
   "g i" #'evil-scroll-line-to-bottom
   ;; "g s" #'evil-scroll-line-to-center
 
-  "g c" #'copy-cur-filename
+  "g c" #'copy-cur-file-truename
+  "g z" #'copy-cur-filename
   "g C" #'copy-wsl-windows-filename
   "g x" #'copy-cur-filename-last
   "g d" #'copy-default-directory

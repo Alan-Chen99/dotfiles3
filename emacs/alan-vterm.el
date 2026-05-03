@@ -150,7 +150,13 @@ For example, pressing x sends C-x to the terminal."
         (append alan-bash-fns-env-vars
                 (list
                  ;; TODO: append instead
-                 "PROMPT_COMMAND=vterm_prompt_command")))
+                 "PROMPT_COMMAND=vterm_prompt_command"
+                 ;; vterm is the terminal emulator for child processes, not
+                 ;; tmux/screen. Apps that see TMUX wrap escape sequences in
+                 ;; DCS passthrough meant for tmux, but libvterm receives them
+                 ;; first and displays garbage.
+                 "TMUX="
+                 "STY=")))
 
   (setq vterm-shell "/bin/bash")
 
@@ -213,6 +219,8 @@ For example, pressing x sends C-x to the terminal."
     "DEL" #'vterm-send-backspace
     "RET" #'vterm-send-return
     "TAB" #'vterm-send-tab
+    "<.> t" #'vterm-send-tab
+    "<backtab>" #'vterm--self-insert
 
     "C-k" #'vterm-scroll-up
     "C-J" #'vterm-scroll-down
@@ -220,6 +228,7 @@ For example, pressing x sends C-x to the terminal."
     "<wheel-down>" #'vterm-scroll-down-mouse
 
     "S-SPC" #'alan-vterm-send-ctrl-next-key
+    "<.> 2" #'alan-vterm-send-ctrl-next-key
     ;; "<S-.>" #'vterm-send-next-key
 
     [remap previous-line] (vterm-with-send-key "<up>")
