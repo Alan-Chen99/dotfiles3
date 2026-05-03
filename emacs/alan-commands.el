@@ -270,6 +270,7 @@
 (defun copy-cur-filename ()
   (interactive)
   (let ((v (if buffer-file-name buffer-file-name default-directory)))
+    (setq v (expand-file-name v))
     (message "%s" v)
     (kill-new v)))
 
