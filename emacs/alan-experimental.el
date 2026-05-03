@@ -351,7 +351,7 @@ This function expects to be in the right *tramp* buffer."
 
 (defun alan-show-file-json ()
   (interactive)
-  (shell-command
+  (alan-shell-command
    (combine-and-quote-strings
     `("json_show.py" ,(thing-at-point 'filename)))))
 
