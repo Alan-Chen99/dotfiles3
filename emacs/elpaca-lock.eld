@@ -804,7 +804,7 @@
                           :package "visual-basic-mode")
                     :source "Init file")
  (vterm :source "MELPA" :recipe
-        (:ref "f4aa06b19135c33d41365a7d4cffeea7981a8c9f" :package
+        (:ref "fcebd42510f917b78d7c6adbb80e8afb8d895a09" :package
               "vterm" :fetcher github :repo "akermu/emacs-libvterm"
               :files
               ("CMakeLists.txt" "elisp.c" "elisp.h" "emacs-module.h"

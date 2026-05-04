@@ -916,7 +916,7 @@ of `backtrace.el' that `backtrace-get-frames' would trigger."
             (span-flush)
             (span--backtrace #'span--debug)
             ;; otherwise, the debugger gets disabled until the next key press
-            (setq internal-when-entered-debugger -1)
+            ;; (setq internal-when-entered-debugger -1)
             (signal err-sym data)))
       (span-notef "debug: %s %s" (:unsafe-ts type) (:unsafe-ts args))
       ;; TODO: should quit here if is here too many times, since might hang

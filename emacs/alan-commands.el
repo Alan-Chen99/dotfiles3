@@ -4,7 +4,7 @@
 (require 'evil)
 (require 'evil-visualstar)
 
-(require-if-is-bytecompile display-line-numbers alan-modeline)
+(require-if-is-bytecompile display-line-numbers alan-modeline dired)
 
 (defun alan-move-up-screen ()
   (interactive)
@@ -468,5 +468,9 @@
          (set-window-configuration wconfig nil 'dont-set-miniwindow)))))
   (top-level))
 
+(defun alan-open-file-external ()
+  (interactive)
+  ;; see dired-do-open
+  (shell-command-do-open (list (thing-at-point 'filename))))
 
 (provide 'alan-commands)

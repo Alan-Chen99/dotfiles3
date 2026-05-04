@@ -12,7 +12,7 @@
   (setq
    ;; embark-help-key "S-SPC"
    embark-help-key nil
-   embark-cycle-key "SPC"
+   embark-cycle-key "S-SPC"
    embark-prompter #'embark-keymap-prompter
    embark-quit-after-action '((kill-buffer . t) (t . nil)))
 
@@ -37,8 +37,9 @@
   ;; embark-keymap-alist
 
   (general-def embark-general-map
-    "S-SPC" #'embark-keymap-help
-    "SPC" #'embark-cycle
+    ;; "SPC" #'embark-keymap-help
+    "s" #'embark-keymap-help
+    "S-SPC" #'embark-cycle
 
     "n" (lambda () (interactive) (embark--run-after-command #'evil-normal-state))
     "t" #'alan-top-level-keep-windows

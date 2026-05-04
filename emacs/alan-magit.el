@@ -84,6 +84,8 @@
 
   (setq magit-diff-extra-stat-arguments '("--stat-width" "200" "--compact-summary"))
 
+  (setf (alist-get 'magit-fetch transient-values) '("--tags"))
+
   )
 
 

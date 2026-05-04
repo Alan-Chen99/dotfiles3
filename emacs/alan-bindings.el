@@ -215,6 +215,7 @@
 
   "<.> j" #'evil-goto-definition
   "<.> <down>" #'(lambda () (interactive) (let ((find-file-visit-truename t)) (evil-goto-definition)))
+  "<.> <up>" #'alan-open-file-external
 
   "0" #'display-local-help
 
