@@ -75,6 +75,7 @@
           (self)
           basedpyright
           cleansrc
+          less-download-flakes
           dbg
           deps
           emacs
