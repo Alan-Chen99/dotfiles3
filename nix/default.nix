@@ -82,6 +82,7 @@
           fonts
           legacypkgs
           lib
+          nixconf
           nixconf-file
           nixmeta
           nixrepl-wrapper
@@ -118,7 +119,14 @@
   }));
 
   mod.env = callpackage ./env.nix {} (reexport (prev: {
-    inherit (prev) nixwrapper flake-registry-file nixconf-file less-download-flakes;
+    inherit
+      (prev)
+      flake-registry-file
+      less-download-flakes
+      nixconf
+      nixconf-file
+      nixwrapper
+      ;
   }));
 
   mod.experimental = callpackage ./experimental.nix {};
