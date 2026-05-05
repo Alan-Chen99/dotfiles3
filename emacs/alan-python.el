@@ -179,6 +179,18 @@
     (setq regexp (rx "1__dummy_completion__" (* anychar))))
   (funcall-interactively fn process timeout regexp))
 
+(defadvice! python-shell-completion-get-completions--use-builtin-print
+    (process input)
+  :override #'python-shell-completion-get-completions
+  ;; rich.print wraps at terminal width, corrupting JSON with newlines
+  (with-current-buffer (process-buffer process)
+    (python--parse-json-array
+     (python-shell-send-string-no-output
+      (format "%s\n__import__('builtins').print(__PYTHON_EL_get_completions(%s))"
+              python-shell-completion-setup-code
+              (python-shell--encode-string input))
+      process))))
+
 (eval-after-load! python
   (add-hook! 'inferior-python-mode-hook
     (defun alan-setup-inferior-python ()
