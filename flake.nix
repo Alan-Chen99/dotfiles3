@@ -164,7 +164,7 @@
       flake = false;
     };
     past-25-05-1 = {
-      url = "github:Alan-Chen99/dotfiles3/24.11.2";
+      url = "github:Alan-Chen99/dotfiles3/25.05.1";
       flake = false;
     };
 
