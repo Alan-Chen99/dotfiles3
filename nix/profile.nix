@@ -6,6 +6,7 @@
   git,
   home-manager-bin,
   legacypkgs,
+  less-download-flakes,
   lib,
   nix,
   nixmeta,
@@ -18,10 +19,11 @@
   which,
 }: rec {
   # TODO: add indirect deps, possibly from lock file, to prevent them from being garbage collected
-  cmds-attrs = builtins.mapAttrs (name: val: "ln -s ${val} ${name}") (removeAttrs flakes ["self" "nixpkgs-lib"]);
+  repo-flakes = if less-download-flakes then {} else removeAttrs flakes ["self" "nixpkgs-lib"];
+  cmds-attrs = builtins.mapAttrs (name: val: "ln -s ${val} ${name}") repo-flakes;
   cmd-body = builtins.concatStringsSep "\n" (builtins.attrValues cmds-attrs);
 
-  test = removeAttrs flakes ["self" "nixpkgs-lib"];
+  test = repo-flakes;
 
   profile-env = {
     # PATH = [
