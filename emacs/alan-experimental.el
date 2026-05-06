@@ -356,5 +356,7 @@ This function expects to be in the right *tramp* buffer."
     `("json_show.py" ,(thing-at-point 'filename)))))
 
 (span-instrument vterm-send)
+(span-wrap python--parse-json-array (string)
+  (:python--parse-json-array "%s" string))
 
 (provide 'alan-experimental)
