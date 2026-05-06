@@ -17,23 +17,19 @@
   in
     assert flakelock.version == 7; flakelock;
 
-  # here we put the same stuff in the lock file into flake registery
-  # we only do this for flakes we input directly
-  # ~we lookup their rev (previously narHash) in the lock file and get info there
-  # ~note: new lock file seem to not contain narHash anymore
-  # above seem to be a bug in nix/lazy-trees
-  # TODO: is this behavior what i actually want?
-  hash-to-source-mapping = builtins.listToAttrs (
-    lib.attrsets.mapAttrsToList (name: value: {
-      name = "${value.locked.narHash}---${value.locked.dir or ""}";
-      value = value.locked;
-    })
-    (removeAttrs flakelock.nodes [flakelock.root])
-  );
-
-  flakes-with-source =
-    builtins.mapAttrs (name: val: hash-to-source-mapping."${val.narHash}---${val.dir or ""}")
-    (removeAttrs flakes ["self"]);
+  # lock file entries for direct inputs, looked up by name to avoid
+  # touching live flake inputs (which would force downloads)
+  flakes-with-source = let
+    root-inputs = flakelock.nodes.${flakelock.root}.inputs;
+    resolve = ref:
+      if builtins.isList ref
+      then let node = flakelock.nodes.${builtins.head ref};
+      in resolve node.inputs.${builtins.elemAt ref 1}
+      else ref;
+  in
+    builtins.mapAttrs (name: _:
+      flakelock.nodes.${resolve root-inputs.${name}}.locked
+    ) (removeAttrs flakes ["self"]);
 
   # extra things added to flake inputs
   _flake-registry = {
