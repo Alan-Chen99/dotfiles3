@@ -199,8 +199,12 @@ For example, pressing x sends C-x to the terminal."
   (evil-set-initial-state 'vterm-mode 'insert)
 
   (general-def vterm-mode-map
-    [remap backward-paragraph] #'vterm-previous-prompt
-    [remap forward-paragraph] #'vterm-next-prompt
+    ;; [remap backward-paragraph] #'vterm-previous-prompt
+    ;; [remap forward-paragraph] #'vterm-next-prompt
+
+    [remap alan-move-down-screen] #'vterm-previous-prompt
+    [remap alan-move-up-screen] #'vterm-next-prompt
+
     [remap alan-completion-at-point] (vterm-with-send-key "<tab>")
     ;; [remap end-of-buffer] #'vterm-reset-cursor-point
 

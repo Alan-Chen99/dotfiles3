@@ -30,7 +30,9 @@
   (add-to-list 'tramp-remote-path "/docker_host_prof/bin")
   ;; newer, easy to run stuff in prior generations
   (add-to-list 'tramp-remote-path "/nix-host-profiles/profile/bin")
-  ;; /nix-host-profiles
+  ;; apptainer containers: nix_store bind-mounted at /nix
+  (add-to-list 'tramp-remote-path "/nix/state/profile/bin")
+  (add-to-list 'tramp-remote-path "/nix/nix_path/bin")
 
   (connection-local-set-profile-variables
    'alan-custom-vars
@@ -79,6 +81,7 @@
                eos)))
 
   (tramp-enable-flatpak-method)
+  (tramp-enable-apptainer-method)
   )
 
 
