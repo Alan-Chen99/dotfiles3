@@ -199,9 +199,12 @@ For example, pressing x sends C-x to the terminal."
   (evil-set-initial-state 'vterm-mode 'insert)
 
   (general-def vterm-mode-map
-    [remap backward-paragraph] #'vterm-previous-prompt
-    [remap forward-paragraph] #'vterm-next-prompt
-    [remap alan-completion-at-point] (vterm-with-send-key "<tab>")
+    ;; [remap backward-paragraph] #'vterm-previous-prompt
+    ;; [remap forward-paragraph] #'vterm-next-prompt
+
+    [remap alan-move-down-screen] #'vterm-next-prompt
+    [remap alan-move-up-screen] #'vterm-previous-prompt
+
     ;; [remap end-of-buffer] #'vterm-reset-cursor-point
 
     ;; "C-u C-k" sometimes dont work?
@@ -210,6 +213,8 @@ For example, pressing x sends C-x to the terminal."
     [remap evil-delete-whole-line] #'alan-vterm-delete-whole-line-without-yank
 
     [remap evil-append] #'evil-collection-vterm-append
+
+    [remap alan-completion-at-point] #'vterm-send-tab
     )
 
 
@@ -220,6 +225,7 @@ For example, pressing x sends C-x to the terminal."
     "RET" #'vterm-send-return
     "TAB" #'vterm-send-tab
     "<.> t" #'vterm-send-tab
+
     "<backtab>" #'vterm--self-insert
 
     "C-k" #'vterm-scroll-up
@@ -235,6 +241,9 @@ For example, pressing x sends C-x to the terminal."
     [remap next-line] (vterm-with-send-key "<down>")
     [remap left-char] (vterm-with-send-key "<left>")
     [remap right-char] (vterm-with-send-key "<right>")
+
+    "C-S-k" #'vterm-scroll-up-mouse
+    "C-S-j" #'vterm-scroll-down-mouse
 
     [remap move-beginning-of-line] (vterm-with-send-key "<start>")
     [remap move-end-of-line] (vterm-with-send-key "<end>")

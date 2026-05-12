@@ -84,7 +84,7 @@ Agents running debugging MUST use `emacs/agent_work_template.el` for interactive
 Run Emacs on a virtual display so it does not appear on the user's screen:
 
 ```sh
-nix shell nixpkgs#xvfb-run -c xvfb-run -a -s "-screen 0 1920x1080x24" env GDK_BACKEND=x11 emacs -l /tmp/agent-work.el 2>/dev/null
+nix shell nixpkgs#xvfb-run -c xvfb-run -a -s "-screen 0 1920x1080x24" env GDK_BACKEND=x11 emacs --user "" -l /tmp/agent-work.el 2>/dev/null
 ```
 
 MUST verify that they can run emacs BEFORE exploring code or starting any related work.

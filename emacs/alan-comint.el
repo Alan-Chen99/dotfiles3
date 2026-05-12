@@ -43,8 +43,8 @@
     ;; [remap forward-paragraph] #'evil-comint-next-prompt
     ;; [remap backward-paragraph] #'evil-comint-previous-prompt
 
-    ;; [remap alan-move-up-screen] #'evil-backward-paragraph
-    ;; [remap alan-move-down-screen] #'evil-forward-paragraph
+    [remap alan-move-down-screen] #'evil-comint-next-prompt
+    [remap alan-move-up-screen] #'evil-comint-previous-prompt
 
     )
 

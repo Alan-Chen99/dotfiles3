@@ -23,27 +23,29 @@
     root-inputs = flakelock.nodes.${flakelock.root}.inputs;
     resolve = ref:
       if builtins.isList ref
-      then let node = flakelock.nodes.${builtins.head ref};
-      in resolve node.inputs.${builtins.elemAt ref 1}
+      then let
+        node = flakelock.nodes.${builtins.head ref};
+      in
+        resolve node.inputs.${builtins.elemAt ref 1}
       else ref;
   in
-    builtins.mapAttrs (name: _:
-      flakelock.nodes.${resolve root-inputs.${name}}.locked
+    builtins.mapAttrs (
+      name: _:
+        flakelock.nodes.${resolve root-inputs.${name}}.locked
     ) (removeAttrs flakes ["self"]);
 
   # extra things added to flake inputs
   _flake-registry = {
+    n = flakes-with-source.nixpkgs;
+    nixpkgs = flakes-with-source.nixpkgs;
+    #
     df = "${source-ver}";
     dotfiles = "${source-ver}";
-    n = "${nixpkgs-flakes}";
-    nixpkgs = "${nixpkgs-flakes}";
     p = "${source-ver}";
   };
 
   export.flake-registry =
-    if self.less-download-flakes
-    then _flake-registry
-    else (removeAttrs flakes-with-source ["nixpkgs-lib"]) // _flake-registry;
+    (removeAttrs flakes-with-source ["nixpkgs-lib"]) // _flake-registry;
 
   flake-registry-list = {
     version = 2;
@@ -72,15 +74,19 @@
       registry remove --registry $out/registry.json dummy-nonexistent
   '';
 
-  # added that is not in _flake-registry
   _nix-path = {
+    df = "${source-ver}";
+    dotfiles = "${source-ver}";
+    n = "${nixpkgs-flakes}";
+    nixpkgs = "${nixpkgs-flakes}";
+    p = "${source-ver}";
     prelude = "${source-ver}/nix/prelude.nix";
   };
 
   export.nix-path =
     if self.less-download-flakes
     then _nix-path
-    else (removeAttrs flakes ["self"]) // _nix-path // _flake-registry;
+    else (removeAttrs flakes ["self"]) // _nix-path;
 
   export.nixconf = {
     # see also https://jackson.dev/post/nix-reasonable-defaults/

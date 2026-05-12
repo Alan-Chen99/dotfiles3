@@ -873,7 +873,7 @@ requires-dist = [
     { name = "sympy", specifier = ">=1.14.0" },
     { name = "uvicorn", extras = ["standard"], specifier = ">=0.37.0" },
     { name = "wheel", specifier = ">=0.45.1" },
-    { name = "yt-dlp", specifier = ">=2025.9.26" },
+    { name = "yt-dlp", specifier = ">=2026.3.17" },
     { name = "z3-solver", specifier = ">=4.15.3.0" },
 ]
 

@@ -5,12 +5,18 @@
 ;; Usage:
 ;;   cp emacs/agent_work_template.el /tmp/agent-work.el
 ;;   # edit the WORK SECTION in /tmp/agent-work.el
-;;   nix shell nixpkgs#xvfb-run -c xvfb-run -a -s "-screen 0 1920x1080x24" env GDK_BACKEND=x11 emacs -l /tmp/agent-work.el 2>/dev/null
+;;   nix shell nixpkgs#xvfb-run -c xvfb-run -a -s "-screen 0 1920x1080x24" env GDK_BACKEND=x11 emacs --user "" -l /tmp/agent-work.el 2>/dev/null
 ;;   grep -A9999 -- '----start----' /tmp/debug.log
 ;;
 ;; The xvfb-run command runs Emacs on a virtual display so it doesn't
 ;; appear on screen.  GDK_BACKEND=x11 makes PGTK Emacs use the X11
 ;; backend (which xvfb provides) instead of looking for Wayland.
+;;
+;; --user "" is required on some shared systems where Emacs cannot
+;; determine the current user from the environment (e.g. NFS homes,
+;; container-mapped UIDs).  Without it, Emacs skips loading init.el
+;; and early-init.el, so (require 'alan) fails silently with no
+;; stderr output.
 ;;
 ;; Key rules:
 ;;   - This file is SELF-CONTAINED. Do NOT add -e/--eval flags.
