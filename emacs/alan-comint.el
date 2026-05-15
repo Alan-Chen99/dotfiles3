@@ -281,6 +281,12 @@
         (buffer-undo-list t))
     (comint-clear-buffer)))
 
+(defun comint-sync-window-size ()
+  (interactive nil comint-mode)
+  (when-let ((proc (get-buffer-process (current-buffer))))
+    (set-process-window-size proc (window-body-height) (window-body-width))
+    (message "Set process window size to %dx%d" (window-body-width) (window-body-height))))
+
 (defadvice! comint-add-to-input-history-no-props (fn cmd)
   :around #'comint-add-to-input-history
   (funcall fn (substring-no-properties cmd)))
