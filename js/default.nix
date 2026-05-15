@@ -61,7 +61,20 @@
   export.jspkgs-bins = {
     claude-code = jspkg {
       name = "@anthropic-ai/claude-code";
+      # Bun single-executable: strip and patchelf corrupt the .bun ELF section
+      dontStrip = true;
+      dontPatchELF = true;
       postInstall = ''
+        # Replace the placeholder stub with the platform-native binary.
+        # install.cjs does this at npm postinstall time, but mkYarnPackage
+        # skips lifecycle scripts.
+        native=$out/libexec/js/node_modules/@anthropic-ai/claude-code-linux-x64/claude
+        stub=$out/libexec/js/node_modules/@anthropic-ai/claude-code/bin/claude.exe
+        if [ -f "$native" ]; then
+          cp "$native" "$stub"
+          chmod +x "$stub"
+        fi
+
         wrapProgram $out/bin/claude \
           --set DISABLE_AUTOUPDATER 1 \
           --set DISABLE_INSTALLATION_CHECKS 1 \
