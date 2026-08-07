@@ -36,7 +36,25 @@
     [remap switch-to-buffer] #'consult-buffer
     [remap switch-to-buffer-other-window] #'consult-buffer-other-window)
 
-  (setq completion-in-region-function #'consult-completion-in-region))
+  (setq completion-in-region-function #'consult-completion-in-region)
+
+  ;; Match against filenames/directories in consult-buffer, not just
+  ;; buffer names.  Appended as invisible text so orderless matches it
+  ;; but display is unchanged (marginalia still shows the annotation).
+  (plist-put consult--source-buffer :items
+             (lambda ()
+               (consult--buffer-query
+                :sort 'visibility
+                :as (lambda (buf)
+                      (let* ((name (buffer-name buf))
+                             (extra (or (buffer-file-name buf)
+                                        (buffer-local-value 'default-directory buf))))
+                        (if extra
+                            (cons (concat name (propertize
+                                                (concat " " (abbreviate-file-name extra))
+                                                'invisible t))
+                                  buf)
+                          (cons name buf))))))))
 
 (defun alan-consult-complete ()
   (interactive)

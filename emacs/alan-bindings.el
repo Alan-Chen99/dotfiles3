@@ -31,6 +31,7 @@
   "<x>" #'yank
 
   "<.> i" #'insert-char
+  "<.> )" #'insert-char
 
   ;; TODO: end up using those rarely, should put something more useful here
   ;; "<home>" #'move-beginning-of-line

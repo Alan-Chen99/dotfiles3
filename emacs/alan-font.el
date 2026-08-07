@@ -29,8 +29,7 @@
                         (font-spec :family "DejaVuSansM Nerd Font")
                         frame 'prepend))))
 
-(defvar alan-default-font-height)
-(setq alan-default-font-height 25)
+(defvar alan-default-font-height (or (string-to-number (getenv "EMACS_FONT_HEIGHT")) 25))
 
 ;; (face-attribute 'default :font)
 (defun alan--set-default-font-spec (family size)
