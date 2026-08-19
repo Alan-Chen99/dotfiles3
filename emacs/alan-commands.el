@@ -3,6 +3,7 @@
 (require 'alan-core)
 (require 'evil)
 (require 'evil-visualstar)
+(require 'alan-with-editor)
 
 (require-if-is-bytecompile display-line-numbers alan-modeline dired)
 
@@ -310,6 +311,8 @@
 ;; (defalias 'sh 'shell)
 (cl-defun shell-this-remote ()
   (interactive)
+  (alan-setup-with-editor)
+
   (let ((remote (file-remote-p default-directory)))
     (dolist (b (append (bound-and-true-p my-iflipb-buffer-list) (buffer-list)))
       (when (and (eq (buffer-local-value 'major-mode b) 'shell-mode)
@@ -392,6 +395,8 @@
   ;; `comint-run' with single input
   (interactive
    (list (read-shell-command "Run: ")))
+
+  (alan-setup-with-editor)
 
   (setq command (string-trim command))
 

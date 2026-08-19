@@ -33,6 +33,36 @@
 (setq alan-default-font-height 25)
 
 ;; (face-attribute 'default :font)
+(defun alan--set-default-font-spec (family size)
+  "Install FAMILY at SIZE as the default face's font override.
+
+The font lives in `face-override-spec' (not `set-face-attribute') so
+that `face-spec-recalc' keeps it after any of:
+
+  - a theme is enabled and its `default' face-spec omits `:font'
+    (e.g. `ef-owl' specifies only `:background'/`:foreground'), or
+  - `face-set-after-frame-default' runs on a frame.
+
+`face-set-after-frame-default' is invoked from
+`Freconsider_frame_fonts' (frame.c) via
+`dynamic-setting-handle-config-changed-event' when Emacs receives a
+`config-changed-event' of type `font-render' or `monospace-font-name'.
+`xsettings.c' fires those events when the X server's XSETTINGS
+manager announces Xft/DPI/Antialias/Hinting/RGBA or GTK font-name
+values.  Servers with an XSETTINGS owner (VcXsrv, Xming, a normal
+desktop session) reliably trigger this shortly after Emacs connects.
+xvfb has no XSETTINGS owner, so the event never fires and imperative
+`:font' assignments appear to stick.
+
+With `set-face-attribute … :font …', the attribute lives outside any
+face-spec, so `face-spec-recalc' drops it and the default face falls
+back to Emacs's built-in default (DejaVu Sans Mono 17 on this build).
+With `face-override-spec', the font is part of the spec and is
+reapplied on every recalc."
+  (face-spec-set 'default
+                 `((t :font ,(font-spec :family family :size size)))
+                 'face-override-spec))
+
 (defun alan-init-font-in-frame (frame)
   (with-selected-frame frame
     (let ((font (cond
@@ -40,6 +70,7 @@
                  ;;x©x©xxxx
                  ;;xxxxxxxx
                  ;;x·✢*✻xxx ;; claude code progress blink
+                 ;;⬝■ ;; opencode progress bar
                  ;;x󰊤x󰊤xxx
                  ;;x★x★xx
                  ;;x😀x😀xxxx
@@ -51,7 +82,7 @@
                  ((alan-font-exist "Courier New"))
                  (t nil))))
       (when font
-        (set-face-attribute 'default frame :font (font-spec :family font :size alan-default-font-height))
+        (alan--set-default-font-spec font alan-default-font-height)
         (alan--apply-symbol-fontset frame)
 
         ;; seems to work even though doc of tooltip-frame-parameters claims otherwise
@@ -80,7 +111,7 @@
 
 (defun alan-set-font-size (newsz &optional silent)
   (when (display-graphic-p)
-    (set-face-attribute 'default (selected-frame) :font (font-spec :size newsz))
+    (alan--set-default-font-spec (face-attribute 'default :family) newsz)
     (alan--apply-symbol-fontset)
 
     ;; so that resizing also changes tooltip size

@@ -5,6 +5,7 @@
 (require 'alan-shell)
 (require 'alan-theme)
 (require 'alan-modeline)
+(require 'alan-with-editor)
 
 (require-if-is-bytecompile evil-collection-vterm)
 ;; (pkg! 'mistty)
@@ -331,6 +332,9 @@ For example, pressing x sends C-x to the terminal."
   ;; compared to original, this restarts if the process died
   (interactive "P")
   (require 'vterm)
+
+  (alan-setup-with-editor)
+
   (let* ((name (cond
                 ((numberp arg) (format "%s<%d>" vterm-buffer-name arg))
                 ((stringp arg) arg)
