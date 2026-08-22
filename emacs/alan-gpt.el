@@ -74,7 +74,7 @@ Today is %s.
                     google/gemini-3-pro-preview
                     google/gemini-2.5-pro
                     deepseek/deepseek-r1-0528
-                    deepseek/deepseek-v3.2-speciale
+                    deepseek/deepseek-v4-pro
                     test-noexist
                     )
           :request-params
