@@ -6,7 +6,7 @@
 ;;   cp emacs/agent_work_template.el /tmp/agent-work.el
 ;;   # edit the WORK SECTION in /tmp/agent-work.el
 ;;   nix shell nixpkgs#xvfb-run -c xvfb-run -a -s "-screen 0 1920x1080x24" env GDK_BACKEND=x11 emacs --user "" -l /tmp/agent-work.el 2>/dev/null
-;;   grep -A9999 -- '----start----' /tmp/debug.log
+;;   grep -a -A9999 -- '----start----' /tmp/debug.log
 ;;
 ;; The xvfb-run command runs Emacs on a virtual display so it doesn't
 ;; appear on screen.  GDK_BACKEND=x11 makes PGTK Emacs use the X11
@@ -25,8 +25,21 @@
 ;;     Use `span-msg` to log; read the log file after emacs exits.
 ;;   - This file must RETURN before Emacs startup completes.
 ;;     All work MUST go on timers (run-with-timer), not at top level.
+;;   - Top level runs before the work timer, and before anything the timer
+;;     `require's has configured itself.  Read config values inside the
+;;     timer; a top-level `defvar' captures the pre-`require' value.
 ;;   - Always end with (kill-emacs 0) inside your work timer.
 ;;   - NEVER use condition-case. Use condition-case-unless-debug, which logs the error.
+;;
+;; reading the log:
+;;   - Use `grep -a'.  The log embeds raw subprocess output, including
+;;     remote shell transcripts, so plain grep can classify the file as
+;;     binary and print nothing at all -- a silent false "no matches".
+;;   - `message' output lands in the log tagged `%%', not in *Messages*.
+;;     The advice on `message' logs the text and binds `message-log-max'
+;;     to nil for the real call, so *Messages* stays empty here.
+;;   - `span-max-width' truncates every logged line.  Raise it before
+;;     logging long values or they are cut mid-line with no marker.
 ;;
 ;; logging framework:
 ;;   - A span is logged if there are any messages within it
@@ -39,7 +52,7 @@
 (elpaca-process-queues)
 
 (defvar log-file "/tmp/debug.log")
-(setq span-max-width 100) ;; truncate each line in log
+(setq span-max-width 100) ;; truncate each line in log; raise for long values
 
 ;; defers and written as batch on timers
 (setq span-log-handler

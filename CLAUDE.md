@@ -95,5 +95,9 @@ MUST NOT use code to find something that can be found by running emacs.
 After Emacs exits, read the log filtered to work output (skip startup trace):
 
 ```sh
-grep -A9999 -- '----start----' /tmp/debug.log
+grep -a -A9999 -- '----start----' /tmp/debug.log
 ```
+
+`-a` is required: the log embeds raw subprocess output, so plain
+`grep` can classify it as binary and print nothing at all. `message`
+output appears in this log tagged `%%`, not in `*Messages*`.
