@@ -85,6 +85,49 @@
   )
 
 
+;; `file-chase-links' resolves a symlink target against the link's own
+;; directory using `files--splice-dirname-file'.  That helper looks up a
+;; file-name handler for the target and, finding none for a bare absolute
+;; path, quotes it into the local namespace: chasing
+;; /ssh:host:/dir/link -> /abs/target yields "/:/abs/target".  Its own
+;; docstring calls the quoting "dubious if DIRNAME is magic".
+;;
+;; Only absolute targets are affected.  A relative target is concatenated
+;; onto the remote directory and keeps its /ssh: prefix, so two links to
+;; the same file behave differently according to how the link was written.
+;;
+;; The elisp manual (node "Truenames") specifies the return value as the
+;; name of the file at the end of the chain, and callers rely on that.
+;; `backup-buffer' copies from it before every save: where /abs/target is
+;; absent locally the save aborts with `file-missing', and where it happens
+;; to exist locally the backup silently captures that unrelated local file.
+(defun alan-file-chase-links-remote (orig filename &optional limit)
+  "Chase links in FILENAME, resolving targets in FILENAME's remote namespace.
+An absolute symlink target of a remote FILENAME names a remote file;
+`file-chase-links' hands it back as a local name instead."
+  (let ((remote (file-remote-p filename)))
+    (if (null remote)
+        (funcall orig filename limit)
+      (let ((newname filename)
+            (count 0)
+            target)
+        (while (and (or (null limit) (< count limit))
+                    (setq target (file-symlink-p newname)))
+          (save-match-data
+            (when (and (null limit) (= count 100))
+              (error "Apparent cycle of symbolic links for %s" filename))
+            ;; In the context of a link, `//' is a plain separator, not the
+            ;; `expand-file-name' escape back to the filesystem root.
+            (setq target (replace-regexp-in-string "//+" "/" target))
+            (setq newname
+                  (expand-file-name
+                   (if (file-name-absolute-p target) (concat remote target) target)
+                   (file-name-directory newname)))
+            (setq count (1+ count))))
+        newname))))
+
+(advice-add #'file-chase-links :around #'alan-file-chase-links-remote)
+
 (require-if-is-bytecompile
  tramp tramp-sh)
 
