@@ -119,19 +119,75 @@
  )
 
 ;; https://www.emacswiki.org/emacs/ForceBackups
+;;
+;; Two histories are kept per file.  The per-save history in
+;; `backup-directory-alist' records every save, but a busy session churns
+;; through its `kept-new-versions' quickly; the per-session history keeps
+;; one snapshot per visit and so reaches much further back.
+;;
+;; Both backups of a save hold the same bytes -- the file as it stands
+;; before the buffer is written -- but `backup-buffer' reads the file
+;; afresh for each.  Over TRAMP that read is a whole transfer of the
+;; file: 0.3-0.5s for 256K over ssh, a method that carries copies inline
+;; through the remote shell.  The advice below hands each backup after
+;; the first the backup already written, so one save moves the file over
+;; the network at most once.
+
+(defvar alan-backup--shared-copy nil
+  "What the save in progress has already copied, as a cons of source and backup.
+`force-backup-of-buffer' binds this to t around the backups it makes and
+`alan-backup-reuse-first-copy' fills it in.  Nil elsewhere, which leaves
+`backup-buffer' reading the visited file as usual.")
+
+(defadvice! alan-backup-reuse-first-copy (orig from to modes extended-attributes)
+  "Copy FROM's existing backup instead of reading FROM a second time.
+Every backup of one save captures identical bytes, so the file is worth
+reading once."
+  :around #'backup-buffer-copy
+  ;; Only a backup of this very file will do, and never the one being
+  ;; written now.  `backup-buffer' yields control while this binding is
+  ;; live -- it sleeps a second when a backup fails -- so a timer reaching
+  ;; `backup-buffer' for an unrelated buffer lands here, and that buffer's
+  ;; backup is no substitute for FROM.  `copy-file' given one file as both
+  ;; source and destination truncates it before reporting the error.
+  (let ((earlier (and (equal from (car-safe alan-backup--shared-copy))
+                      (not (equal to (cdr alan-backup--shared-copy)))
+                      (cdr alan-backup--shared-copy))))
+    (prog1 (funcall orig (or earlier from) to modes extended-attributes)
+      ;; `copy-file' gives TO the permissions of whatever it read, and
+      ;; `backup-buffer-copy' corrects them only where setting the extended
+      ;; attributes fails -- so on a file carrying an ACL or an SELinux
+      ;; context TO would keep the earlier backup's own #o600.  That
+      ;; earlier backup came from the visited file through this same
+      ;; function, so its permissions are the ones TO should have.
+      (when earlier
+        (set-file-modes to (file-modes earlier)))
+      ;; Reached only on a successful copy: `backup-buffer-copy' signals
+      ;; otherwise, leaving TO absent and FROM still the source to read.
+      (when (eq alan-backup--shared-copy t)
+        (setq alan-backup--shared-copy (cons from to))))))
+
 (defun force-backup-of-buffer ()
-  ;; Make a special "per session" backup at the first save of each
-  ;; emacs session.
-  (when (not buffer-backed-up)
-    ;; Override the default parameters for per-session backups.
-    (let ((backup-directory-alist '(("" . "~/.emacs.d/backup/per-session")))
-          (kept-new-versions 3))
-      (backup-buffer)))
-  ;; Make a "per save" backup on each save.  The first save results in
-  ;; both a per-session and a per-save backup, to keep the numbering
-  ;; of per-save backups consistent.
-  (let ((buffer-backed-up nil))
-    (backup-buffer)))
+  "Back up the visited file, per session and per save, before writing it."
+  (let ((alan-backup--shared-copy t))
+    ;; Make a special "per session" backup at the first save of each
+    ;; emacs session.
+    (when (not buffer-backed-up)
+      ;; Override the default parameters for per-session backups.
+      (let ((backup-directory-alist '(("" . "~/.emacs.d/backup/per-session")))
+            (kept-new-versions 3))
+        (backup-buffer)))
+    ;; Make a "per save" backup on each save.  The first save results in
+    ;; both a per-session and a per-save backup, to keep the numbering
+    ;; of per-save backups consistent.
+    ;;
+    ;; `backup-buffer' refuses to act once `buffer-backed-up' is set, so
+    ;; the flag is rebound and the value it stores discarded with the
+    ;; binding.  On the first save the per-session backup above has
+    ;; already set the outer flag, which is what stops
+    ;; `basic-save-buffer-2' adding a third backup of its own.
+    (let ((buffer-backed-up nil))
+      (backup-buffer))))
 
 (add-hook 'before-save-hook #'force-backup-of-buffer)
 
