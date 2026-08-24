@@ -5,16 +5,13 @@
 ;; Usage:
 ;;   cp emacs/agent_work_template.el /tmp/agent-work.el
 ;;   # edit the WORK SECTION in /tmp/agent-work.el
-;;   nix shell nixpkgs#xvfb-run -c xvfb-run -a -s "-screen 0 1920x1080x24" env GDK_BACKEND=x11 emacs --user "" -l /tmp/agent-work.el 2>/tmp/debug-stderr.log
+;;   agent-tools run --desc "emacs agent work" nix shell nixpkgs#xvfb-run -c xvfb-run -a -s "-screen 0 1920x1080x24" env GDK_BACKEND=x11 emacs --user "" -l /tmp/agent-work.el
 ;;   grep -a -A9999 -- '----start----' /tmp/debug.log
-;;   cat /tmp/debug-stderr.log   # span reports a broken log sink HERE, not in the log
 ;;
-;; span reports a failure of the log handler on stderr, because that is the
-;; one failure the log itself cannot carry.  The setup below redirects fd 2
-;; into /tmp/debug-stderr.log from inside Emacs, so those reports survive
-;; even if you invoke this with 2>/dev/null.  Keeping the shell redirect as
-;; well is still worth it: it catches anything written before this file
-;; loads, such as a failure to load it at all.
+;; Run it under `agent-tools run'.  span reports a failure of the log handler
+;; on stderr -- the one failure the log itself cannot carry -- and
+;; agent-tools captures stderr and passes it through, so no redirect is
+;; needed to see it.
 ;;
 ;; The xvfb-run command runs Emacs on a virtual display so it doesn't
 ;; appear on screen.  GDK_BACKEND=x11 makes PGTK Emacs use the X11
@@ -72,19 +69,11 @@
 ;;     the matching in-band note only survives if the sink recovers.
 ;;   - Errors past `span-debugger-rearm-limit-per-cycle' in one flush cycle
 ;;     carry no backtrace; a `warning: debugger re-armed' note marks that point.
+;;   - `debug-ignored-errors' is cleared in the setup below, so an unhandled
+;;     `end-of-file' or `user-error' is logged with a backtrace instead of
+;;     being silently skipped.
 
 ;; --- setup (do not modify) -------------------------------------------
-
-(defvar stderr-file "/tmp/debug-stderr.log")
-
-;; Own the stderr redirect from inside Emacs, so the last-resort channel
-;; survives however this file was invoked -- including with 2>/dev/null.
-;; This is a real dup2 on fd 2, so it also captures GTK and Xvfb noise.
-;; Appends: whatever the shell redirect caught before this line (a failure
-;; to load this file at all, say) is kept rather than truncated away.
-;; Redirect elsewhere by calling this again; setting `stderr-file' later
-;; has no effect, the dup2 already happened.
-(redirect-debugging-output stderr-file t)
 
 (require 'alan)
 
@@ -103,6 +92,16 @@
 
 ;; use non-interactive debugger that prints to logs
 (advice-add #'debug :override #'span--debug)
+
+;; span logs an error by way of the debugger, and Emacs skips the debugger
+;; for anything in `debug-ignored-errors' -- which by default holds
+;; `end-of-file', `user-error', `search-failed' and friends.  That hides
+;; real failures, including an unbalanced paren in this very file, which
+;; would otherwise leave nothing behind but a bare `! :load'.  An error a
+;; `condition-case' catches still does not reach the debugger, so clearing
+;; this only surfaces errors that really went unhandled.
+;; Packages loaded later re-add their own entries as they load.
+(setq debug-ignored-errors nil)
 
 ;; xvfb has no window manager, so "maximized" doesn't work.
 ;; force a reasonable frame size for agent work.

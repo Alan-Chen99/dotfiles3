@@ -84,15 +84,12 @@ Agents running debugging MUST use `emacs/agent_work_template.el` for interactive
 Run Emacs on a virtual display so it does not appear on the user's screen:
 
 ```sh
-nix shell nixpkgs#xvfb-run -c xvfb-run -a -s "-screen 0 1920x1080x24" env GDK_BACKEND=x11 emacs --user "" -l /tmp/agent-work.el 2>/tmp/debug-stderr.log
+agent-tools run --desc "emacs agent work" nix shell nixpkgs#xvfb-run -c xvfb-run -a -s "-screen 0 1920x1080x24" env GDK_BACKEND=x11 emacs --user "" -l /tmp/agent-work.el
 ```
 
-span reports a failure of the log handler on stderr — the one failure
-the log itself cannot carry. The template redirects fd 2 into
-`/tmp/debug-stderr.log` from inside Emacs, so those reports survive even
-if you invoke it with `2>/dev/null`. Keep the shell redirect anyway: it
-catches anything written before the template loads, such as a failure to
-load it at all. Always read this file alongside the log.
+Run it under `agent-tools run`. span reports a failure of the log handler
+on stderr — the one failure the log itself cannot carry — and agent-tools
+captures stderr and passes it through, so no redirect is needed.
 
 MUST verify that they can run emacs BEFORE exploring code or starting any related work.
 SHOULD NOT use `--batch` — it skips normal config loading and `(require 'alan)` will fail.
@@ -103,7 +100,6 @@ After Emacs exits, read the log filtered to work output (skip startup trace):
 
 ```sh
 grep -a -A9999 -- '----start----' /tmp/debug.log
-cat /tmp/debug-stderr.log
 ```
 
 `-a` is required: the log embeds raw subprocess output, so plain
@@ -124,3 +120,8 @@ Tramp and off lock files. Do not hand-roll a log handler.
 `span-msg` queues the entry; the log is written on a 0.5s timer. Use
 `span-msg-now` for a checkpoint that must survive a segfault or an
 external kill — it returns only once the entry is on disk.
+
+The template clears `debug-ignored-errors`. Emacs skips the debugger for
+the errors listed there, and span logs errors by way of the debugger, so
+an unhandled `end-of-file` — an unbalanced paren in your work file — would
+otherwise leave nothing in the log but a bare `! :load`.
