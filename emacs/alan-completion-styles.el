@@ -59,17 +59,26 @@
   ;; (advice-add 'company-capf--candidates :around #'just-one-face)
 
   (defvar my-orderless-component-separator #'orderless-escapable-split-on-space)
+  (defvar my-orderless-quit-catcher-p nil
+    "Non-nil while an `orderless-quit' catcher is established up the stack.")
   (defun my-orderless-split (string)
     (let
         ((ans
           (if (functionp my-orderless-component-separator)
               (funcall my-orderless-component-separator string)
             (split-string string my-orderless-component-separator t))))
-      (if (> (length ans) 1)
+      ;; A single component is left to the next completion style, which
+      ;; `orderless-quit' reaches by unwinding out of the style entry point.
+      ;; `orderless-compile' is also reachable from callers that establish no
+      ;; catcher -- `orderless-filter', `orderless-highlight-matches', or a
+      ;; direct call -- and those need the components back, not an unwind.
+      (if (or (> (length ans) 1) (not my-orderless-quit-catcher-p))
           ans
         (throw 'orderless-quit nil))))
   (defun orderless-quit-advice (orig-fun &rest args)
-    (catch 'orderless-quit (apply orig-fun args)))
+    (catch 'orderless-quit
+      (let ((my-orderless-quit-catcher-p t))
+        (apply orig-fun args))))
   (advice-add #'orderless-all-completions :around 'orderless-quit-advice)
   (advice-add #'orderless-try-completion :around 'orderless-quit-advice)
 
