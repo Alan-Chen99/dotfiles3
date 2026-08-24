@@ -336,8 +336,15 @@ designed to be created at compile time and used as constant"
 (defvar span--pending-log-list nil)
 (defvar span--pending-log-list-len 0)
 (defvar span--n-backtrace-made-this-cycle 0)
+(defvar span--n-debugger-rearmed-this-cycle 0)
 
 (defvar span-message-limit-per-cycle 3000)
+
+(defvar span-debugger-rearm-limit-per-cycle 10
+  "How often `span--debug' may re-arm the Emacs debugger per flush cycle.
+Emacs disables the debugger after one entry until the next non-macro
+input event.  Re-arming restores a backtrace for every error; the limit
+keeps an error storm from spending the whole cycle in the debugger.")
 
 (defmacro span--pending-log-list-push (entry)
   `(let ((l span--pending-log-list-len))
@@ -462,7 +469,16 @@ designed to be created at compile time and used as constant"
       (let ((span--handles-message nil)
             (debug-on-message nil))
         (span :span-log-handler
-          (funcall span-log-handler msg))))))
+          (condition-case err
+              (funcall span-log-handler msg)
+            (error
+             ;; PENDING is already off `span--pending-log-list', so a handler
+             ;; that refuses the batch destroys it.  Size the hole before
+             ;; re-raising: the note goes out with the next batch, which a
+             ;; content-dependent failure usually accepts.
+             (span-notef "warning: log handler failed, %s entries lost: %s"
+               (length pending) (span-fmt-to-string err))
+             (signal (car err) (cdr err)))))))))
 
 (defvar span--is-flushing nil)
 
@@ -522,6 +538,7 @@ designed to be created at compile time and used as constant"
         (setq span--pending-log-list nil)
         (setq span--pending-log-list-len 0)
         (setq span--n-backtrace-made-this-cycle 0)
+        (setq span--n-debugger-rearmed-this-cycle 0)
         (when (> prev-len span-message-limit-per-cycle)
           (span-notef
             "warning: %s has been ommited due to too many messages"
@@ -915,8 +932,25 @@ of `backtrace.el' that `backtrace-get-frames' would trigger."
           (span (:span--debug "error: %s %s" (:unsafe-ts (cons err-sym data)) (:unsafe-ts (buffer-name (current-buffer))))
             (span-flush)
             (span--backtrace #'span--debug)
-            ;; otherwise, the debugger gets disabled until the next key press
-            ;; (setq internal-when-entered-debugger -1)
+            ;; Entering the debugger disables it until the next non-macro input
+            ;; event.  A session that takes no keyboard input -- an agent run, a
+            ;; batch job, a burst of errors inside one command -- therefore gets
+            ;; a backtrace for the first error and nothing for the rest.
+            ;; Re-arming is budgeted per flush cycle so a storm cannot spend the
+            ;; whole cycle building backtraces.
+            (cond
+             ((< span--n-debugger-rearmed-this-cycle
+                 span-debugger-rearm-limit-per-cycle)
+              (cl-incf span--n-debugger-rearmed-this-cycle)
+              (setq internal-when-entered-debugger -1))
+             ;; One warning as the budget runs out, so a log that goes quiet
+             ;; reads as a spent budget rather than as no further errors.
+             ((= span--n-debugger-rearmed-this-cycle
+                 span-debugger-rearm-limit-per-cycle)
+              (cl-incf span--n-debugger-rearmed-this-cycle)
+              (span-notef
+                "warning: debugger re-armed %s times this cycle; errors until the next flush carry no backtrace"
+                span-debugger-rearm-limit-per-cycle)))
             (signal err-sym data)))
       (span-notef "debug: %s %s" (:unsafe-ts type) (:unsafe-ts args))
       ;; TODO: should quit here if is here too many times, since might hang
