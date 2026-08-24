@@ -41,6 +41,12 @@
   ;; Match against filenames/directories in consult-buffer, not just
   ;; buffer names.  Appended as invisible text so orderless matches it
   ;; but display is unchanged (marginalia still shows the annotation).
+  ;;
+  ;; This runs over every buffer on each `consult-buffer' call, so the
+  ;; path has to be abbreviated without touching the file system.
+  ;; `abbreviate-file-name' dispatches to Tramp for a remote name, which
+  ;; asks the host for its home directory and case sensitivity; on a
+  ;; connection that is live but unresponsive that wait has no timeout.
   (plist-put consult--source-buffer :items
              (lambda ()
                (consult--buffer-query
@@ -51,7 +57,7 @@
                                         (buffer-local-value 'default-directory buf))))
                         (if extra
                             (cons (concat name (propertize
-                                                (concat " " (abbreviate-file-name extra))
+                                                (concat " " (consult--fast-abbreviate-file-name extra))
                                                 'invisible t))
                                   buf)
                           (cons name buf))))))))
