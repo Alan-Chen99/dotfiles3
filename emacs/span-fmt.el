@@ -25,8 +25,22 @@
       obj
     (prin1-to-string obj)))
 
+(defvar span-fmt-print-limit 100
+  "Print budget for `span-fmt-to-string', in characters.
+
+This decides where the \"...\" of an elided value appears.
+`cl-print-to-string-with-limit' derives `print-length', `print-level' and
+`cl-print-string-length' from it and retries with tighter levels until
+the result fits, so it bounds the printed value rather than capping the
+returned string exactly.
+
+Distinct from `span-max-width', which cuts the finished line.  The two
+must not be equal: a value printed under this budget ends near this
+column, so the ellipses cluster just past it and a line width of the same
+size cuts them off.")
+
 (defun span-fmt-to-string (obj)
-  (backtrace-print-to-string obj 100))
+  (backtrace-print-to-string obj span-fmt-print-limit))
 
 (defsubst span-fmt--immutable-or-replace-seq (obj)
   (cl-map (type-of obj) #'span-fmt--immutable-or-replace obj))

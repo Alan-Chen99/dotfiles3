@@ -549,7 +549,14 @@ may never be logged.  It does NOT reach `span-log-handler'; that is
 (defvar span-max-width 1000
   "Truncate every logged line to this many characters, or nil for no limit.
 Applied per line after formatting, so a long value is cut with no marker.
-Raise it before logging long values.")
+Raise it before logging long values.
+
+Keep this well above `span-fmt-print-limit'.  That limit is the print
+budget, so a printed value ends near it and the \"...\" markers cl-print
+leaves behind cluster in a narrow band just past it.  A width equal to
+the limit cuts through that band and removes the markers themselves --
+the ellipsis is the only sign that anything was elided, so losing it
+costs more than the characters do.")
 (defun span--maybe-truncate-str (s)
   (declare (indent 0))
   (if (and span-max-width (length> s span-max-width))

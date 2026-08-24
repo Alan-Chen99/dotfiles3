@@ -70,8 +70,11 @@
 ;;   - `message' output lands in the log tagged `%%', not in *Messages*.
 ;;     The advice on `message' logs the text and binds `message-log-max'
 ;;     to nil for the real call, so *Messages* stays empty here.
-;;   - `span-max-width' truncates every logged line.  Raise it before
-;;     logging long values or they are cut mid-line with no marker.
+;;   - `span-max-width' truncates every logged line, leaving no marker at
+;;     the cut.  Raise it before logging long values.  Keep it clear of
+;;     `span-fmt-print-limit' (the print budget, 100): a printed value
+;;     ends near that column, so the "..." that marks an elided part sits
+;;     just past it, and a width of 100 cuts off the ellipses themselves.
 ;;
 ;; logging framework:
 ;;   - A span is logged if there are any messages within it
@@ -98,7 +101,12 @@
 (elpaca-process-queues)
 
 (defvar log-file "/tmp/debug.log")
-(setq span-max-width 100) ;; truncate each line in log; raise for long values
+;; Cut each logged line here.  200 rather than 100 because
+;; `span-fmt-print-limit' is 100: printed values end around that column
+;; and their "..." markers sit just past it, so a width of 100 removes
+;; the only sign that anything was elided -- and buys about 2% of the log
+;; for it.  Raise this further before logging long values.
+(setq span-max-width 200)
 
 ;; The log is opened for append and nothing else truncates it, so without
 ;; this a re-run leaves two runs in one file -- both timestamp series
