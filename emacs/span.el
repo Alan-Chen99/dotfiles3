@@ -368,7 +368,7 @@ repeat it in a format string.  Values are printed at flush time."
         (:track-blocking (setq track-blocking (pop rest)))
         (:flush-on-err (setq flush-on-err (pop rest)))
         (:blocking (setq blocking (pop rest)))
-        (_ (error "invalid"))))
+        (k (error "span--unchecked: invalid option %S" k))))
 
     (cl-assert (symbolp track-sucess))
 
@@ -454,7 +454,8 @@ Keyword options may precede the body:
     (while (keywordp (car-safe rest))
       (pcase (pop rest)
         (:blocking (setq blocking (pop rest)))
-        (:flush-on-err (setq flush-on-err (pop rest)))))
+        (:flush-on-err (setq flush-on-err (pop rest)))
+        (k (error "span: invalid option %S" k))))
     (if (bound-and-true-p byte-compile-current-file)
         (macroexp-let2* nil
             ((span--tmp-obj (span--parse-span-spec obj))
@@ -896,7 +897,8 @@ ad-hoc tracing of an arbitrary function, use `span-instrument'."
          (wrap-with 'span)
          (_ (while (keywordp (car-safe rest))
               (pcase (pop rest)
-                (:with (setq wrap-with (pop rest))))))
+                (:with (setq wrap-with (pop rest)))
+                (k (error "span-wrap: invalid option %S" k)))))
          (_ (when (eq (car-safe (car-safe rest)) '_)
               (setcar (car rest) (intern (concat ":" (symbol-name sym))))))
          (defun-form
@@ -990,7 +992,7 @@ REST runs inside the span on entry, so it can log extra context."
         (:verbose (setq verbose (pop rest)))
         (:backtrace (setq backtrace (pop rest)))
         (:time (setq time (pop rest)))
-        (_ (error "invalid"))))
+        (k (error "span-instrument: invalid option %S" k))))
     `(span-add-instrument #',sym ,verbose ,backtrace ,time (lambda () ,@rest))))
 
 (defun span-uninstrument (sym)
