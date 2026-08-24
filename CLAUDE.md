@@ -84,8 +84,15 @@ Agents running debugging MUST use `emacs/agent_work_template.el` for interactive
 Run Emacs on a virtual display so it does not appear on the user's screen:
 
 ```sh
-nix shell nixpkgs#xvfb-run -c xvfb-run -a -s "-screen 0 1920x1080x24" env GDK_BACKEND=x11 emacs --user "" -l /tmp/agent-work.el 2>/dev/null
+nix shell nixpkgs#xvfb-run -c xvfb-run -a -s "-screen 0 1920x1080x24" env GDK_BACKEND=x11 emacs --user "" -l /tmp/agent-work.el 2>/tmp/debug-stderr.log
 ```
+
+span reports a failure of the log handler on stderr — the one failure
+the log itself cannot carry. The template redirects fd 2 into
+`/tmp/debug-stderr.log` from inside Emacs, so those reports survive even
+if you invoke it with `2>/dev/null`. Keep the shell redirect anyway: it
+catches anything written before the template loads, such as a failure to
+load it at all. Always read this file alongside the log.
 
 MUST verify that they can run emacs BEFORE exploring code or starting any related work.
 SHOULD NOT use `--batch` — it skips normal config loading and `(require 'alan)` will fail.
@@ -96,6 +103,7 @@ After Emacs exits, read the log filtered to work output (skip startup trace):
 
 ```sh
 grep -a -A9999 -- '----start----' /tmp/debug.log
+cat /tmp/debug-stderr.log
 ```
 
 `-a` is required: the log embeds raw subprocess output, so plain
@@ -108,3 +116,11 @@ bytes and characters above `#x10FFFF` — consult appends the latter to
 every completion candidate — and no ordinary coding system encodes
 them, so `write-region` stops on a coding-system prompt. Emacs then
 hangs with an empty stdout and stderr and a log that simply stops.
+
+The span log itself is already safe: the template installs
+`span-file-log-handler`, which encodes in Lisp and keeps the write off
+Tramp and off lock files. Do not hand-roll a log handler.
+
+`span-msg` queues the entry; the log is written on a 0.5s timer. Use
+`span-msg-now` for a checkpoint that must survive a segfault or an
+external kill — it returns only once the entry is on disk.

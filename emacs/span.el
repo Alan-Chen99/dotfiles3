@@ -12,7 +12,58 @@
 (autoload 'backtrace--to-string "backtrace")
 
 
+;;; Overview
+;;
+;; A span is a named region of execution; notes attach to the span that
+;; encloses them.  A span reaches the log only if something was logged
+;; inside it, so instrumentation that stays quiet costs only a push and a
+;; pop.
+;;
+;; There are two independent "flush" steps.  Confusing them is the most
+;; common mistake:
+;;
+;;   `span-flush'      emits the enclosing spans' headers into the pending
+;;                     list, so notes recorded afterwards appear under the
+;;                     right span.  Reaches no sink.
+;;   `span-flush-log'  hands the whole pending list to `span-log-handler'.
+;;                     This is the step that reaches a buffer, stdout or a
+;;                     file.  Normally driven by a 0.5s timer.
+;;
+;; Recording an entry, cheapest first:
+;;
+;;   `span-note'    record; formatting is deferred to flush time.  Emits
+;;                  nothing until the enclosing span is logged for some
+;;                  other reason.
+;;   `span-notef'   as `span-note' but runs `span-flush' first, so the entry
+;;                  appears even when the enclosing span is otherwise quiet.
+;;                  The normal choice for instrumentation.
+;;   `span-msg'     formats eagerly with `format-message', then `span-notef'.
+;;                  A plain function, so it takes no (:ts ...) / (:unsafe ...)
+;;                  format specs -- those are macro-only, see span-fmt.el.
+;;   `span-msg-now' as `span-msg', then `span-flush-log': the entry is in the
+;;                  sink before the call returns.  Roughly 25x the cost of
+;;                  `span-msg', so it is a checkpoint tool, not a default.
+;;   `span-dbg' / `span-dbgf'   log `expr: value' pairs, deferred / flushed.
+;;
+;; `span-log-handler' receives one string per flush.  That string is an
+;; ordinary Emacs string: it may carry text properties, raw 8-bit bytes, and
+;; characters above #x10FFFF (consult appends those to its candidates).  A
+;; handler must cope with all of it; `span-file-log-handler' is the worked
+;; example.  Encoding belongs to the handler, not here, because the shipped
+;; sinks disagree about it -- a buffer and `message' both want the string as
+;; it is, and only a file wants bytes.
+;;
+;; If a handler signals, the batch it was handed is already off the pending
+;; list and is gone.  That failure is reported on stderr rather than through
+;; the log, because the log is the channel that just failed.
+
 (defmacro span-fmt (&rest body)
+  "Evaluate BODY as a span format spec and return the formatted string.
+See span-fmt.el for the spec language.  The short version: a bare
+expression and (:ts EXPR) are evaluated AND formatted at the call site,
+while (:unsafe EXPR) and (:unsafe-ts EXPR) capture EXPR now and format it
+at flush time -- so a printer that signals aborts the caller in the first
+form and degrades to a log entry in the second."
   (cl-destructuring-bind (fn . val) (span-fmt-parse body)
     `(funcall ,fn ,val)))
 
@@ -121,6 +172,12 @@ designed to be created at compile time and used as constant"
 (defvar span--blocking-time nil)
 
 (defun span-var (sym)
+  "Value of SYM in the current span context, as a settable place.
+
+`span--context-locals' is rebound by `span--context', so a value stored
+here lasts for the current redisplay, command, or timer callback and is
+gone in the next one.  Use it for state that should not leak between
+contexts."
   (alist-get sym span--context-locals))
 
 (gv-define-expander span-var
@@ -159,6 +216,17 @@ designed to be created at compile time and used as constant"
     (span--unsafe-note e)))
 
 (defmacro span-note (&rest args)
+  "Record a note on the innermost span, formatting it at flush time.
+
+ARGS is a span format spec (see `span-fmt'), optionally preceded by
+:tag TAG to change the marker the entry is printed with.
+
+The note is buffered on the enclosing span and is written only if that
+span is logged -- which happens when anything else inside it is flushed,
+or when it exits non-locally.  A span in which nothing but `span-note'
+ran therefore stays invisible.  That is the point: this is the form to
+reach for when instrumenting a hot path, where the common case should
+cost nothing.  Use `span-notef' when the entry must appear regardless."
   (declare (indent 0))
   (let (tag)
     (when (eq (car-safe args) :tag)
@@ -167,6 +235,16 @@ designed to be created at compile time and used as constant"
     `(span--note ,(span--parse-fmt-spec args tag))))
 
 (defmacro span-notef (&rest args)
+  "Record a note on the innermost span and make it visible.
+
+Like `span-note', but runs `span-flush' first, so the enclosing spans are
+emitted and this entry is guaranteed to appear rather than depending on
+something else in the span being logged.  The `f' is for that stack
+flush; it does NOT write to `span-log-handler' -- that still waits for
+`span-flush-log' on the next timer tick.  Use `span-msg-now' when the
+entry has to be in the sink before the call returns.
+
+This is the normal choice for instrumentation that should always show up."
   (declare (indent 0))
   (let (tag)
     (when (eq (car-safe args) :tag)
@@ -175,7 +253,37 @@ designed to be created at compile time and used as constant"
     `(span--note-and-flush ,(span--parse-fmt-spec args tag))))
 
 (defun span-msg (&rest args)
+  "Format ARGS with `format-message' and record the result via `span-notef'.
+
+Use this to log a value already in hand.  Being an ordinary function, it
+evaluates and formats ARGS at the call site, so it accepts no (:ts ...)
+or (:unsafe ...) format specs -- those are understood only by the macros
+`span-note', `span-notef', `span-dbg' and `span', and written here a spec
+like (:unsafe-ts x) is read as a function call and signals `void-function'.
+
+Formatting at the call site also means a value whose printer signals
+aborts the caller.  To defer that risk to flush time, use
+`span-notef' with (:unsafe-ts VALUE) instead."
   (span-notef (:unsafe (apply #'format-message args))))
+
+(defun span-msg-now (&rest args)
+  "Like `span-msg', but the entry reaches `span-log-handler' before returning.
+
+`span-msg' only queues; the pending list is written on a 0.5s timer, and
+`span--kill-emacs-hook' drains it on a normal exit.  Neither helps when
+Emacs dies without running hooks -- a segfault, an external SIGKILL, or a
+wedge in code that never yields to the timer.  This is the checkpoint
+form for those cases: after it returns, the entry is in the sink.
+
+It costs roughly 25x a plain `span-msg' (a formatting pass plus a real
+write, against a list push), so use it to mark progress, not to log.
+
+Inside `span-log-handler' itself this degrades to a plain `span-msg':
+`span-flush-log' refuses to re-enter, and the entry goes out with the
+next batch.  A failing handler cannot propagate out of here either -- see
+`span--flush-log-impl' -- so a checkpoint never aborts the code it marks."
+  (apply #'span-msg args)
+  (span-flush-log))
 
 (eval-and-compile
   (defun span--macro-backquote (arg)
@@ -208,9 +316,13 @@ designed to be created at compile time and used as constant"
 
 
 (defmacro span-dbg (&rest args)
+  "Log each of ARGS as `EXPR: VALUE', deferring the note like `span-note'.
+The expression text is captured at compile time, so there is no need to
+repeat it in a format string.  Values are printed at flush time."
   `(span-note
      ,(span--handle-dbg-args args)))
 (defmacro span-dbgf (&rest args)
+  "As `span-dbg', but flush the span stack like `span-notef' so it always shows."
   `(span-notef
      ,(span--handle-dbg-args args)))
 
@@ -312,6 +424,26 @@ designed to be created at compile time and used as constant"
     (funcall cb)))
 
 (defmacro span (obj &rest rest)
+  "Run the body in REST inside a span named by OBJ.
+
+OBJ is a keyword, or a list whose head is a keyword followed by a span
+format spec, as in (:my-tag \"x=%s\" (:unsafe-ts x)).
+
+The span reaches the log only if something was logged inside it, so
+wrapping a function that stays quiet costs a push and a pop and nothing
+else.  A body that exits non-locally is marked with `!' in the log.
+
+Keyword options may precede the body:
+
+  :blocking      whether time spent in the body counts as the session
+                 being stuck (default t).  A blocking stretch longer than
+                 `span-blocking-log-limit' logs a `blocking:' note.  Pass
+                 nil, or a condition, for a body that is expected to wait
+                 without the user minding -- see
+                 `span--wrap-accept-process-output'.
+  :flush-on-err  on a non-local exit, also flush the enclosing span stack
+                 so the failure is visible rather than buffered on a span
+                 that may never be logged (default t)."
   (declare (indent 1))
   (let ((blocking t)
         (flush-on-err t))
@@ -338,7 +470,11 @@ designed to be created at compile time and used as constant"
 (defvar span--n-backtrace-made-this-cycle 0)
 (defvar span--n-debugger-rearmed-this-cycle 0)
 
-(defvar span-message-limit-per-cycle 3000)
+(defvar span-message-limit-per-cycle 3000
+  "Maximum entries recorded per flush cycle; the rest are dropped.
+`span-flush-log' notes how many were dropped.  Bounds the damage when a
+loop logs without limit, which would otherwise exhaust memory before the
+next timer tick.")
 
 (defvar span-debugger-rearm-limit-per-cycle 10
   "How often `span--debug' may re-arm the Emacs debugger per flush cycle.
@@ -396,10 +532,19 @@ keeps an error storm from spending the whole cycle in the debugger.")
       (cl-incf c))))
 
 (defun span-flush ()
+  "Emit the enclosing spans' headers into the pending log list.
+
+This makes the current span position visible, so notes recorded after it
+are printed under the right span instead of being buffered on a span that
+may never be logged.  It does NOT reach `span-log-handler'; that is
+`span-flush-log'."
   (let ((inhibit-quit t))
     (span--unsafe-flush-stack)))
 
-(defvar span-max-width 1000)
+(defvar span-max-width 1000
+  "Truncate every logged line to this many characters, or nil for no limit.
+Applied per line after formatting, so a long value is cut with no marker.
+Raise it before logging long values.")
 (defun span--maybe-truncate-str (s)
   (declare (indent 0))
   (if (and span-max-width (length> s span-max-width))
@@ -407,6 +552,13 @@ keeps an error storm from spending the whole cycle in the debugger.")
     s))
 
 (defun span-format-one (e)
+  "Format one pending log entry E into its printed line(s).
+
+Errors from the entry's own format function are caught and replaced with
+an `error (span-format-one)' line, so one bad entry cannot destroy the
+batch.  Note this does NOT cover a value whose printer signals: `cl-prin1'
+demotes that internally, so such a value renders as an empty string and
+the reason surfaces separately as a `cl-prin1:' message."
   (cl-destructuring-bind (depth s time . obj) e
     (let* ((inhibit-redisplay t)
            (backtrace-on-redisplay-error nil)
@@ -454,8 +606,24 @@ keeps an error storm from spending the whole cycle in the debugger.")
                     #'backtrace--expand-ellipsis))
     span--log-buf))
 
-(defvar span-log-handler #'span-default-log-handler)
+(defvar span-log-handler #'span-default-log-handler
+  "Function called with one string per flush, to put the log somewhere.
+
+MSG is an ordinary Emacs string and may carry text properties, raw 8-bit
+bytes, and characters above #x10FFFF.  A handler has to cope with all of
+it.  Encoding is the handler's business precisely because the sinks
+disagree: `span-default-log-handler' inserts into a buffer and
+`ci--redirect-to-stdout' calls `message', both of which want the string
+unchanged, while only a file wants bytes -- see `span-file-log-handler'.
+
+A handler runs from a timer, at an arbitrary point in unrelated code.  It
+must not prompt, must not block, and should not depend on the current
+buffer or `default-directory'.  If it signals, the batch it was given is
+destroyed; see `span--flush-log-impl' for what happens then.")
+
 (defun span-default-log-handler (msg)
+  "Append MSG to the *span* buffer.
+Cannot fail on content: a buffer holds anything a Lisp string can."
   (with-current-buffer (span--get-or-create-log-buf)
     (let ((buffer-read-only nil))
       (span-with-no-minibuffer-message
@@ -463,22 +631,117 @@ keeps an error storm from spending the whole cycle in the debugger.")
          (goto-char (point-max))
          (insert-before-markers msg))))))
 
+(defun span-file-log-handler (file)
+  "Return a `span-log-handler' that appends the log to FILE.
+
+FILE is a file name, or a function of no arguments returning one.  Pass a
+function when the destination is chosen after the handler is installed --
+the agent harness does this, so that a work section can still redirect the
+log by setting its `log-file' variable.  FILE should be absolute; a
+relative name is expanded when the handler is created, with file-name
+handlers disabled so that even that expansion cannot reach Tramp.
+
+Each binding below closes off a way for a log write to re-enter Lisp,
+block, or prompt -- which matters because this runs from a timer, at
+arbitrary points in unrelated code:
+
+  `default-directory' and `file-name-handler-alist'
+      `write-region' expands FILE against `default-directory', so a remote
+      one routes the log write through Tramp.  With both bound, a write
+      from a remote buffer performs no Tramp operations at all.
+  `write-region-post-annotation-function'
+      runs even though START is a string, because `write-region' seeds its
+      annotation buffer list unconditionally.
+  `create-lockfiles'
+      `write-region' locks the file it writes, including a file it is not
+      visiting.
+  `coding-system-for-write' plus an explicit `encode-coding-string'
+      encoding in Lisp cannot prompt.  Leaving the choice to `write-region'
+      sends an unencodable character into `select-safe-coding-system',
+      which asks the user -- and hangs a session that has no user.
+      `utf-8-emacs-unix' encodes everything an Emacs string can hold.
+
+The sixth argument of `write-region' is omitted deliberately: it is
+LOCKNAME, not MUSTBENEW.  Passing a non-nil value there makes Emacs
+derive a lock file name from it on every single write."
+  (let ((static (unless (functionp file)
+                  (let ((file-name-handler-alist nil))
+                    (expand-file-name file)))))
+    (lambda (msg)
+      (let ((default-directory "/")
+            (file-name-handler-alist nil)
+            (write-region-post-annotation-function nil)
+            (create-lockfiles nil)
+            (coding-system-for-write 'binary)
+            (inhibit-interaction t))
+        (write-region (encode-coding-string msg 'utf-8-emacs-unix)
+                      nil (or static (expand-file-name (funcall file)))
+                      t 'no-message)))))
+
+(defvar span-log-handler-failure-limit 5
+  "Consecutive `span-log-handler' failures tolerated before falling back.
+Past this many, the handler is replaced by `span-default-log-handler' so
+that the framework still has a sink that works.")
+
+(defvar span--consecutive-log-handler-failures 0)
+
+(defun span--last-resort (fmt &rest args)
+  "Report FMT and ARGS on stderr, bypassing the log entirely.
+
+This exists for failures of `span-log-handler' itself, which cannot be
+reported through the log.  A batch handed to a handler is already off
+`span--pending-log-list', so a handler that signals destroys it -- and any
+note about the loss is destroyed the same way by the next failure, which
+is why a sustained outage otherwise reports only its final cycle.
+
+The payload is reduced to printable ASCII and written with `princ' to
+`external-debugging-output'.  ASCII on that stream reaches stderr through
+a bare putc per character: no file-name handlers, no coding-system
+selection, no hooks.  Anything else would consult `coding-system-for-write'
+and `standard-display-table'."
+  (let* ((str (condition-case nil
+                  (apply #'format fmt args)
+                (error "unformattable report")))
+         (ascii (mapconcat (lambda (c)
+                             (char-to-string
+                              (if (and (>= c 32) (< c 127)) c ??)))
+                           str "")))
+    (let ((standard-display-table nil))
+      (princ (concat "span: " ascii "\n") 'external-debugging-output))))
+
 (defun span--flush-log-impl (pending)
+  "Format PENDING and hand it to `span-log-handler', containing any failure.
+
+A handler that signals has already destroyed PENDING, so re-raising would
+only route the report into the channel that just failed -- and into a
+timer, where it becomes a `%% Error running timer' line in that same dead
+log.  The failure is therefore reported through `span--last-resort'
+instead, and not propagated: a flush must not abort whatever code
+`span-msg-now' was called from.  The in-band note is kept as well, since
+it survives and usefully marks the hole whenever the sink recovers."
   (with-temp-buffer ;; prevent accidental interference with current buffer
     (let ((msg (mapconcat #'span-format-one pending "")))
       (let ((span--handles-message nil)
             (debug-on-message nil))
         (span :span-log-handler
           (condition-case err
-              (funcall span-log-handler msg)
+              (progn
+                (funcall span-log-handler msg)
+                (setq span--consecutive-log-handler-failures 0))
             (error
-             ;; PENDING is already off `span--pending-log-list', so a handler
-             ;; that refuses the batch destroys it.  Size the hole before
-             ;; re-raising: the note goes out with the next batch, which a
-             ;; content-dependent failure usually accepts.
+             (cl-incf span--consecutive-log-handler-failures)
+             (span--last-resort
+              "log handler failed (%d consecutive), %d entries lost: %S"
+              span--consecutive-log-handler-failures (length pending) err)
              (span-notef "warning: log handler failed, %s entries lost: %s"
                (length pending) (span-fmt-to-string err))
-             (signal (car err) (cdr err)))))))))
+             (when (and (>= span--consecutive-log-handler-failures
+                            span-log-handler-failure-limit)
+                        (not (eq span-log-handler #'span-default-log-handler)))
+               (setq span-log-handler #'span-default-log-handler)
+               (span--last-resort
+                "log handler replaced by span-default-log-handler after %d failures"
+                span--consecutive-log-handler-failures)))))))))
 
 (defvar span--is-flushing nil)
 
@@ -529,6 +792,15 @@ keeps an error storm from spending the whole cycle in the debugger.")
         ,@body))))
 
 (defun span-flush-log ()
+  "Hand everything pending to `span-log-handler'.
+
+This is the step that actually reaches a buffer, stdout or a file, as
+opposed to `span-flush', which only positions entries within their spans.
+Normally driven by a 0.5s timer and by `span--kill-emacs-hook'; call it
+directly, or use `span-msg-now', when an entry must land immediately.
+
+Re-entrant calls are refused, so a `span-msg-now' from inside a log
+handler queues instead of recursing."
   (when (and span--pending-log-list (not span--is-flushing))
     (span :span--flush-log
       (let ((inhibit-quit t)
@@ -567,6 +839,18 @@ keeps an error storm from spending the whole cycle in the debugger.")
 (add-hook 'kill-emacs-hook #'span--kill-emacs-hook 100)
 
 (defmacro span-wrap (sym &optional arglist &rest rest)
+  "Advise function SYM so that each call runs inside a span.
+
+Defines `span--wrap-SYM' and installs it as :around advice.  With no
+ARGLIST the span is tagged :SYM and the arguments are not logged; with an
+ARGLIST the body in REST runs inside the span, wrapping a call to the
+original.  A leading `_' in REST is replaced by the :SYM keyword.
+
+:with FN uses FN instead of `span' as the wrapper macro, which is how
+`span-wrap-redisplay' installs a different context.
+
+This is for permanently instrumenting a known function in this file.  For
+ad-hoc tracing of an arbitrary function, use `span-instrument'."
   (declare (indent 2))
   (cl-assert (symbolp sym))
   (let* ((adv-sym (intern (concat "span--wrap-" (symbol-name sym))))
@@ -599,6 +883,8 @@ keeps an error storm from spending the whole cycle in the debugger.")
        (advice-add #',sym :around #',adv-sym))))
 
 (defmacro span-quickwrap (sym)
+  "Advise SYM with a span that logs its arguments.
+Shorthand for the common `span-wrap' case."
   `(span-wrap ,sym (&rest args)
      (_ (:seq args))))
 
@@ -634,6 +920,7 @@ keeps an error storm from spending the whole cycle in the debugger.")
           res)))))
 
 (defun span-add-instrument (sym verbose backtrace time callback)
+  "Install tracing advice on SYM.  See `span-instrument' for the options."
   (setf (get sym 'span--instrument-verbose) verbose)
   (setf (get sym 'span--instrument-backtrace) backtrace)
   (setf (get sym 'span--instrument-callback) callback)
@@ -641,6 +928,19 @@ keeps an error storm from spending the whole cycle in the debugger.")
   (advice-add sym :around (span--instrument-with sym)))
 
 (defmacro span-instrument (sym &rest rest)
+  "Trace calls to SYM: log its arguments, its return value, and REST.
+
+Ad-hoc counterpart to `span-wrap', meant to be evaluated interactively
+while investigating.  Remove it with `span-uninstrument'.
+
+  :verbose    print arguments and result in full, at the call site rather
+              than at flush time.  Costs more and can abort the traced
+              call if a value's printer signals; without it both are
+              printed at flush time.
+  :backtrace  log a backtrace at every call.
+  :time       log how long each call took.
+
+REST runs inside the span on entry, so it can log extra context."
   (declare (indent 1))
   (cl-assert (symbolp sym))
   (let ((verbose nil)
@@ -655,6 +955,7 @@ keeps an error storm from spending the whole cycle in the debugger.")
     `(span-add-instrument #',sym ,verbose ,backtrace ,time (lambda () ,@rest))))
 
 (defun span-uninstrument (sym)
+  "Remove the tracing advice `span-instrument' installed on SYM."
   (advice-remove sym (span--instrument-with sym)))
 
 (advice-add #'message :around #'span--wrap-message)

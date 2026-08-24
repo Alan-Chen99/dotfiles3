@@ -5,8 +5,16 @@
 ;; Usage:
 ;;   cp emacs/agent_work_template.el /tmp/agent-work.el
 ;;   # edit the WORK SECTION in /tmp/agent-work.el
-;;   nix shell nixpkgs#xvfb-run -c xvfb-run -a -s "-screen 0 1920x1080x24" env GDK_BACKEND=x11 emacs --user "" -l /tmp/agent-work.el 2>/dev/null
+;;   nix shell nixpkgs#xvfb-run -c xvfb-run -a -s "-screen 0 1920x1080x24" env GDK_BACKEND=x11 emacs --user "" -l /tmp/agent-work.el 2>/tmp/debug-stderr.log
 ;;   grep -a -A9999 -- '----start----' /tmp/debug.log
+;;   cat /tmp/debug-stderr.log   # span reports a broken log sink HERE, not in the log
+;;
+;; span reports a failure of the log handler on stderr, because that is the
+;; one failure the log itself cannot carry.  The setup below redirects fd 2
+;; into /tmp/debug-stderr.log from inside Emacs, so those reports survive
+;; even if you invoke this with 2>/dev/null.  Keeping the shell redirect as
+;; well is still worth it: it catches anything written before this file
+;; loads, such as a failure to load it at all.
 ;;
 ;; The xvfb-run command runs Emacs on a virtual display so it doesn't
 ;; appear on screen.  GDK_BACKEND=x11 makes PGTK Emacs use the X11
@@ -38,10 +46,12 @@
 ;;   - Characters above #x10FFFF (consult appends them to candidates as
 ;;     invisible "tofu" markers) land in the log as multi-byte garbage.
 ;;     That is expected; the entry around them is intact.
-;;   - Any log file you write yourself MUST bind `coding-system-for-write'
-;;     to `utf-8-emacs-unix'.  Formatting a consult candidate or a buffer
-;;     of raw bytes into a `write-region' without it prompts for a coding
-;;     system and hangs Emacs with no output on stdout or stderr.
+;;   - Any file the work section writes ITSELF must bind
+;;     `coding-system-for-write' to `utf-8-emacs-unix'.  Writing a consult
+;;     candidate or a buffer of raw bytes without it sends `write-region'
+;;     into `select-safe-coding-system', which prompts and hangs Emacs with
+;;     no output on stdout or stderr.  The span log is already safe -- that
+;;     is what `span-file-log-handler' is for.
 ;;   - `message' output lands in the log tagged `%%', not in *Messages*.
 ;;     The advice on `message' logs the text and binds `message-log-max'
 ;;     to nil for the real call, so *Messages* stays empty here.
@@ -54,12 +64,27 @@
 ;;   - A value whose printer signals renders as an empty string: `cl-prin1'
 ;;     demotes the error, so the entry reads `x: ' with nothing after it and
 ;;     the reason arrives separately as `%% cl-prin1: ...'.
-;;   - A log handler that signals destroys its whole batch.  The next batch
-;;     carries `warning: log handler failed, N entries lost'.
+;;   - `span-msg' queues; the log is written on a 0.5s timer.  Use
+;;     `span-msg-now' for a checkpoint that must survive a segfault or an
+;;     external kill -- it returns only once the entry is on disk.
+;;   - A log handler that signals destroys its whole batch.  Each failure is
+;;     reported on stderr as `span: log handler failed (N consecutive)';
+;;     the matching in-band note only survives if the sink recovers.
 ;;   - Errors past `span-debugger-rearm-limit-per-cycle' in one flush cycle
 ;;     carry no backtrace; a `warning: debugger re-armed' note marks that point.
 
 ;; --- setup (do not modify) -------------------------------------------
+
+(defvar stderr-file "/tmp/debug-stderr.log")
+
+;; Own the stderr redirect from inside Emacs, so the last-resort channel
+;; survives however this file was invoked -- including with 2>/dev/null.
+;; This is a real dup2 on fd 2, so it also captures GTK and Xvfb noise.
+;; Appends: whatever the shell redirect caught before this line (a failure
+;; to load this file at all, say) is kept rather than truncated away.
+;; Redirect elsewhere by calling this again; setting `stderr-file' later
+;; has no effect, the dup2 already happened.
+(redirect-debugging-output stderr-file t)
 
 (require 'alan)
 
@@ -68,18 +93,13 @@
 (defvar log-file "/tmp/debug.log")
 (setq span-max-width 100) ;; truncate each line in log; raise for long values
 
-;; defers and written as batch on timers
-(setq span-log-handler
-      (lambda (msg)
-        ;; `utf-8-emacs-unix' encodes every character a Lisp string can hold,
-        ;; including raw bytes and the above-#x10FFFF characters consult
-        ;; appends to its candidates.  Leaving the coding system unspecified
-        ;; sends `write-region' into `select-safe-coding-system', which finds
-        ;; no safe choice and prompts -- hanging Emacs, or with
-        ;; `inhibit-interaction' signalling and dropping the whole log batch.
-        (let ((coding-system-for-write 'utf-8-emacs-unix)
-              (inhibit-interaction t))
-          (write-region msg nil log-file t 'no-message ""))))
+;; Written as a batch on a 0.5s timer.  `span-file-log-handler' is the
+;; supported file sink: it keeps the write off Tramp, off lock files, and
+;; out of `select-safe-coding-system'.  Do not hand-roll this -- every one
+;; of those is a way to hang the run with an empty log.
+;; A function, not a plain path: the work section may still redirect the
+;; log by setting `log-file', and the handler follows it.
+(setq span-log-handler (span-file-log-handler (lambda () log-file)))
 
 ;; use non-interactive debugger that prints to logs
 (advice-add #'debug :override #'span--debug)
