@@ -35,6 +35,13 @@
 ;;   - Use `grep -a'.  The log embeds raw subprocess output, including
 ;;     remote shell transcripts, so plain grep can classify the file as
 ;;     binary and print nothing at all -- a silent false "no matches".
+;;   - Characters above #x10FFFF (consult appends them to candidates as
+;;     invisible "tofu" markers) land in the log as multi-byte garbage.
+;;     That is expected; the entry around them is intact.
+;;   - Any log file you write yourself MUST bind `coding-system-for-write'
+;;     to `utf-8-emacs-unix'.  Formatting a consult candidate or a buffer
+;;     of raw bytes into a `write-region' without it prompts for a coding
+;;     system and hangs Emacs with no output on stdout or stderr.
 ;;   - `message' output lands in the log tagged `%%', not in *Messages*.
 ;;     The advice on `message' logs the text and binds `message-log-max'
 ;;     to nil for the real call, so *Messages* stays empty here.
@@ -44,6 +51,13 @@
 ;; logging framework:
 ;;   - A span is logged if there are any messages within it
 ;;   - `!` at the end of the span indicate a non-local exit (error or throw). It is otherwise a normal exit.
+;;   - A value whose printer signals renders as an empty string: `cl-prin1'
+;;     demotes the error, so the entry reads `x: ' with nothing after it and
+;;     the reason arrives separately as `%% cl-prin1: ...'.
+;;   - A log handler that signals destroys its whole batch.  The next batch
+;;     carries `warning: log handler failed, N entries lost'.
+;;   - Errors past `span-debugger-rearm-limit-per-cycle' in one flush cycle
+;;     carry no backtrace; a `warning: debugger re-armed' note marks that point.
 
 ;; --- setup (do not modify) -------------------------------------------
 
@@ -57,7 +71,14 @@
 ;; defers and written as batch on timers
 (setq span-log-handler
       (lambda (msg)
-        (let ((inhibit-interaction t))
+        ;; `utf-8-emacs-unix' encodes every character a Lisp string can hold,
+        ;; including raw bytes and the above-#x10FFFF characters consult
+        ;; appends to its candidates.  Leaving the coding system unspecified
+        ;; sends `write-region' into `select-safe-coding-system', which finds
+        ;; no safe choice and prompts -- hanging Emacs, or with
+        ;; `inhibit-interaction' signalling and dropping the whole log batch.
+        (let ((coding-system-for-write 'utf-8-emacs-unix)
+              (inhibit-interaction t))
           (write-region msg nil log-file t 'no-message ""))))
 
 ;; use non-interactive debugger that prints to logs

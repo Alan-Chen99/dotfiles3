@@ -101,3 +101,10 @@ grep -a -A9999 -- '----start----' /tmp/debug.log
 `-a` is required: the log embeds raw subprocess output, so plain
 `grep` can classify it as binary and print nothing at all. `message`
 output appears in this log tagged `%%`, not in `*Messages*`.
+
+Any file the work section writes itself MUST bind
+`coding-system-for-write` to `utf-8-emacs-unix`. Emacs strings hold raw
+bytes and characters above `#x10FFFF` — consult appends the latter to
+every completion candidate — and no ordinary coding system encodes
+them, so `write-region` stops on a coding-system prompt. Emacs then
+hangs with an empty stdout and stderr and a log that simply stops.
