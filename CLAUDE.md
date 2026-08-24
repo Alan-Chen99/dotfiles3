@@ -96,15 +96,35 @@ SHOULD NOT use `--batch` — it skips normal config loading and `(require 'alan)
 MUST NOT ask users to run your scripts for interactive emacs.
 MUST NOT use code to find something that can be found by running emacs.
 
-After Emacs exits, read the log filtered to work output (skip startup trace):
+After Emacs exits, read the log. Two greps, and you need both:
 
 ```sh
-grep -a -A9999 -- '----start----' /tmp/debug.log
+grep -a -A9999 -- '% ----start----' /tmp/debug.log   # the work section
+grep -anE '^[0-9.]+ +! |span--debug' /tmp/debug.log  # failures, anywhere
 ```
 
 `-a` is required: the log embeds raw subprocess output, so plain
 `grep` can classify it as binary and print nothing at all. `message`
 output appears in this log tagged `%%`, not in `*Messages*`.
+
+The first grep shows the work section and nothing before it, so an empty
+result does **not** mean nothing happened — it means the run never reached
+the marker, which is exactly what a work file that fails to load looks
+like. Fall back to the failure grep, which covers startup too. Anchor on
+`% ----start----`: the bare string also occurs inside backtrace frames,
+because the work lambda's own source contains it.
+
+In the failure grep, `:span--debug` is an error that reached the debugger,
+i.e. one that nothing handled. `!` marks any non-local exit, deliberate
+ones included — `ignore-errors` in `alan-early-init.el` logs
+`! :set-startup-frame-size` on every startup under xvfb.
+
+The template empties the log at startup and writes a `==== span run` header
+naming the pid and wall clock, so one file holds one run and `head -1`
+distinguishes a fresh log from one an earlier attempt left behind. It also
+arms a watchdog that kills the run after `work-timeout` seconds and exits
+9; without it a work file that fails to load hangs until the caller's own
+timeout.
 
 Any file the work section writes itself MUST bind
 `coding-system-for-write` to `utf-8-emacs-unix`. Emacs strings hold raw
@@ -115,7 +135,8 @@ hangs with an empty stdout and stderr and a log that simply stops.
 
 The span log itself is already safe: the template installs
 `span-file-log-handler`, which encodes in Lisp and keeps the write off
-Tramp and off lock files. Do not hand-roll a log handler.
+Tramp and off lock files. Do not hand-roll a log handler, and use
+`span-file-log-reset` rather than truncating the log by hand.
 
 `span-msg` queues the entry; the log is written on a 0.5s timer. Use
 `span-msg-now` for a checkpoint that must survive a segfault or an

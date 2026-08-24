@@ -6,7 +6,8 @@
 ;;   cp emacs/agent_work_template.el /tmp/agent-work.el
 ;;   # edit the WORK SECTION in /tmp/agent-work.el
 ;;   agent-tools run --desc "emacs agent work" nix shell nixpkgs#xvfb-run -c xvfb-run -a -s "-screen 0 1920x1080x24" env GDK_BACKEND=x11 emacs --user "" -l /tmp/agent-work.el
-;;   grep -a -A9999 -- '----start----' /tmp/debug.log
+;;   grep -a -A9999 -- '% ----start----' /tmp/debug.log       # the work section
+;;   grep -anE '^[0-9.]+ +! |span--debug' /tmp/debug.log      # failures, anywhere
 ;;
 ;; Run it under `agent-tools run'.  span reports a failure of the log handler
 ;; on stderr -- the one failure the log itself cannot carry -- and
@@ -33,10 +34,27 @@
 ;;   - Top level runs before the work timer, and before anything the timer
 ;;     `require's has configured itself.  Read config values inside the
 ;;     timer; a top-level `defvar' captures the pre-`require' value.
-;;   - Always end with (kill-emacs 0) inside your work timer.
+;;   - Always end with (kill-emacs 0) inside your work timer.  A watchdog
+;;     in the setup kills the run after `work-timeout' seconds and exits 9,
+;;     so a mistake costs that long and not the caller's whole timeout;
+;;     re-arm it with a larger delay if the work legitimately runs longer.
 ;;   - NEVER use condition-case. Use condition-case-unless-debug, which logs the error.
 ;;
 ;; reading the log:
+;;   - The log holds exactly this run: the setup below empties it and writes
+;;     a `==== span run' line naming the pid and the wall clock.  `head -1'
+;;     is how you tell a fresh log from one left by an earlier attempt.
+;;   - The `----start----' grep shows the work section and nothing before it.
+;;     An empty result does NOT mean nothing happened -- it means the run
+;;     never reached the marker, which is what a work file that fails to
+;;     load looks like.  Read the whole log, or the failure grep, instead.
+;;     Anchor on `% ----start----': the bare string also occurs inside
+;;     backtrace frames, because the work lambda's own source contains it.
+;;   - The failure grep matches two different things.  `:span--debug' is an
+;;     error that reached the debugger, i.e. one nothing handled.  `!' marks
+;;     any non-local exit, deliberate ones included -- the `ignore-errors' in
+;;     alan-early-init.el logs `! :set-startup-frame-size' on every startup
+;;     here, because xvfb has no display size to report.
 ;;   - Use `grep -a'.  The log embeds raw subprocess output, including
 ;;     remote shell transcripts, so plain grep can classify the file as
 ;;     binary and print nothing at all -- a silent false "no matches".
@@ -82,6 +100,16 @@
 (defvar log-file "/tmp/debug.log")
 (setq span-max-width 100) ;; truncate each line in log; raise for long values
 
+;; The log is opened for append and nothing else truncates it, so without
+;; this a re-run leaves two runs in one file -- both timestamp series
+;; starting at zero -- and a reader anchored on the first marker it finds
+;; silently gets the older run.  The header line carries the only absolute
+;; time and the only pid in the file.
+(span-file-log-reset log-file
+                     (format "==== span run pid %s started %s ===="
+                             (emacs-pid)
+                             (format-time-string "%Y-%m-%d %H:%M:%S%z")))
+
 ;; Written as a batch on a 0.5s timer.  `span-file-log-handler' is the
 ;; supported file sink: it keeps the write off Tramp, off lock files, and
 ;; out of `select-safe-coding-system'.  Do not hand-roll this -- every one
@@ -109,6 +137,21 @@
 
 ;; check if things are running and whether we are at top-level or no
 (run-with-timer 0 1 #'span-msg "heartbeat")
+
+;; Nothing else bounds the run.  A work section that never reaches its
+;; `kill-emacs' -- most often because this file failed to load, so no work
+;; timer was ever armed -- otherwise leaves Emacs running until something
+;; outside kills it, and the log ends in heartbeats with no clue why.
+;; Work that legitimately runs longer should re-arm this with a larger
+;; delay rather than cancel it.
+(defvar work-timeout 120)
+(defvar work-watchdog-timer nil)
+(setq work-watchdog-timer
+      (run-with-timer
+       work-timeout nil
+       (lambda ()
+         (span-msg-now "WATCHDOG: no exit after %ss, killing run" work-timeout)
+         (kill-emacs 9))))
 
 ;; log flushes every 0.5 seconds, at most this many entries
 (setq span-message-limit-per-cycle 100000)

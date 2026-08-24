@@ -53,6 +53,10 @@
 ;; sinks disagree about it -- a buffer and `message' both want the string as
 ;; it is, and only a file wants bytes.
 ;;
+;; `span-file-log-handler' only appends.  `span-file-log-reset' empties the
+;; file first, so that one file holds one run rather than a pile of runs
+;; whose timestamps all start at zero.
+;;
 ;; If a handler signals, the batch it was handed is already off the pending
 ;; list and is gone.  That failure is reported on stderr rather than through
 ;; the log, because the log is the channel that just failed.
@@ -631,19 +635,17 @@ Cannot fail on content: a buffer holds anything a Lisp string can."
          (goto-char (point-max))
          (insert-before-markers msg))))))
 
-(defun span-file-log-handler (file)
-  "Return a `span-log-handler' that appends the log to FILE.
+(defun span--file-log-write (file msg append)
+  "Write MSG to FILE, guarded so the write cannot re-enter Lisp or prompt.
 
-FILE is a file name, or a function of no arguments returning one.  Pass a
-function when the destination is chosen after the handler is installed --
-the agent harness does this, so that a work section can still redirect the
-log by setting its `log-file' variable.  FILE should be absolute; a
-relative name is expanded when the handler is created, with file-name
-handlers disabled so that even that expansion cannot reach Tramp.
+FILE is an absolute file name, or a function of no arguments returning
+one; a function is called here rather than by the caller so that even
+that call, and the `expand-file-name' after it, happen under the guards.
+APPEND is passed through to `write-region'.
 
-Each binding below closes off a way for a log write to re-enter Lisp,
-block, or prompt -- which matters because this runs from a timer, at
-arbitrary points in unrelated code:
+Each binding closes off one way a log write can re-enter Lisp, block, or
+prompt -- which matters because this runs from a timer, at arbitrary
+points in unrelated code:
 
   `default-directory' and `file-name-handler-alist'
       `write-region' expands FILE against `default-directory', so a remote
@@ -664,19 +666,56 @@ arbitrary points in unrelated code:
 The sixth argument of `write-region' is omitted deliberately: it is
 LOCKNAME, not MUSTBENEW.  Passing a non-nil value there makes Emacs
 derive a lock file name from it on every single write."
-  (let ((static (unless (functionp file)
-                  (let ((file-name-handler-alist nil))
-                    (expand-file-name file)))))
+  (let ((default-directory "/")
+        (file-name-handler-alist nil)
+        (write-region-post-annotation-function nil)
+        (create-lockfiles nil)
+        (coding-system-for-write 'binary)
+        (inhibit-interaction t))
+    (write-region (encode-coding-string msg 'utf-8-emacs-unix)
+                  nil
+                  (if (functionp file) (expand-file-name (funcall file)) file)
+                  append 'no-message)))
+
+(defun span--file-log-target (file)
+  "Resolve FILE for `span--file-log-write': expand a name, pass a function on."
+  (if (functionp file)
+      file
+    (let ((file-name-handler-alist nil))
+      (expand-file-name file))))
+
+(defun span-file-log-handler (file)
+  "Return a `span-log-handler' that appends the log to FILE.
+
+FILE is a file name, or a function of no arguments returning one.  Pass a
+function when the destination is chosen after the handler is installed --
+the agent harness does this, so that a work section can still redirect the
+log by setting its `log-file' variable.  FILE should be absolute; a
+relative name is expanded against \"/\", with file-name handlers disabled
+so that even that expansion cannot reach Tramp.
+
+The write itself is `span--file-log-write', whose docstring explains what
+each guard is for.  This handler only ever appends, so call
+`span-file-log-reset' at setup if the log should hold one run."
+  (let ((target (span--file-log-target file)))
     (lambda (msg)
-      (let ((default-directory "/")
-            (file-name-handler-alist nil)
-            (write-region-post-annotation-function nil)
-            (create-lockfiles nil)
-            (coding-system-for-write 'binary)
-            (inhibit-interaction t))
-        (write-region (encode-coding-string msg 'utf-8-emacs-unix)
-                      nil (or static (expand-file-name (funcall file)))
-                      t 'no-message)))))
+      (span--file-log-write target msg t))))
+
+(defun span-file-log-reset (file &optional header)
+  "Empty FILE, then write HEADER and a newline if HEADER is non-nil.
+
+FILE is a file name or a function of no arguments returning one, as for
+`span-file-log-handler', and the write is guarded the same way.  Call this
+at setup, before anything is logged.
+
+`span-file-log-handler' appends, and nothing else truncates: without this
+a second run leaves two runs in one file, both timestamp series starting
+at zero, and a reader anchored on the first marker it finds silently gets
+the older one.  HEADER exists so the first line can say which run this is
+-- wall clock and pid, neither of which the relative timestamps carry."
+  (span--file-log-write (span--file-log-target file)
+                        (if header (concat header "\n") "")
+                        nil))
 
 (defvar span-log-handler-failure-limit 5
   "Consecutive `span-log-handler' failures tolerated before falling back.
