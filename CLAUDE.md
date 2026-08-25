@@ -81,11 +81,50 @@ preserves compiler-emitted debug sections.
 ## Interactive Emacs
 
 Agents running debugging MUST use `emacs/agent_work_template.el` for interactive emacs.
-Run Emacs on a virtual display so it does not appear on the user's screen:
+Run Emacs on a virtual display so it does not appear on the user's screen.
+
+There are two ways to run it. The template's own header is the governing
+description of both; what follows is the shape.
+
+A **session** — run the template unchanged, straight from the repo, nothing
+copied and nothing edited. It parks instead of exiting, and you evaluate
+forms in it with `emacsclient`. Background the run; it will not return.
 
 ```sh
-agent-tools run --desc "emacs agent work" nix shell nixpkgs#xvfb-run -c xvfb-run -a -s "-screen 0 1920x1080x24" env GDK_BACKEND=x11 emacs --user "" -l /tmp/agent-work.el
+timeout 900 agent-tools run --desc "emacs session" nix shell nixpkgs#xvfb-run -c xvfb-run -a -s "-screen 0 1920x1080x24" env GDK_BACKEND=x11 emacs --user "" -l /repos/dotfiles/emacs/agent_work_template.el   # <- background this one
+timeout 180 grep -m1 -a -E '^[0-9.]+ +% ----parked----' < <(tail -n +1 -F --retry /tmp/debug.log)
+SOCK=$(sed -n '1s/^==== span run pid [0-9]* socket \([^ ]*\) .*/\1/p' /tmp/debug.log)
+PID=$( sed -n '1s/^==== span run pid \([0-9]*\) .*/\1/p'              /tmp/debug.log)
+timeout 30 emacsclient -s "$SOCK" --eval '(length (buffer-list))'
+kill "$PID"   # done. nothing else reaps it
 ```
+
+A **work file** — copy it, edit the WORK SECTION, and end with
+`(kill-emacs 0)` in place of `(agent-park)` so the run exits by itself.
+Cheaper when you already know what you want to find out.
+
+```sh
+cp emacs/agent_work_template.el /tmp/agent-work.el
+timeout 300 agent-tools run --desc "emacs agent work" nix shell nixpkgs#xvfb-run -c xvfb-run -a -s "-screen 0 1920x1080x24" env GDK_BACKEND=x11 emacs --user "" -l /tmp/agent-work.el
+```
+
+NEVER run `emacsclient` without `-s`, or with a socket name you did not
+read from line 1 of the log. The socket directory also holds the user's
+own editors, which are named `server<pid>`; a bare or mistyped
+`emacsclient` silently evaluates your form inside one of them. The session
+is named `agent-work-<pid>`, outside that namespace, so a typo exits 2.
+Check `emacsclient`'s own exit status — piping it into `head` reports
+`head`'s 0 and hides a timeout.
+
+Nothing inside Emacs bounds anything: `timeout` around the command is the
+only bound, and it is the better one, since a wedged Emacs runs no timers
+and so could never time itself out. Wrap both the run and each query.
+Exceeding a timeout is not by itself a reason to kill — the session
+survives a query timing out, and a hung Emacs is usually the thing you
+wanted to inspect. Attach and look, or kill the pid on line 1, as fits.
+Prefer `kill` over letting the timeout fire: SIGTERM runs
+`kill-emacs-hook` so the shutdown is logged, while the timeout path leaves
+the log ending at the last flush, just as `kill -9` would.
 
 Run it under `agent-tools run`. span reports a failure of the log handler
 on stderr — the one failure the log itself cannot carry — and agent-tools
@@ -96,7 +135,8 @@ SHOULD NOT use `--batch` — it skips normal config loading and `(require 'alan)
 MUST NOT ask users to run your scripts for interactive emacs.
 MUST NOT use code to find something that can be found by running emacs.
 
-After Emacs exits, read the log. Two greps, and you need both:
+Read the log the same way in both modes — a session writes it while
+parked, so you do not have to stop it first. Two greps, and you need both:
 
 ```sh
 grep -a -A9999 -- '% ----start----' /tmp/debug.log   # the work section
@@ -120,11 +160,10 @@ ones included — `ignore-errors` in `alan-early-init.el` logs
 `! :set-startup-frame-size` on every startup under xvfb.
 
 The template empties the log at startup and writes a `==== span run` header
-naming the pid and wall clock, so one file holds one run and `head -1`
-distinguishes a fresh log from one an earlier attempt left behind. It also
-arms a watchdog that kills the run after `work-timeout` seconds and exits
-9; without it a work file that fails to load hangs until the caller's own
-timeout.
+naming the pid, the socket and the wall clock, so one file holds one run and
+`head -1` distinguishes a fresh log from one an earlier attempt left behind
+— check that line 1's pid is alive, because a reader that starts watching
+before the run truncates the file sees the previous run's markers.
 
 Any file the work section writes itself MUST bind
 `coding-system-for-write` to `utf-8-emacs-unix`. Emacs strings hold raw
