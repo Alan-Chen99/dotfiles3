@@ -2,174 +2,193 @@
 ;;
 ;; Agent work template for interactive Emacs sessions.
 ;;
-;; Two ways to run it.  Both use the same file; they differ only in how
-;; the WORK SECTION ends.
+;; Emacs runs on a virtual display so it stays off the user's screen.
+;; GDK_BACKEND=x11 makes PGTK Emacs use the X11 backend xvfb provides.
+;; --user "" is required here: without it Emacs skips init.el and
+;; early-init.el, and (require 'alan) fails with nothing on stderr.
 ;;
-;; 1. SESSION -- what you get by running this file unchanged, straight
-;;    from the repo.  Nothing to copy, nothing to edit.  It starts, logs,
-;;    and then parks: Emacs stays up and you evaluate forms in it with
-;;    emacsclient.  Run it in the background; it will not exit on its own.
+;; Two ways to run this file, differing only in how the WORK SECTION ends.
 ;;
-;;      timeout 900 agent-tools run --desc "emacs session" \
+;; 1. SESSION -- run it unchanged, straight from the repo.  It parks
+;;    instead of exiting, and you query it with emacsclient.
+;;
+;;      : > /tmp/debug.log   # else the wait below matches the LAST run
+;;      agent-tools run --background --desc "emacs session" \
 ;;        nix shell nixpkgs#xvfb-run -c xvfb-run -a -s "-screen 0 1920x1080x24" \
 ;;        env GDK_BACKEND=x11 emacs --user "" \
 ;;        -l /repos/dotfiles/emacs/agent_work_template.el
 ;;
-;;      # wait for it to park (no sleep: block on the log)
 ;;      timeout 180 grep -m1 -a -E '^[0-9.]+ +% ----parked----' \
 ;;        < <(tail -n +1 -F --retry /tmp/debug.log)
 ;;
-;;      SOCK=$(sed -n '1s/^==== span run pid [0-9]* socket \([^ ]*\) .*/\1/p' /tmp/debug.log)
-;;      PID=$( sed -n '1s/^==== span run pid \([0-9]*\) .*/\1/p'              /tmp/debug.log)
-;;
+;;      SOCK=$(sed -n '1s/.* socket \([^ ]*\) .*/\1/p'           /tmp/debug.log)
+;;      PID=$( sed -n '1s/^==== span run pid \([0-9]*\) .*/\1/p' /tmp/debug.log)
 ;;      timeout 30 emacsclient -s "$SOCK" --eval '(length (buffer-list))'
-;;      kill "$PID"          # done; SIGTERM runs kill-emacs-hook and logs it
+;;      kill "$PID"
+;;
+;;    `--background' is required, the run never returns on its own.  It
+;;    also means `timeout' bounds nothing: it wraps the wrapper, which
+;;    returns as soon as the child starts.  `kill' is what ends a session,
+;;    and the pid to kill is the one on line 1 of the log -- not the "child
+;;    pid" the wrapper prints, which is the nix/xvfb wrapper.  Killing it
+;;    ends the whole run, and SIGTERM runs `kill-emacs-hook', so the
+;;    shutdown is logged.
 ;;
 ;; 2. WORK FILE -- copy it, edit the WORK SECTION, and end with
-;;    (kill-emacs 0) instead of (agent-park).  The run exits by itself and
-;;    you just read the log.  This is the cheaper path when you already
-;;    know what you want to find out.
+;;    (kill-emacs 0) instead of (agent-park), so the run exits by itself.
+;;    Cheaper when you already know what you want to find out.
 ;;
 ;;      cp emacs/agent_work_template.el /tmp/agent-work.el
 ;;      timeout 300 agent-tools run --desc "emacs agent work" \
 ;;        nix shell nixpkgs#xvfb-run -c xvfb-run -a -s "-screen 0 1920x1080x24" \
 ;;        env GDK_BACKEND=x11 emacs --user "" -l /tmp/agent-work.el
-;;      grep -a -A9999 -- '% ----start----' /tmp/debug.log       # the work section
-;;      grep -anE '^[0-9.]+ +! |span--debug' /tmp/debug.log      # failures, anywhere
 ;;
-;; Run it under `agent-tools run'.  span reports a failure of the log handler
-;; on stderr -- the one failure the log itself cannot carry -- and
-;; agent-tools captures stderr and passes it through, so no redirect is
-;; needed to see it.
-;;
-;; The xvfb-run command runs Emacs on a virtual display so it doesn't
-;; appear on screen.  GDK_BACKEND=x11 makes PGTK Emacs use the X11
-;; backend (which xvfb provides) instead of looking for Wayland.
-;;
-;; --user "" is required on some shared systems where Emacs cannot
-;; determine the current user from the environment (e.g. NFS homes,
-;; container-mapped UIDs).  Without it, Emacs skips loading init.el
-;; and early-init.el, so (require 'alan) fails silently with no
-;; stderr output.
-;;
-;; Nothing inside Emacs bounds the run.  `timeout' around the command is
-;; the whole story, and it is strictly better than an in-Emacs timer would
-;; be: it catches a work section that never finishes, a file that failed to
-;; load before arming anything, and an Emacs wedged inside Lisp -- which no
-;; Emacs timer can catch, because a wedged Emacs runs no timers.
-;;
-;; Exceeding the timeout is not by itself a reason to kill.  The process is
-;; still there, and a hung Emacs is usually the thing you wanted to look
-;; at: leave it and attach, or kill it, as the situation warrants.
+;; Run either under `agent-tools run'.  span reports a failure of the log
+;; handler on stderr -- the one failure the log itself cannot carry -- and
+;; agent-tools passes stderr through.
 ;;
 ;; Key rules:
-;;   - This file is SELF-CONTAINED. Do NOT add -e/--eval flags.
-;;   - Do NOT use --batch. It skips normal config and (require 'alan) fails.
-;;   - All output goes to /tmp/debug.log (not stdout/stderr).
-;;     Use `span-msg` to log; read the log file after emacs exits.
-;;   - This file must RETURN before Emacs startup completes.
-;;     All work MUST go on timers (run-with-timer), not at top level.
-;;   - Top level runs before the work timer, and before anything the timer
-;;     `require's has configured itself.  Read config values inside the
-;;     timer; a top-level `defvar' captures the pre-`require' value.
-;;   - Always end the work timer with `agent-park' or (kill-emacs 0).
-;;     Falling off the end leaves Emacs running with nothing scheduled --
-;;     harmless in itself, but then only your `timeout' ends the run.
-;;   - NEVER use condition-case. Use condition-case-unless-debug, which logs the error.
+;;   - This file is SELF-CONTAINED.  Do NOT add -e/--eval flags.
+;;   - Do NOT use --batch.  It skips normal config and (require 'alan) fails.
+;;   - All output goes to /tmp/debug.log, not stdout.  Log with `span-msg'.
+;;   - This file must RETURN before startup completes, so all work goes on
+;;     timers, never at top level.  Top level also runs before anything the
+;;     timer `require's has configured itself, so read config values inside
+;;     the timer; a top-level `defvar' captures the pre-`require' value.
+;;   - End the work timer with `agent-park' or (kill-emacs 0).
+;;   - NEVER use condition-case.  Use condition-case-unless-debug, which logs.
 ;;
-;; querying a parked session:
-;;   - The socket path is on LINE 1 of the log and nowhere else.  Take it
-;;     from there.  Do not grep the body for it: a marker written in the
-;;     WORK SECTION also appears in the `:timer' entry that prints the work
-;;     lambda's source, so a body grep matches twice, and the source match
-;;     carries the format string rather than the value.  Markers emitted by
-;;     the setup below (`----parked----') do not have that problem, but they
-;;     tell you WHEN the session is ready, not WHERE it is.
-;;   - NEVER run emacsclient without -s, and never with a guessed name.
-;;     The socket directory also holds the user's own editors, which are
-;;     named server<pid>.  A bare or mistyped emacsclient silently
-;;     evaluates your form inside one of them.  This session is named
-;;     agent-work-<pid>, outside that namespace, so a typo exits 2 instead.
-;;   - Check emacsclient's OWN exit status.  Piping it into head reports
-;;     head's 0 and hides a timeout.
-;;   - Ask for what you need -- (length x), (type-of x), (cl-count-if ...)
-;;     -- rather than the object.  Results print through `pp' with
-;;     `print-length' and `print-level' bound (see `agent-query-print-length'),
-;;     which bounds most values but not one enormous string.
-;;   - Do NOT return what `span-fmt-to-string' returns.  That string keeps
-;;     the elided objects alive in its text properties, and printing it
-;;     prints them: measured at 247x for a 174-element tail, and enough to
-;;     take the session to 1GB and wedge it on a longer one.  Strip it with
-;;     `substring-no-properties' first.
-;;   - Nothing reaps a parked session.  It runs until you `kill' the pid on
-;;     line 1 of the log, or the outer `timeout' ends it.  Confirm
-;;     /proc/PID/cmdline names this file before killing anything.
-;;   - Prefer `kill'.  Plain SIGTERM runs `kill-emacs-hook', so the
-;;     shutdown lands in the log; the outer `timeout' does not reach Emacs
-;;     that way and leaves the log ending wherever the last flush did,
-;;     exactly as `kill -9' would.  Anything that must survive either one
-;;     has to go through `span-msg-now'.
-;;   - Bound each query with `timeout'; a form that never returns otherwise
-;;     hangs the caller too.  Exit 124 means the session is wedged in Lisp:
-;;     no timers run and the log is frozen at the last flush, so killing the
-;;     pid is the only way out.
+;; querying a session:
+;;   - Take the socket from LINE 1 of the log.  NEVER run emacsclient
+;;     without -s, or with a guessed name: this directory also holds the
+;;     user's own editors, named server<pid>, and a bare or mistyped
+;;     emacsclient evaluates your form inside one of those.  The session is
+;;     agent-work-<pid>, outside that namespace, so a typo exits 2.
+;;
+;;   - WRAP EVERY QUERY: `agent-q' to ask something, `agent-async' to do
+;;     something.  A bare --eval is answered exactly as stock Emacs would
+;;     answer it -- nothing logged, nothing bounded -- and that is
+;;     deliberate.  The Emacs under test may use its own server, and a
+;;     reply shaped for an agent would be wrong for those callers, silently
+;;     so: `server-eval-at' `read's what comes back, and a bounded
+;;     rendering of (number-sequence 1 10000) reads without error as a
+;;     27-element list ending in the symbol `...'.  So the instrumentation
+;;     is opt-in, per query, and the server itself is left alone.
+;;
+;;   - `agent-q' returns a STRING -- the rendering of the value, not the
+;;     value.  That is what bounds it: 77 bytes for the list above against
+;;     51143 bare.  It also logs `:query BODY', whatever BODY logged, and
+;;     `-> VALUE', flushing on both sides, so the log is complete when the
+;;     client returns and a query stuck at a prompt shows as a `:query'
+;;     span with no `->'.
+;;
+;;   - ONE FORM PER --eval.  A second one is dropped in silence and the
+;;     client still exits 0 -- `server-eval-and-print' reads only the first
+;;     -- so put everything inside the one `agent-q', where a `progn' runs
+;;     it all.
+;;
+;;   - Check emacsclient's OWN exit status.  0 with a value is success; 1
+;;     prints `*ERROR*: ...' for a Lisp error; 124 is the jam below; 0 with
+;;     EMPTY output means the server died mid-request.  Piping into `head'
+;;     reports head's 0 and hides all of these.  An error inside `agent-q'
+;;     also leaves a `:span--debug' backtrace in the log; a bare --eval
+;;     gets no backtrace, because `server-execute' handles the error before
+;;     any debugger runs.
+;;
+;;   - PUT WORK ON A TIMER, with `agent-async', and never prompt in the
+;;     eval itself.  Emacs serialises server requests (bug#71223, see
+;;     `server--process-filter-active'), so an eval that stops at a prompt
+;;     jams the whole session: every later emacsclient times out at 124 and
+;;     the only way out is the X display, below.  A timer moves the work
+;;     out of the filter, the client returns in milliseconds, and the
+;;     session stays queryable THROUGH the prompt:
+;;
+;;       --eval (agent-async WORK)          ;; => :armed, at once
+;;       --eval (agent-q (minibuffer-depth));; => "1", still answering
+;;       --eval (agent-async (execute-kbd-macro (kbd "y")))   ;; answers it
+;;
+;;     THE EXIT STATUS NOW MEANS NOTHING about the work.  The client is
+;;     gone before the timer runs, so rc is 0 whatever happens.  Read the
+;;     log instead, where `agent-async' leaves three distinguishable
+;;     states:
+;;
+;;       `<<done>> VALUE'  present            -- BODY returned
+;;       absent, with a `:span--debug' entry  -- BODY signalled
+;;       absent, with neither                 -- still running, or at a prompt
+;;
+;;     Never read `:armed' as success, and never take "no `*ERROR*'" for
+;;     "no error"; run the failure grep before believing an async query
+;;     worked.  Within a single eval the same trick works without a second
+;;     client -- arm the answer before prompting:
+;;
+;;       (agent-q (run-with-timer 0.1 nil #'execute-kbd-macro (kbd "y"))
+;;                (y-or-n-p "..."))
+;;
+;;   - `server-eval-at' to this session's OWN server deadlocks it: the
+;;     outer request holds the filter, so the nested one is never served
+;;     and Emacs waits in `accept-process-output' forever.  Only a kill
+;;     ends that.
+;;
+;;   - If a query does jam the session, the log names it: the last `:query'
+;;     span is the one with no `->' under it.  Recover through the X
+;;     display, which the jam does not reach.  Do NOT kill the blocked
+;;     client -- once the prompt is answered it returns its value normally,
+;;     so run anything that might prompt under `agent-tools run
+;;     --background' and read its capture file.  A client killed
+;;     mid-request leaves the server logging `connection broken by remote
+;;     peer' against the query it was still answering.
+;;
+;;       DISPLAY=:99            # from /proc/<pid>/environ of the session
+;;       W=$(for w in $(xdotool search --onlyvisible --class emacs); do
+;;             eval $(xdotool getwindowgeometry --shell $w)
+;;             echo "$((WIDTH*HEIGHT)) $w"; done | sort -rn | head -1 | cut -d' ' -f2)
+;;       xdotool windowfocus $W; xdotool key y      # or: xdotool type ...
+;;
+;;     The frame is picked by area because the class also matches a 10x10
+;;     leader window and any warning popup, and PGTK Emacs cannot tell you
+;;     the id itself -- its `outer-window-id' is nil.  There is no window
+;;     manager, so `windowfocus' is what makes the key land; `xdotool key
+;;     --window' on its own does not.
 ;;
 ;; reading the log:
-;;   - The log holds exactly this run: the setup below empties it and writes
+;;   - The log holds exactly one run: the setup below empties it and writes
 ;;     a `==== span run' line naming the pid, the socket and the wall clock.
-;;     `head -1' is how you tell a fresh log from one left by an earlier
-;;     attempt -- and a stale log is easy to hit, because a reader that
-;;     starts watching before the run has truncated the file sees the
-;;     previous run's markers.  Check that line 1's pid is alive.
-;;   - The `----start----' grep shows the work section and nothing before it.
-;;     An empty result does NOT mean nothing happened -- it means the run
-;;     never reached the marker, which is what a work file that fails to
-;;     load looks like.  Read the whole log, or the failure grep, instead.
+;;     Check that line 1's pid is alive before trusting anything below it --
+;;     a reader that starts watching before the run truncates the file sees
+;;     the PREVIOUS run's markers.
+;;   - The `----start----' grep shows the work section and nothing before
+;;     it.  An empty result does NOT mean nothing happened -- it means the
+;;     run never reached the marker, which is what a work file that failed
+;;     to load looks like.  Use the failure grep, which covers startup too.
 ;;     Anchor on `% ----start----': the bare string also occurs inside
 ;;     backtrace frames, because the work lambda's own source contains it.
-;;   - The failure grep matches two different things.  `:span--debug' is an
-;;     error that reached the debugger, i.e. one nothing handled.  `!' marks
-;;     any non-local exit, deliberate ones included -- the `ignore-errors' in
+;;   - The failure grep matches two things.  `:span--debug' is an error that
+;;     reached the debugger, i.e. one nothing handled.  `!' marks any
+;;     non-local exit, deliberate ones included -- `ignore-errors' in
 ;;     alan-early-init.el logs `! :set-startup-frame-size' on every startup
 ;;     here, because xvfb has no display size to report.
-;;   - Use `grep -a'.  The log embeds raw subprocess output, including
-;;     remote shell transcripts, so plain grep can classify the file as
-;;     binary and print nothing at all -- a silent false "no matches".
-;;   - Characters above #x10FFFF (consult appends them to candidates as
-;;     invisible "tofu" markers) land in the log as multi-byte garbage.
-;;     That is expected; the entry around them is intact.
-;;   - Any file the work section writes ITSELF must bind
-;;     `coding-system-for-write' to `utf-8-emacs-unix'.  Writing a consult
-;;     candidate or a buffer of raw bytes without it sends `write-region'
-;;     into `select-safe-coding-system', which prompts and hangs Emacs with
-;;     no output on stdout or stderr.  The span log is already safe -- that
-;;     is what `span-file-log-handler' is for.
+;;   - Use `grep -a'.  The log embeds raw subprocess output, so plain grep
+;;     can classify the file as binary and print nothing at all.
 ;;   - `message' output lands in the log tagged `%%', not in *Messages*.
-;;     The advice on `message' logs the text and binds `message-log-max'
-;;     to nil for the real call, so *Messages* stays empty here.
 ;;   - `span-max-width' truncates every logged line, leaving no marker at
-;;     the cut.  Raise it before logging long values.  Keep it clear of
-;;     `span-fmt-print-limit' (the print budget, 100): a printed value
-;;     ends near that column, so the "..." that marks an elided part sits
-;;     just past it, and a width of 100 cuts off the ellipses themselves.
-;;
-;; logging framework:
-;;   - A span is logged if there are any messages within it
-;;   - `!` at the end of the span indicate a non-local exit (error or throw). It is otherwise a normal exit.
-;;   - A value whose printer signals renders as an empty string: `cl-prin1'
-;;     demotes the error, so the entry reads `x: ' with nothing after it and
-;;     the reason arrives separately as `%% cl-prin1: ...'.
+;;     the cut.  Raise it before logging long values, and keep it clear of
+;;     `span-fmt-print-limit' (the print budget, 100): a printed value ends
+;;     near that column and the "..." marking an elided part sits just past
+;;     it, so a width of 100 cuts off the ellipses themselves.
 ;;   - `span-msg' queues; the log is written on a 0.5s timer.  Use
-;;     `span-msg-now' for a checkpoint that must survive a segfault or an
-;;     external kill -- it returns only once the entry is on disk.
-;;   - A log handler that signals destroys its whole batch.  Each failure is
-;;     reported on stderr as `span: log handler failed (N consecutive)';
-;;     the matching in-band note only survives if the sink recovers.
-;;   - Errors past `span-debugger-rearm-limit-per-cycle' in one flush cycle
-;;     carry no backtrace; a `warning: debugger re-armed' note marks that point.
+;;     `span-msg-now' for a checkpoint that must survive a segfault or a
+;;     SIGKILL -- it returns only once the entry is on disk.
+;;   - Any file the work section writes ITSELF must bind
+;;     `coding-system-for-write' to `utf-8-emacs-unix'.  Emacs strings hold
+;;     raw bytes and characters above #x10FFFF, which no ordinary coding
+;;     system encodes, so `write-region' stops in `select-safe-coding-system'
+;;     on a `Select coding system' prompt -- which blocks the session like
+;;     any other prompt.  The span log is already safe; that is what
+;;     `span-file-log-handler' is for.
+;;   - A span is logged only if something was logged inside it.
 ;;   - `debug-ignored-errors' is cleared in the setup below, so an unhandled
-;;     `end-of-file' or `user-error' is logged with a backtrace instead of
-;;     being silently skipped.
+;;     `end-of-file' -- an unbalanced paren in your work file -- is logged
+;;     with a backtrace instead of being skipped.
 
 ;; --- setup (do not modify) -------------------------------------------
 
@@ -190,20 +209,13 @@
 ;; for it.  Raise this further before logging long values.
 (setq span-max-width 200)
 
-;; Name the query server here so the log header can carry its socket path.
-;; `server--file-name' only expands `server-name' against the socket
-;; directory, so the path is known before anything is listening; the server
-;; itself starts at the END of this setup, once a failure there would be
-;; logged rather than aborting the load in silence.
-;;
-;; The config does eventually start a server on its own -- `with-editor'
-;; does it about a second in -- but relying on that costs two things.  The
-;; header is written before it happens, so the socket would have to be
-;; recovered by grepping the body; and that server is named server<pid>,
-;; the same namespace the user's own editors occupy in this directory, so
-;; a mistyped name reaches a real editing session instead of failing.
-;; Naming it ourselves fixes both.  `with-editor' still calls
-;; `server-start' later, but it reuses `server-name', so the path below
+;; Name the server here rather than leaving it to `with-editor', which
+;; starts one about a second in under the name server<pid> -- the same
+;; namespace the user's own editors occupy in this directory, where a
+;; mistyped name reaches a real editing session instead of failing.
+;; `server--file-name' just expands `server-name' against that directory,
+;; so the path is known before anything is listening and the log header
+;; below can carry it.  `with-editor' reuses `server-name', so the path
 ;; stays valid.
 (require 'server)
 (setq server-name (format "agent-work-%s" (emacs-pid)))
@@ -245,49 +257,112 @@
 ;; force a reasonable frame size for agent work.
 (run-with-timer 0.5 nil (lambda () (set-frame-size (selected-frame) 120 40)))
 
-;; check if things are running and whether we are at top-level or no
-(run-with-timer 0 1 #'span-msg "heartbeat")
+;; The heartbeat is how the log distinguishes a session that is merely busy
+;; from one that has stopped, and it carries the minibuffer depth because
+;; that is the distinction you need when a query times out: timers keep
+;; running inside a prompt, so the beat continues with mb>0, while an Emacs
+;; wedged in Lisp runs no timers at all and the log simply stops.  Held in a
+;; variable so `agent-park' can re-arm exactly this timer and not whatever
+;; the work section scheduled.
+(defvar agent-heartbeat-timer nil)
+
+(defvar agent-park-heartbeat-seconds 30
+  "Heartbeat period once parked.
+1/sec is right while work runs and far too noisy for an idle session --
+it would put thousands of lines between the work output and the next
+read -- but stopping it altogether costs the liveness signal.")
+
+(defun agent--heartbeat ()
+  (span-msg "heartbeat mb=%d" (minibuffer-depth)))
+
+(setq agent-heartbeat-timer (run-with-timer 0 1 #'agent--heartbeat))
 
 ;; log flushes every 0.5 seconds, at most this many entries
 (setq span-message-limit-per-cycle 100000)
 
-;; Last, deliberately.  An error here is a top-level error during `-l',
-;; which abandons the rest of this file -- so anything the diagnosis needs
-;; has to already be in place: the log to write to, the debugger override
-;; that turns the error into a logged backtrace.  Started any earlier, a
-;; failure leaves nothing at all behind -- no log, no stderr -- and the run
-;; just sits there until your `timeout' ends it.
+;; Last, deliberately.  An error here is a top-level error during `-l' and
+;; abandons the rest of this file, so the log and the debugger override
+;; have to be in place already; started earlier, a failure leaves no log
+;; and no stderr at all.
 (server-start)
 
 ;; --- parked session (do not modify) ----------------------------------
 
-(defvar agent-query-print-length 200
-  "`print-length' for values returned to emacsclient.")
-
-(defvar agent-query-print-level 6
-  "`print-level' for values returned to emacsclient.")
-
 (defun agent-park ()
   "End the work section without exiting, leaving the session queryable.
-Nothing reaps the session: it runs until the caller kills the pid on line 1
-of the log, or the outer `timeout' ends it."
-  ;; The 1/sec heartbeat shows the run is alive during work.  A parked
-  ;; session can idle for many minutes, and every one of those lines lands
-  ;; between the work output and whatever is read next.
-  (cancel-function-timers #'span-msg)
+Nothing reaps the session -- it runs until the pid on line 1 of the log is
+killed."
+  (cancel-timer agent-heartbeat-timer)
+  (setq agent-heartbeat-timer
+        (run-with-timer agent-park-heartbeat-seconds
+                        agent-park-heartbeat-seconds
+                        #'agent--heartbeat))
   (span-msg-now "----parked---- socket=%s" agent-socket))
 
-;; Bound the value sent back to emacsclient.  `server-eval-and-print' pp's
-;; the result with whatever print settings are current, so an unbounded
-;; value is tens of KB of the caller's context, and a circular one -- easy
-;; to reach from a live buffer or marker -- never finishes printing at all.
-(defun agent--bounded-print (orig expr proc)
-  (let ((print-length agent-query-print-length)
-        (print-level agent-query-print-level)
-        (print-circle t))
-    (funcall orig expr proc)))
+;; NOTHING here replaces `server-eval-and-print'.  This template exists to
+;; debug Emacs, and the Emacs being debugged may use its own server --
+;; `with-editor', `org-protocol', a subprocess running emacsclient,
+;; `server-eval-at' between instances.  An agent-shaped reply would be
+;; wrong for every one of them, and silently so: `server-eval-at' `read's
+;; what comes back, and a bounded rendering of (number-sequence 1 10000)
+;; reads without error as a 27-element list ending in the symbol `...'.
+;; Stock clients therefore get stock `pp' output, which is what is meant to
+;; be read back.
+;;
+;; The agent opts in per query instead, with `agent-q' below.
 
-(advice-add 'server-eval-and-print :around #'agent--bounded-print)
+;; Wrap a query in this to get the log entry, the bound, and the backtrace.
+;; It returns a STRING -- the rendering, not the value -- so that no query
+;; can flood the caller: (number-sequence 1 10000) is 75 bytes rendered
+;; against 51143 from `pp'.  Being visibly a string, it also cannot be
+;; mistaken for something to read back.
+;;
+;; `span--context' is here rather than around the whole request because
+;; `server-execute' wraps the eval in a plain `condition-case': the error
+;; is handled, so the debugger span builds backtraces with never runs.  The
+;; innermost handler is the one that decides, and this is inside it.  span
+;; wraps the process filter itself with the same `:server' context, but
+;; that is too far out to affect this.
+(defmacro agent-q (&rest body)
+  "Evaluate BODY as an agent query; return a bounded rendering of its value.
+Logs `:query' with BODY, whatever BODY logged, and `-> VALUE', flushed on
+entry and on exit -- so a query still sitting at a prompt appears as a
+`:query' span with no `->', and the log is complete the moment the client
+returns."
+  (let ((label (format "%S" (if (cdr body) (cons 'progn body) (car body)))))
+    `(span--context :server
+       (span (:query "%s" ,label)
+         (span-flush)
+         (span-flush-log)
+         (let* ((v (progn ,@body))
+                (s (substring-no-properties (span-fmt-to-string v))))
+           (span-msg "-> %s" s)
+           (span-flush-log)
+           s)))))
+
+;; The protocol for anything that is not a plain question.  BODY runs on a
+;; timer, i.e. outside the server filter, which is what keeps the session
+;; answering queries while BODY sits at a prompt -- see the header.
+;;
+;; It also fixes what the exit status cannot say.  The client returns the
+;; instant BODY is armed, so its 0 means "armed", never "worked": an error
+;; inside BODY arrives long after the client is gone.  `<<done>>' is logged
+;; only by a BODY that returned, so the log carries three distinguishable
+;; states -- `<<done>>' present is success, absent with a backtrace is
+;; failure, absent with neither is still running or waiting at a prompt.
+(defmacro agent-async (&rest body)
+  "Arm BODY on a timer and return `:armed' at once.
+Logs `<<done>> VALUE' if BODY returns.  If BODY signals, that line is
+never written and `span--debug' logs the backtrace instead."
+  `(progn
+     (run-with-timer
+      0 nil
+      (lambda ()
+        (let ((v (progn ,@body)))
+          (span-msg "<<done>> %s"
+                    (substring-no-properties (span-fmt-to-string v)))
+          (span-flush-log))))
+     :armed))
 
 ;; --- WORK SECTION ----------------------------------------------------
 ;;
