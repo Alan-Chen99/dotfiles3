@@ -803,16 +803,30 @@ it survives and usefully marks the hole whenever the sink recovers."
         (let ((inhibit-debugger t))
           (signal (car ,err-sym) (cdr ,err-sym)))))))
 
+(eval-and-compile
+  (defconst span--noninteractive-debugger-contexts '(:redisplay :server)
+    "Contexts whose errors go to `span--debug' rather than the interactive one.
+
+The interactive debugger needs a frame to display in and input to read.
+A context that begins at a moment nothing chose -- inside redisplay, or
+in a process filter that runs whenever a packet lands -- reliably has
+neither, so entering it there can wedge the session or re-enter itself.
+`span--debug' logs a backtrace and re-raises instead.
+
+Distinct from `non-essential', which stays specific to `:redisplay': this
+only decides where a backtrace goes, not what the body is allowed to do."))
+
 (defmacro span--context (context &rest body)
   (declare (indent 1))
   (cl-assert (keywordp context))
   (let* ((is-redisp (eq context :redisplay))
+         (quiet-debugger (memq context span--noninteractive-debugger-contexts))
          ;; (inhibit-debugger is-redisp)
          ;; (do-debug (not inhibit-debugger))
          )
     `(let* ((span--cur-context ,context)
 
-            (debugger ,(if is-redisp '#'span--debug '#'debug))
+            (debugger ,(if quiet-debugger '#'span--debug '#'debug))
             (non-essential ,is-redisp)
             ;; (signal-hook-function ,(if is-redisp '#'span--signal-hook-function nil))
             ;; ,@(when is-redisp '((signal-hook-function nil)))
@@ -1181,6 +1195,26 @@ REST runs inside the span on entry, so it can log extra context."
 
 (advice-add #'accept-process-output :around #'span--wrap-accept-process-output)
 
+
+;; A server request is Emacs entering Lisp from outside, the same kind of
+;; event as a timer or a command.  `server-process-filter' is the function
+;; the C process-input path calls -- server.el installs it as the
+;; connection's :filter -- and everything emacsclient asks for runs below
+;; it.  Without a context of its own that work inherits whatever dynamic
+;; state Emacs happened to be in when the packet landed, and reports itself
+;; under the `:redisplay' default of `span--cur-context'.
+;;
+;; This does not make an erroring `--eval' produce a backtrace.  The plain
+;; `condition-case' in `server-execute' sits between here and the eval, and
+;; the innermost handler decides, so the error is handled before any
+;; debugger runs.  Only something below that `condition-case' can change
+;; it, which is server's business rather than span's.
+(with-eval-after-load 'server
+  (advice-add 'server-process-filter :around #'span--wrap-server-process-filter))
+(defun span--wrap-server-process-filter (orig-fn &rest args)
+  (span--context :server
+    (span--unchecked (:server-process-filter)
+      (apply orig-fn args))))
 
 (advice-add #'redisplay :around #'span--wrap-redisplay)
 (defun span--wrap-redisplay (orig-fn &optional force)
