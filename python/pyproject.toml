@@ -66,6 +66,7 @@ dependencies = [
   "uvicorn[standard]>=0.37.0",
   "z3-solver>=4.15.3.0",
   "pyahocorasick>=2.3.0",
+  "python-dotenv>=1.2.2",
 ]
 
 # [[tool.uv.index]]
