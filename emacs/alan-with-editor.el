@@ -1,6 +1,7 @@
 ;; -*- lexical-binding: t -*-
 
 (require 'alan-core)
+(require 'alan-evil)
 
 (pkg! 'with-editor
   (startup-queue-package 'with-editor 0))
@@ -10,6 +11,8 @@
 
 
 (eval-after-load! with-editor
+  (add-hook! 'with-editor-mode-hook #'evil-normalize-keymaps)
+
   (run-with-idle-timer
    ;; delaying with timer makes it less likely to throw
    ;; (file-error "Cannot bind server socket" "Interrupted system call")
