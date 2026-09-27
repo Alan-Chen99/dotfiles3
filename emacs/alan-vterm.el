@@ -283,6 +283,23 @@ For example, pressing x sends C-x to the terminal."
     "SPC m" #'vterm-copy-mode-done
     )
 
+  (add-hook! 'after-load-theme-hook
+    (defun alan-vterm-resync-all-buffers ()
+      ;; Cell colors are baked into text properties as each line is drawn, so
+      ;; existing output keeps the previous palette until the buffer is rebuilt
+      ;; from libvterm's state.  `run-hooks' reaches only the current buffer's
+      ;; local hook value, so one global function walks every vterm buffer.
+      ;;
+      ;; Exited terminals are skipped: a rebuild reproduces only what libvterm
+      ;; holds and would drop the process-exit line Emacs appended, and nothing
+      ;; further is ever drawn in them.
+      (mapc
+       (lambda (buf)
+         (with-current-buffer buf
+           (when (and (derived-mode-p 'vterm-mode) (vterm-check-proc))
+             (vterm-resync-buffer))))
+       (buffer-list))))
+
   (add-hook! 'vterm-mode-hook
     (defun alan-vterm-mode-setup ()
       (span-msg "alan-vterm-mode-setup")
@@ -297,11 +314,6 @@ For example, pressing x sends C-x to the terminal."
                 #'alan-vterm--evil-follow-term-cursor-insert nil t)
       (add-hook (var 'evil-insert-state-exit-hook)
                 #'alan-vterm--evil-freeze-term-cursor-normal nil t)
-
-      (add-hook (var 'after-load-theme-hook)
-                #'vterm--invalidate nil t)
-
-      ;; (add-hook 'vterm--invalidate
 
       ;; (alan-vterm--evil-freeze-term-cursor-normal)
       ;; (span-dbg hl-line-mode)
