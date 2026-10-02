@@ -41,8 +41,16 @@ in rec {
     stdenv = std.keepDebugInfo std.stdenv;
   });
 
+  # crane reads Cargo.toml during evaluation, both to name the crate and to stub
+  # a dependency-only source, and builtins.fromTOML is TOML 1.0, which forbids
+  # the newlines inside an inline table that schemat's manifest uses (cargo
+  # accepts them). Naming the crate here and building dependencies in the same
+  # derivation leaves the manifest to cargo alone.
   export.rustpkgs-bins.schemat = craneLib.buildPackage {
     src = flakes.schemat;
+    pname = "schemat";
+    version = flakes.schemat.shortRev;
+    cargoArtifacts = null;
     strictDeps = true;
   };
 
