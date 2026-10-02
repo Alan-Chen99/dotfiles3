@@ -116,10 +116,19 @@
     home-manager-bin = self.deps.home-manager.packages.${system}.home-manager;
     coreutils = pkgs.coreutils-full;
 
-    emacs-base = (pkgs.emacs-pgtk.override {srcRepo = true;}).overrideAttrs {
+    emacs-base = (pkgs.emacs-pgtk.override {srcRepo = true;}).overrideAttrs (prev: {
       version = "31.0.50";
       src = flakes.emacs31;
-    };
+
+      # nixpkgs picks patches for the emacs 30.2 tarball this package otherwise
+      # builds. CVE-2026-6861 is an off-by-one in the emacs-30 `:css` handling,
+      # which the master snapshot above implements through make_formatted_string
+      # instead, leaving the patch no context to apply against.
+      patches =
+        builtins.filter
+        (p: builtins.match ".*CVE-2026-6861.*" (builtins.baseNameOf p) == null)
+        prev.patches;
+    });
 
     gcc = pkgs.gcc_latest;
 
