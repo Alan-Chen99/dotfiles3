@@ -31,11 +31,17 @@
   :around #'evil-initial-state-for-buffer
   (span (:evil-initial-state-for-buffer (buffer-name buffer))
     (let ((res (funcall orig-fn buffer)))
-      (when (or (eq res 'motion) (eq res 'normal))
-        (if (buffer-local-value 'buffer-read-only (or buffer (current-buffer)))
-            (setq res 'motion)
-          (setq res 'normal)))
-      res)))
+      (with-current-buffer (or buffer (current-buffer))
+        (cond
+         ((not (memq res '(motion normal))) res)
+         (buffer-read-only 'motion)
+         ;; A major mode listed in `evil-motion-state-modes' keeps motion in
+         ;; a writable buffer: image-mode makes its text read-only by text
+         ;; property and leaves `buffer-read-only' nil.  Only the mode itself
+         ;; counts, not a listed parent, so occur-edit-mode (an editing child
+         ;; of occur-mode) still gets normal.
+         ((and (eq res 'motion) (memq major-mode evil-motion-state-modes)) 'motion)
+         (t 'normal))))))
 
 (advice-add #'revert-buffer-restore-read-only :override #'alan-revert-buffer-restore-read-only)
 (defun alan-revert-buffer-restore-read-only ()
