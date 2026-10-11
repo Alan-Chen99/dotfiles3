@@ -37,8 +37,13 @@
  alan-simple
  )
 
+(add-to-list 'evil-motion-state-modes 'image-mode)
 (eval-after-load! image-mode
-  (clear-and-backup-keymap image-mode-map))
+  (clear-and-backup-keymap image-mode-map)
+  (general-def image-mode-map
+    :states 'motion
+    "o" #'image-increase-size
+    "p" #'image-decrease-size))
 
 ;; set by emacs wrapper from nix; should not propagate to subprocesses
 (setenv "GIO_EXTRA_MODULES")
