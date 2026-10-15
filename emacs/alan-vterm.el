@@ -368,6 +368,41 @@ For example, pressing x sends C-x to the terminal."
   (let ((vterm-shell command))
     (vterm t)))
 
+(defun alan-vterm--tmux-sessions ()
+  "Names of the sessions on the tmux server for `default-directory''s host."
+  (with-temp-buffer
+    (let ((rc (process-file "tmux" nil t nil "list-sessions" "-F" "#S")))
+      (cond
+       ((eq rc 0) (split-string (buffer-string) "\n" t))
+       ;; No server, or its socket dir absent: there are no sessions yet.
+       ((save-excursion
+          (goto-char (point-min))
+          (re-search-forward "^\\(no server running\\|error connecting to\\)" nil t))
+        nil)
+       (t (error "tmux list-sessions exited %s: %s" rc (string-trim (buffer-string))))))))
+
+(defun alan-vterm-tmux (session)
+  "Show tmux SESSION in a vterm buffer, attaching or creating it.
+Completes over existing sessions; a new name creates that session."
+  (interactive
+   (list (completing-read "tmux session: " (alan-vterm--tmux-sessions))))
+  (when (string-empty-p session)
+    (user-error "Empty tmux session name"))
+  (require 'vterm)
+  (alan-setup-with-editor)
+  (let* ((name (format "*tmux:%s*" session))
+         (buf (get-buffer name)))
+    (if (and buf (process-live-p (buffer-local-value 'vterm--process buf)))
+        (switch-to-buffer buf)
+      (let ((dir default-directory))
+        (when buf
+          (setq dir (buffer-local-value 'default-directory buf))
+          (kill-buffer buf))
+        (pop-to-buffer-same-window (let ((default-directory dir)) (get-buffer-create name)))
+        ;; `vterm-mode' hands this string to "sh -c", so it needs quoting.
+        (let ((vterm-shell (format "tmux new-session -A -s %s" (shell-quote-argument session))))
+          (vterm-mode))))))
+
 (defun alan-vterm-kill-process ()
   (interactive)
   (kill-process (get-buffer-process (current-buffer)) 'current-group))

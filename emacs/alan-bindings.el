@@ -249,6 +249,7 @@
   "a s" #'alan-shell-command
   "a d" #'shell-this-remote
   "a v" #'alan-vterm
+  "a V" #'alan-vterm-tmux
   "a g" #'gpt
   "a a" #'gptel-context-add
   "a t" #'toggle-truncate-lines
