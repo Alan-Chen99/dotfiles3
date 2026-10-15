@@ -7,7 +7,7 @@
 (require 'alan-modeline)
 (require 'alan-with-editor)
 
-(require-if-is-bytecompile evil-collection-vterm)
+(require-if-is-bytecompile evil-collection-vterm with-editor server)
 ;; (pkg! 'mistty)
 ;; (eval-after-load! mistty
 ;;   (general-def mistty-mode-map
@@ -64,12 +64,12 @@ Keyboard bindings reach here too, so fall back to the pointer position."
   (alan-vterm--wheel 65 (alan-vterm--point-col-row) #'scroll-up-command))
 
 (defun vterm-scroll-up-mouse ()
-  "Scroll up at the mouse: wheel event to the application, else `scroll-down-command'."
+  "Like `vterm-scroll-up', but at the mouse pointer."
   (interactive)
   (alan-vterm--wheel 64 (alan-vterm--mouse-col-row) #'scroll-down-command))
 
 (defun vterm-scroll-down-mouse ()
-  "Scroll down at the mouse: wheel event to the application, else `scroll-up-command'."
+  "Like `vterm-scroll-down', but at the mouse pointer."
   (interactive)
   (alan-vterm--wheel 65 (alan-vterm--mouse-col-row) #'scroll-up-command))
 
@@ -369,9 +369,30 @@ For example, pressing x sends C-x to the terminal."
         nil)
        (t (error "tmux list-sessions exited %s: %s" rc (string-trim (buffer-string))))))))
 
+(defvar alan-vterm--tmux-editor-files nil
+  "Files that tmux-editor.sh is about to open through emacsclient.")
+
+(defun alan-vterm-tmux-editor-expect (file dir)
+  "Open the next emacsclient visit of FILE, relative to DIR, in `with-editor-mode'.
+tmux-editor.sh calls this through emacsclient --eval before the visit."
+  (push (expand-file-name file dir) alan-vterm--tmux-editor-files)
+  nil)
+
+(defun alan-vterm--tmux-editor-visit ()
+  (when-let* ((file (seq-find (lambda (f) (file-equal-p f buffer-file-name))
+                              alan-vterm--tmux-editor-files)))
+    (setq alan-vterm--tmux-editor-files (delete file alan-vterm--tmux-editor-files))
+    ;; Already on for commit messages, through `git-commit-setup'.
+    (unless with-editor-mode
+      (with-editor-mode 1))))
+
+(add-hook 'server-visit-hook #'alan-vterm--tmux-editor-visit)
+
 (defun alan-vterm-tmux (session)
   "Show tmux SESSION in a vterm buffer, attaching or creating it.
-Completes over existing sessions; a new name creates that session."
+Completes over existing sessions; a new name creates that session.
+On the local host, $EDITOR in the session's panes opens files in this
+Emacs, through tmux-editor.sh."
   (interactive
    (list (completing-read "tmux session: " (alan-vterm--tmux-sessions))))
   (when (string-empty-p session)
@@ -394,8 +415,27 @@ Completes over existing sessions; a new name creates that session."
         ;; tmux request mouse reporting, so `vterm-scroll-up' sends it wheel
         ;; events and tmux scrolls its own history; vterm only ever holds
         ;; the visible screen.
-        (let ((vterm-shell (format "tmux set-option -g allow-passthrough on \\; new-session -A -s %s \\; set-option mouse on"
-                                   (shell-quote-argument session))))
+        ;;
+        ;; The session outlives this Emacs, and a pane's environment is
+        ;; fixed when the pane starts, so $EDITOR is a script that asks tmux
+        ;; for the socket on every call.  update-environment refreshes the
+        ;; session's copy on each attach.  A remote host cannot reach this
+        ;; Emacs's socket, so its environment is left alone.
+        (let* ((local (not (file-remote-p dir)))
+               (vterm-shell
+                (concat
+                 "tmux set-option -g allow-passthrough on \\; "
+                 (when local
+                   (format "set-option -g 'update-environment[90]' EMACS_SOCKET_NAME \\; set-option -g 'update-environment[91]' ALAN_EMACSCLIENT \\; set-environment -g EDITOR %s \\; "
+                           (shell-quote-argument (expand-file-name "tmux-editor.sh" alan-dotemacs-dir))))
+                 (format "new-session -A -s %s \\; set-option mouse on"
+                         (shell-quote-argument session))))
+               (process-environment
+                (if local
+                    (append (list (concat "EMACS_SOCKET_NAME=" (expand-file-name server-name server-socket-dir))
+                                  (concat "ALAN_EMACSCLIENT=" with-editor-emacsclient-executable))
+                            process-environment)
+                  process-environment)))
           (vterm-mode))))))
 
 (defun alan-vterm-kill-process ()
