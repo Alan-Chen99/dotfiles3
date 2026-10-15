@@ -114,7 +114,12 @@ For example, pressing x sends C-x to the terminal."
     ;; (vterm-set-follow-cursor-shape nil)
     ))
 
-(defvar-local alan-vterm-current-title "")
+(defvar-local alan-vterm-current-title nil
+  "Title the terminal application last set with OSC 0/2, or nil.")
+
+(add-to-list 'alan-modeline-lhs
+             '(alan-vterm-current-title (" [" (-60 "" alan-vterm-current-title) "]"))
+             t)
 
 (eval-after-load! vterm
   (setq vterm-min-window-width 60)
@@ -179,7 +184,9 @@ For example, pressing x sends C-x to the terminal."
 
   (defadvice! alan-vterm--set-title (title)
     :override #'vterm--set-title
-    (setq-local alan-vterm-current-title title))
+    (setq-local alan-vterm-current-title title)
+    ;; Titles can arrive without any buffer change that would refresh the mode line.
+    (force-mode-line-update))
 
   ;; (span-instrument vterm--set-directory)
   (clear-and-backup-keymap vterm-mode-map)
@@ -297,8 +304,6 @@ For example, pressing x sends C-x to the terminal."
       (span-msg "alan-vterm-mode-setup")
 
       (setq-local truncate-lines t)
-      ;; (setq-local header-line-format (var alan-vterm-current-title))
-      ;; (setq-local header-line-format '(:eval (alan-vterm-format-header-line)))
 
       ;; (setq-local evil-move-cursor-back nil)
 
@@ -322,15 +327,6 @@ For example, pressing x sends C-x to the terminal."
 
   ;; (general-def vterm-mode-map)
   )
-
-(defun alan-vterm-format-header-line ()
-  (span :alan-vterm-format-header-line
-    (alan-with-demoted-errors
-     (alan-modeline-from-left-right
-      (concat "[" (or alan-vterm-current-title "...") "]")
-      "rhs"
-      nil))))
-
 
 (defun alan-vterm (&optional arg)
   ;; compared to original, this restarts if the process died
