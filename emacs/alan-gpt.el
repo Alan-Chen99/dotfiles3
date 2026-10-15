@@ -63,6 +63,7 @@ Today is %s.
           :endpoint "/api/v1/chat/completions"
           :stream t
           :models '(
+                    gpt-6-astra
                     gpt-5
                     gpt-5.1
                     gpt-5.4
@@ -75,6 +76,7 @@ Today is %s.
                     google/gemini-2.5-pro
                     deepseek/deepseek-r1-0528
                     deepseek/deepseek-v4-pro
+                    deepseek/deepseek-v4-flash
                     test-noexist
                     )
           :request-params

@@ -272,6 +272,7 @@
   "z s" #'magit-branch-reset
   "z h" #'magit-reflog-head
   "z o" #'magit-reflog-other
+  "z t" #'magit-stash
   )
 
 

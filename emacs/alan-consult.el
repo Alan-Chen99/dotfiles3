@@ -16,7 +16,7 @@
    ;; TODO: maybe 0.2 for tramp and 0.1 local?
    consult-async-input-debounce 0.5)
 
-  (setq consult-fd-args '("fd" "--full-path --color=never --hidden"))
+  (setq consult-fd-args '("fd" "--full-path --color=never --hidden -u"))
 
   ;; (string-split consult-ripgrep-args " ")
   (setq consult-ripgrep-args
