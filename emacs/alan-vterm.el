@@ -31,55 +31,47 @@
 (defmacro vterm-with-send-key (expr)
   `(lambda () (interactive) (vterm-send ,expr)))
 
-(defun vterm-scroll-up ()
-  "Scroll up in vterm.
-When the application has enabled mouse reporting, send the SGR
-mouse scroll-up escape sequence.  Otherwise, fall back to
-`scroll-down-command' (which scrolls the viewport up)."
-  (interactive)
+(defun alan-vterm--wheel (button col-row fallback)
+  "Send SGR mouse BUTTON at window-relative 0-based COL-ROW, or call FALLBACK.
+The event goes to the application only when it has enabled mouse
+reporting; otherwise FALLBACK scrolls the Emacs window."
   (if (vterm-mouse-reporting-p)
-      (let ((col (1+ (current-column)))
-            (row (1+ (count-screen-lines (window-start) (point)))))
-        (vterm-send-string (format "\e[<64;%d;%dM" col row)))
-    (scroll-down-command)))
+      ;; SGR coordinates are 1-based.  The row decides which tmux pane or
+      ;; status line receives the wheel, so it has to be exact.
+      (vterm-send-string (format "\e[<%d;%d;%dM" button (1+ (car col-row)) (1+ (cdr col-row))))
+    (funcall fallback)))
+
+(defun alan-vterm--point-col-row ()
+  (cons (current-column) (count-screen-lines (window-start) (line-beginning-position))))
+
+(defun alan-vterm--mouse-col-row ()
+  "Window-relative column and row of the mouse wheel event or the pointer.
+Keyboard bindings reach here too, so fall back to the pointer position."
+  (posn-col-row
+   (if (consp last-input-event)
+       (event-start last-input-event)
+     (let ((mp (mouse-pixel-position)))
+       (posn-at-x-y (cadr mp) (cddr mp) (car mp))))))
+
+(defun vterm-scroll-up ()
+  "Scroll up at point: wheel event to the application, else `scroll-down-command'."
+  (interactive)
+  (alan-vterm--wheel 64 (alan-vterm--point-col-row) #'scroll-down-command))
 
 (defun vterm-scroll-down ()
-  "Scroll down in vterm.
-When the application has enabled mouse reporting, send the SGR
-mouse scroll-down escape sequence.  Otherwise, fall back to
-`scroll-up-command' (which scrolls the viewport down)."
+  "Scroll down at point: wheel event to the application, else `scroll-up-command'."
   (interactive)
-  (if (vterm-mouse-reporting-p)
-      (let ((col (1+ (current-column)))
-            (row (1+ (count-screen-lines (window-start) (point)))))
-        (vterm-send-string (format "\e[<65;%d;%dM" col row)))
-    (scroll-up-command)))
+  (alan-vterm--wheel 65 (alan-vterm--point-col-row) #'scroll-up-command))
 
 (defun vterm-scroll-up-mouse ()
-  "Handle mouse scroll-up in vterm.
-When the application has enabled mouse reporting, send the SGR
-mouse scroll-up escape sequence at the mouse position.  Otherwise,
-fall back to `scroll-down-command'."
+  "Scroll up at the mouse: wheel event to the application, else `scroll-down-command'."
   (interactive)
-  (if (vterm-mouse-reporting-p)
-      (let* ((pos (mouse-position))
-             (col (or (cadr pos) 1))
-             (row (or (cddr pos) 1)))
-        (vterm-send-string (format "\e[<64;%d;%dM" col row)))
-    (scroll-down-command)))
+  (alan-vterm--wheel 64 (alan-vterm--mouse-col-row) #'scroll-down-command))
 
 (defun vterm-scroll-down-mouse ()
-  "Handle mouse scroll-down in vterm.
-When the application has enabled mouse reporting, send the SGR
-mouse scroll-down escape sequence at the mouse position.  Otherwise,
-fall back to `scroll-up-command'."
+  "Scroll down at the mouse: wheel event to the application, else `scroll-up-command'."
   (interactive)
-  (if (vterm-mouse-reporting-p)
-      (let* ((pos (mouse-position))
-             (col (or (cadr pos) 1))
-             (row (or (cddr pos) 1)))
-        (vterm-send-string (format "\e[<65;%d;%dM" col row)))
-    (scroll-up-command)))
+  (alan-vterm--wheel 65 (alan-vterm--mouse-col-row) #'scroll-up-command))
 
 (defun alan-vterm-send-ctrl-next-key ()
   "Read the next key and send it to vterm with Control added.
@@ -402,8 +394,11 @@ Completes over existing sessions; a new name creates that session."
         ;; `vterm-mode' hands this string to "sh -c", so it needs quoting.
         ;; Passthrough carries the shell's OSC 51 prompt/directory marks
         ;; (see vterm_printf), which tmux otherwise drops.  It is a window
-        ;; option with no per-session scope, hence global.
-        (let ((vterm-shell (format "tmux set-option -g allow-passthrough on \\; new-session -A -s %s"
+        ;; option with no per-session scope, hence global.  Mouse mode makes
+        ;; tmux request mouse reporting, so `vterm-scroll-up' sends it wheel
+        ;; events and tmux scrolls its own history; vterm only ever holds
+        ;; the visible screen.
+        (let ((vterm-shell (format "tmux set-option -g allow-passthrough on \\; new-session -A -s %s \\; set-option mouse on"
                                    (shell-quote-argument session))))
           (vterm-mode))))))
 
