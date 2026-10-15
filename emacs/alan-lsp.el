@@ -45,6 +45,24 @@
 
   ;; prevent markdown that dont specificy lang to be rendered in buffer major mode lang
   ;; since often they arent intended to be so
+  ;; A directory reported as `created' can be gone, or unreadable, by the
+  ;; time lsp lists it: installers and builds create temp dirs and
+  ;; rename or delete them at once.  The recursive advice keeps one
+  ;; vanished subdirectory from aborting watches on its siblings.
+  (defadvice! lsp--all-watchable-directories-skip-vanished (fn dir &rest args)
+    :around #'lsp--all-watchable-directories
+    (condition-case err
+        (apply fn dir args)
+      ((file-missing file-permission-denied)
+       (lsp-log "Not watching %s: %s" dir (error-message-string err))
+       nil)))
+  (defadvice! lsp--folder-watch-callback-skip-vanished (fn event &rest args)
+    :around #'lsp--folder-watch-callback
+    (condition-case err
+        (apply fn event args)
+      ((file-missing file-permission-denied)
+       (lsp-log "Dropped file watch event %S: %s" event (error-message-string err)))))
+
   (defadvice! lsp--setup-markdown-ignore-orig-mode (fn _mode)
     :around #'lsp--setup-markdown
     (funcall fn nil))
