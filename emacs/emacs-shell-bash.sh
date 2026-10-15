@@ -58,6 +58,12 @@ export -f vterm_cmd
 # The escape sequence "51;A" has also the role of identifying the end of the
 # prompt
 vterm_prompt_end() {
+	# tmux writes passthrough at once but holds printed text until a flush,
+	# so the mark would reach vterm before the prompt and land at column 0.
+	# Erase-character flushes first; at the prompt end it blanks an empty cell.
+	if [ -n "$TMUX" ]; then
+		printf '\e[1X'
+	fi
 	vterm_printf "51;A$(pwd)"
 }
 export -f vterm_prompt_end

@@ -400,7 +400,11 @@ Completes over existing sessions; a new name creates that session."
           (kill-buffer buf))
         (pop-to-buffer-same-window (let ((default-directory dir)) (get-buffer-create name)))
         ;; `vterm-mode' hands this string to "sh -c", so it needs quoting.
-        (let ((vterm-shell (format "tmux new-session -A -s %s" (shell-quote-argument session))))
+        ;; Passthrough carries the shell's OSC 51 prompt/directory marks
+        ;; (see vterm_printf), which tmux otherwise drops.  It is a window
+        ;; option with no per-session scope, hence global.
+        (let ((vterm-shell (format "tmux set-option -g allow-passthrough on \\; new-session -A -s %s"
+                                   (shell-quote-argument session))))
           (vterm-mode))))))
 
 (defun alan-vterm-kill-process ()
