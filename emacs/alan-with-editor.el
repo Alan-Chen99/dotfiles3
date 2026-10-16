@@ -49,28 +49,36 @@
 ;; which vterm draws instead of handing to a filter, and its $EDITOR is a
 ;; quoted "sh -c" string that breaks when a shell word-splits "$EDITOR file".
 ;; remote-editor.sh sends the request as an OSC 51;E sequence instead, and
-;; $EDITOR is just its path.  The copy's name carries the content hash, so
-;; an existing copy is current.
+;; $EDITOR is just the path of its copy on the remote host.
+(defun alan-with-editor-install (name)
+  "Copy script NAME from `alan-dotemacs-dir' to `default-directory''s host.
+Return the copy's file name on that host, without the remote prefix.
+The copy's name carries the content hash, so an existing copy is current."
+  (let* ((src (expand-file-name name alan-dotemacs-dir))
+         (hash (with-temp-buffer
+                 (insert-file-contents-literally src)
+                 (secure-hash 'sha256 (current-buffer))))
+         ;; Under $HOME, not /tmp, where another user could plant the file.
+         (dest (expand-file-name
+                (format "%s~/.cache/alan-emacs/%s-%s"
+                        (file-remote-p default-directory)
+                        (file-name-sans-extension name)
+                        (substring hash 0 16)))))
+    (unless (file-exists-p dest)
+      (make-directory (file-name-directory dest) t)
+      ;; Renamed into place so a copy cut short never passes the check above.
+      (let ((tmp (format "%s.tmp%d" dest (emacs-pid))))
+        (copy-file src tmp t)
+        (set-file-modes tmp #o700)
+        (rename-file tmp dest t)))
+    (file-local-name dest)))
+
 (defun alan-with-editor-remote-env ()
   "Environment entries for a shell started in `default-directory'.
 On a remote host, $EDITOR becomes a copy of remote-editor.sh there.
 Locally there are none: the global $EDITOR already runs emacsclient."
-  (when-let* ((remote (file-remote-p default-directory)))
-    (let* ((src (expand-file-name "remote-editor.sh" alan-dotemacs-dir))
-           (hash (with-temp-buffer
-                   (insert-file-contents-literally src)
-                   (secure-hash 'sha256 (current-buffer))))
-           ;; Under $HOME, not /tmp, where another user could plant the file.
-           (dest (expand-file-name
-                  (format "%s~/.cache/alan-emacs/remote-editor-%s" remote (substring hash 0 16)))))
-      (unless (file-exists-p dest)
-        (make-directory (file-name-directory dest) t)
-        ;; Renamed into place so a copy cut short never passes the check above.
-        (let ((tmp (format "%s.tmp%d" dest (emacs-pid))))
-          (copy-file src tmp t)
-          (set-file-modes tmp #o700)
-          (rename-file tmp dest t)))
-      (list (concat "EDITOR=" (file-local-name dest))))))
+  (when (file-remote-p default-directory)
+    (list (concat "EDITOR=" (alan-with-editor-install "remote-editor.sh")))))
 
 (defun alan-with-editor-open (pid hex)
   "Visit the file that remote-editor.sh process PID asks for.

@@ -1,6 +1,7 @@
 #!/bin/sh
 # $EDITOR for shells that Emacs starts on a remote host, installed there by
-# `alan-with-editor-remote-env'.
+# `alan-with-editor-install': directly for shell and vterm buffers, and
+# through tmux-editor.sh for `alan-vterm-tmux'.
 #
 # A remote host cannot reach Emacs's server socket, so the request goes out
 # on the terminal as an OSC 51;E sequence, which vterm and comint hand to

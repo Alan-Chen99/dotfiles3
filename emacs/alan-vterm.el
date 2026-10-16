@@ -395,8 +395,8 @@ The path is on `default-directory''s host, without a remote prefix."
 (defun alan-vterm-tmux (session)
   "Show tmux SESSION in a vterm buffer, attaching or creating it.
 Completes over existing sessions; a new name creates that session.
-On the local host, $EDITOR in the session's panes opens files in this
-Emacs, through tmux-editor.sh."
+$EDITOR in the session's panes opens files in this Emacs, through
+tmux-editor.sh, until a client other than this Emacs attaches."
   (interactive
    (list (completing-read "tmux session: " (alan-vterm--tmux-sessions))))
   (when (string-empty-p session)
@@ -432,26 +432,29 @@ Emacs, through tmux-editor.sh."
         ;;
         ;; The session outlives this Emacs, and a pane's environment is
         ;; fixed when the pane starts, so $EDITOR is a script that asks tmux
-        ;; for the socket on every call.  update-environment refreshes the
-        ;; session's copy on each attach.  A remote host cannot reach this
-        ;; Emacs's socket, and remote-editor.sh would wait forever in a pane
-        ;; whose client is not this Emacs, so a remote session's environment
-        ;; is left alone.
+        ;; on every call which editor the last client to attach left in the
+        ;; session's environment (update-environment).  On a remote host
+        ;; that is remote-editor.sh, whose request reaches this Emacs through
+        ;; passthrough; both scripts are copied there.
         (let* ((local (not (file-remote-p dir)))
+               (editor (if local
+                           (expand-file-name "tmux-editor.sh" alan-dotemacs-dir)
+                         (alan-with-editor-install "tmux-editor.sh")))
                (vterm-shell
                 (concat
                  "tmux set-option -g allow-passthrough on \\; "
-                 (when local
-                   (format "set-option -g 'update-environment[90]' EMACS_SOCKET_NAME \\; set-option -g 'update-environment[91]' ALAN_EMACSCLIENT \\; set-environment -g EDITOR %s \\; "
-                           (shell-quote-argument (expand-file-name "tmux-editor.sh" alan-dotemacs-dir))))
+                 "set-option -g 'update-environment[90]' EMACS_SOCKET_NAME \\; "
+                 "set-option -g 'update-environment[91]' ALAN_EMACSCLIENT \\; "
+                 "set-option -g 'update-environment[92]' ALAN_REMOTE_EDITOR \\; "
+                 (format "set-environment -g EDITOR %s \\; " (shell-quote-argument editor))
                  (format "new-session -A -s %s \\; set-option mouse on \\; set-option status off \\; set-option set-titles on \\; set-option set-titles-string '#{pane_title}'"
                          (shell-quote-argument session))))
                (process-environment
-                (if local
-                    (append (list (concat "EMACS_SOCKET_NAME=" (expand-file-name server-name server-socket-dir))
+                (append (if local
+                            (list (concat "EMACS_SOCKET_NAME=" (expand-file-name server-name server-socket-dir))
                                   (concat "ALAN_EMACSCLIENT=" with-editor-emacsclient-executable))
-                            process-environment)
-                  process-environment)))
+                          (list (concat "ALAN_REMOTE_EDITOR=" (alan-with-editor-install "remote-editor.sh"))))
+                        process-environment)))
           (vterm-mode))))))
 
 (defun alan-vterm-kill-process ()
