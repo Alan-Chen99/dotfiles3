@@ -250,6 +250,7 @@
   "a d" #'shell-this-remote
   "a v" #'alan-vterm
   "a m" #'alan-vterm-tmux
+  "a b" #'alan-consult-vterm
   "a g" #'gpt
   "a a" #'gptel-context-add
   "a t" #'toggle-truncate-lines

@@ -7,7 +7,7 @@
 (require 'alan-modeline)
 (require 'alan-with-editor)
 
-(require-if-is-bytecompile evil-collection-vterm with-editor server)
+(require-if-is-bytecompile consult evil-collection-vterm with-editor server)
 ;; (pkg! 'mistty)
 ;; (eval-after-load! mistty
 ;;   (general-def mistty-mode-map
@@ -482,6 +482,34 @@ panes send no prompt or directory marks even if they run bash."
   (require 'vterm)
   (let ((vterm-wrapper-shell "/bin/sh"))
     (alan-vterm-tmux session)))
+
+(defun alan-consult-vterm ()
+  "Switch to a vterm buffer, matching its name or its terminal title."
+  (interactive)
+  (require 'consult)
+  (consult--multi
+   (list
+    (list
+     :name "Vterm"
+     :category 'buffer
+     :state #'consult--buffer-state
+     :items
+     (lambda ()
+       (consult--buffer-query
+        :sort 'visibility
+        :mode 'vterm-mode
+        :as (lambda (buf)
+              (let ((title (buffer-local-value 'alan-vterm-current-title buf)))
+                (cons (if title
+                          (concat (buffer-name buf)
+                                  "  "
+                                  (propertize title 'face 'completions-annotations))
+                        (buffer-name buf))
+                      buf)))))))
+   :require-match t
+   :prompt "Vterm: "
+   :history 'consult--buffer-history
+   :sort nil))
 
 (defun alan-vterm-kill-process ()
   (interactive)
