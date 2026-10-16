@@ -5,8 +5,9 @@
 #
 # A remote host cannot reach Emacs's server socket, so the request goes out
 # on the terminal as an OSC 51;E sequence, which vterm and comint hand to
-# `alan-with-editor-open'.  That visits the file; finishing or cancelling it
-# runs `kill -s USR1' or `kill -s USR2' on this process through Tramp.
+# `alan-with-editor-open'.  That visits the file as emacsclient would, and
+# killing its buffer, or finishing or cancelling a commit message, runs
+# `kill -s USR1' or `kill -s USR2' on this process through Tramp.
 set -eu
 
 # Hex keeps the directory and file names clear of OSC terminators and of the

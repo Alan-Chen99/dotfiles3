@@ -3,6 +3,13 @@
 (require 'alan-core)
 (require 'alan-evil)
 
+;; with-editor's, declared so that compiling this file without with-editor
+;; loaded still binds the hook in `alan-with-editor-open' dynamically.
+(defvar with-editor-filter-visit-hook)
+(defvar with-editor-usage-message)
+(defvar with-editor--pid)
+(defvar with-editor-mode)
+
 (pkg! 'with-editor
   (startup-queue-package 'with-editor 0))
 
@@ -80,12 +87,71 @@ Locally there are none: the global $EDITOR already runs emacsclient."
   (when (file-remote-p default-directory)
     (list (concat "EDITOR=" (alan-with-editor-install "remote-editor.sh")))))
 
+;; Every $EDITOR this Emacs answers -- emacsclient, tmux-editor.sh, and
+;; remote-editor.sh on a remote host -- opens a file the same way, since the
+;; calling program keeps or drops the edit by the editor's exit status.  A
+;; plain file is a plain buffer: killing it ends the editor with status 0,
+;; after kill-buffer's usual prompt if it has unsaved changes, so saving and
+;; then killing keeps the edit.  Only buffers that git-commit or git-rebase
+;; put in `with-editor-mode' differ: finishing ends the editor with status 0,
+;; and cancelling, which killing does there, with 1.  No way of ending deletes
+;; the file.
+
+(defvar-local alan-with-editor--pids nil
+  "remote-editor.sh processes waiting on this buffer, as (PID . DIRECTORY).
+The counterpart of `server-buffer-clients' for a plain file; `kill' runs
+in DIRECTORY, on the host of PID.")
+(put 'alan-with-editor--pids 'permanent-local t)
+
+(defvar alan-with-editor--end-signal "USR1"
+  "Signal `alan-with-editor--end' sends.
+remote-editor.sh exits with status 0 on USR1 and 1 on USR2.")
+
+(defun alan-with-editor--end ()
+  "End the remote-editor.sh processes waiting on the current buffer.
+Killing the buffer runs this, as it runs `server-kill-buffer' for
+emacsclient."
+  (dolist (p alan-with-editor--pids)
+    (let* ((default-directory (cdr p))
+           (rc (process-file "kill" nil nil nil
+                             "-s" alan-with-editor--end-signal (car p))))
+      ;; A warning, not an error: an error would leave the buffer unkillable
+      ;; once the process is gone, as after C-c in its shell.
+      (unless (eq rc 0)
+        (display-warning 'alan-with-editor
+                         (format "kill -s %s %s in %s exited %s"
+                                 alan-with-editor--end-signal (car p)
+                                 default-directory rc))))))
+
+(add-hook 'kill-buffer-hook #'alan-with-editor--end)
+
+(defadvice! alan-with-editor-return-keep-file (fn cancel)
+  "Finish or cancel for a sleeping editor as for emacsclient.
+With no emacsclient waiting, `with-editor-return' deletes the file on
+cancel, a fallback for Emacs run directly as $EDITOR, whose exit status
+cannot say the edit was cancelled.  A sleeping editor's can, so its file
+is kept, and remote-editor.sh processes waiting on a plain buffer end with
+the status with-editor would give."
+  :around #'with-editor-return
+  (if (not (or with-editor--pid alan-with-editor--pids))
+      (funcall fn cancel)
+    (let ((file buffer-file-name)
+          (delete (symbol-function 'delete-file))
+          (alan-with-editor--end-signal (if cancel "USR2" "USR1")))
+      (cl-letf (((symbol-function 'delete-file)
+                 (lambda (name &rest args)
+                   (unless (equal name file)
+                     (apply delete name args)))))
+        (funcall fn cancel)))))
+
 (defun alan-with-editor-open (pid hex)
   "Visit the file that remote-editor.sh process PID asks for.
 HEX is its working directory and arguments, NUL-terminated and hex-encoded.
-The file is on `default-directory''s host.  `with-editor-finish' and
-`with-editor-cancel' signal PID there, ending it with status 0 or 1.  If
-the file cannot be visited, PID is ended with status 1."
+The file is on `default-directory''s host.  The buffer ends PID as an
+emacsclient buffer ends its client: killing a plain file ends PID with
+status 0, and a buffer that git-commit or git-rebase puts in
+`with-editor-mode' ends it with status 0 on finishing and 1 on cancelling.
+If the file cannot be visited, PID is ended with status 1."
   (require 'with-editor)
   (condition-case err
       (let* ((bytes (apply #'unibyte-string
@@ -97,11 +163,37 @@ the file cannot be visited, PID is ended with status 1."
         (unless args
           (error "Remote $EDITOR was called without a file"))
         ;; The request is rebuilt in with-editor's own format, so +LINE:COL
-        ;; arguments and the `with-editor-mode' setup match its sleeping editor.
-        (let ((request (format "WITH-EDITOR: %s OPEN %s\037%s\037 IN %s"
-                               pid (nth 0 args) (or (nth 1 args) "") dir)))
-          (when (with-editor-sleeping-editor-filter nil request)
-            (error "with-editor did not parse remote $EDITOR request %S" request))))
+        ;; arguments and commit messages match its sleeping editor.
+        (let* ((request (format "WITH-EDITOR: %s OPEN %s\037%s\037 IN %s"
+                                pid (nth 0 args) (or (nth 1 args) "") dir))
+               (visit (symbol-function 'find-file-noselect))
+               (enabled nil)
+               ;; The sleeping editor turns on `with-editor-mode' for every
+               ;; file once visited.  A file the visit left without it is one
+               ;; emacsclient would open as a plain buffer.
+               (with-editor-filter-visit-hook
+                (cons (lambda ()
+                        (unless enabled
+                          ;; The usage message the mode shows on a timer is
+                          ;; read when the timer runs.
+                          (setq with-editor-usage-message
+                                "When done with this buffer, kill it")
+                          (with-editor-mode -1)
+                          ;; The mode adds this when turned off too.
+                          (remove-hook 'kill-buffer-query-functions
+                                       #'with-editor-kill-buffer-noop t)
+                          (push (cons with-editor--pid default-directory)
+                                alan-with-editor--pids)
+                          (setq with-editor--pid nil)))
+                      with-editor-filter-visit-hook)))
+          (cl-letf (((symbol-function 'find-file-noselect)
+                     (lambda (&rest visit-args)
+                       (let ((buf (apply visit visit-args)))
+                         ;; Set last by the outermost visit, the filter's own.
+                         (setq enabled (buffer-local-value 'with-editor-mode buf))
+                         buf))))
+            (when (with-editor-sleeping-editor-filter nil request)
+              (error "with-editor did not parse remote $EDITOR request %S" request)))))
     (error
      (process-file "kill" nil nil nil "-s" "USR2" pid)
      (signal (car err) (cdr err)))))

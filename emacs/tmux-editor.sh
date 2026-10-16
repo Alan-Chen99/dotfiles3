@@ -7,7 +7,8 @@
 # (tmux update-environment).  An Emacs on this host sets EMACS_SOCKET_NAME and
 # ALAN_EMACSCLIENT; an Emacs on another host, reaching this one through Tramp,
 # cannot be reached by emacsclient and sets ALAN_REMOTE_EDITOR instead, the
-# path of remote-editor.sh here.
+# path of remote-editor.sh here.  Either way a file opens as it does for
+# emacsclient outside tmux; alan-with-editor.el says how that ends.
 set -eu
 
 : "${TMUX:?not inside tmux}"
