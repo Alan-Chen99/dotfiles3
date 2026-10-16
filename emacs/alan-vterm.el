@@ -369,6 +369,25 @@ For example, pressing x sends C-x to the terminal."
         nil)
        (t (error "tmux list-sessions exited %s: %s" rc (string-trim (buffer-string))))))))
 
+(defun alan-vterm--tmux-session-cwd (session)
+  "Working directory of the active pane of tmux SESSION, or nil.
+Nil when SESSION does not exist or tmux cannot read the pane's directory.
+The path is on `default-directory''s host, without a remote prefix."
+  (with-temp-buffer
+    ;; "=" matches the name exactly; the trailing ":" picks the session's
+    ;; current window, whose active pane is what an attach shows.
+    (let ((rc (process-file "tmux" nil t nil "display-message" "-p" "-t"
+                            (concat "=" session ":") "#{pane_current_path}")))
+      (cond
+       ((eq rc 0)
+        (let ((path (string-trim-right (buffer-string) "\n")))
+          (unless (string-empty-p path) path)))
+       ((save-excursion
+          (goto-char (point-min))
+          (re-search-forward "^\\(no server running\\|error connecting to\\|can't find session\\)" nil t))
+        nil)
+       (t (error "tmux display-message exited %s: %s" rc (string-trim (buffer-string))))))))
+
 (defun alan-vterm-tmux (session)
   "Show tmux SESSION in a vterm buffer, attaching or creating it.
 Completes over existing sessions; a new name creates that session.
@@ -388,6 +407,12 @@ Emacs, through tmux-editor.sh."
         (when buf
           (setq dir (buffer-local-value 'default-directory buf))
           (kill-buffer buf))
+        ;; The shell's directory mark arrives only with its next prompt, and
+        ;; attaching redraws the screen without one.  A new session starts
+        ;; in DIR, so only an existing one needs asking.
+        (let ((cwd (let ((default-directory dir)) (alan-vterm--tmux-session-cwd session))))
+          (when cwd
+            (setq dir (concat (file-remote-p dir) (file-name-as-directory cwd)))))
         (pop-to-buffer-same-window (let ((default-directory dir)) (get-buffer-create name)))
         ;; `vterm-mode' hands this string to "sh -c", so it needs quoting.
         ;; Passthrough carries the shell's OSC 51 prompt/directory marks
