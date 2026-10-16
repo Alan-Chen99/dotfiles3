@@ -55,7 +55,10 @@
          (list
           ;; TODO: append instead
           "PROMPT_COMMAND=vterm_prompt_command"
-          "INSIDE_EMACS=")))
+          "INSIDE_EMACS="
+          ;; An Emacs started inside tmux passes TMUX on, and vterm_printf
+          ;; would then wrap its marks in tmux passthrough.
+          "TMUX=")))
     (funcall fn)))
 
 

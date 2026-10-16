@@ -9,8 +9,10 @@
 # shell to send information to `vterm` via properly escaped sequences. A
 # function that helps in this task, `vterm_printf`, is defined below.
 
+# $TMUX alone decides, not TERM: rc files may override TERM inside tmux, and
+# Emacs blanks TMUX for the shells it runs (`vterm-environment', comint).
 function vterm_printf() {
-	if [ -n "$TMUX" ] && ([ "${TERM%%-*}" = "tmux" ] || [ "${TERM%%-*}" = "screen" ]); then
+	if [ -n "$TMUX" ]; then
 		# Tell tmux to pass the escape sequences through
 		printf "\ePtmux;\e\e]%s\007\e\\" "$1"
 	elif [ "${TERM%%-*}" = "screen" ]; then
