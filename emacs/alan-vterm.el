@@ -114,6 +114,12 @@ For example, pressing x sends C-x to the terminal."
     ;; (vterm-set-follow-cursor-shape nil)
     ))
 
+(defvar-local alan-vterm--full-height nil
+  "Non-nil if the terminal takes every row of the window.
+vterm makes the terminal a row shorter than the window, a row that
+a shell fills with a scrollback line.  A program on the alternate
+screen, like tmux, leaves no scrollback, so the row stays blank.")
+
 (defvar-local alan-vterm-current-title nil
   "Title the terminal application last set with OSC 0/2, or nil.")
 
@@ -181,6 +187,12 @@ For example, pressing x sends C-x to the terminal."
     :override #'vterm--get-directory
     ;; (span-dbgf path)
     (concat (file-remote-p default-directory) (file-name-as-directory path)))
+
+  (defadvice! alan-vterm--calculate-size-full-height (dims)
+    :filter-return #'vterm--calculate-size
+    (if (and dims alan-vterm--full-height)
+        (cons (car dims) (1+ (cdr dims)))
+      dims))
 
   (defadvice! alan-vterm--set-title (title)
     :override #'vterm--set-title
@@ -389,7 +401,8 @@ Emacs, through tmux-editor.sh."
           (setq dir (buffer-local-value 'default-directory buf))
           (kill-buffer buf))
         (pop-to-buffer-same-window (let ((default-directory dir)) (get-buffer-create name)))
-        ;; `vterm-mode' hands this string to "sh -c", so it needs quoting.
+        ;; `vterm-mode' splices `vterm-shell' into "bash -c ... && exec %s",
+        ;; so it needs quoting, and one command, hence the inner bash.
         ;; Passthrough carries the shell's OSC 51 prompt/directory marks
         ;; (see vterm_printf), which tmux otherwise drops.  It is a window
         ;; option with no per-session scope, hence global.  Mouse mode makes
@@ -406,8 +419,13 @@ Emacs, through tmux-editor.sh."
         ;; for the socket on every call.  update-environment refreshes the
         ;; session's copy on each attach.  A remote host cannot reach this
         ;; Emacs's socket, so its environment is left alone.
+        ;;
+        ;; tmux gets every row of the window (see `alan-vterm--full-height').
+        ;; vterm's own stty sets one row fewer before `vterm-shell' runs,
+        ;; and tmux reads the size when it attaches.
         (let* ((local (not (file-remote-p dir)))
-               (vterm-shell
+               (height (window-body-height))
+               (tmux
                 (concat
                  "tmux set-option -g allow-passthrough on \\; "
                  (when local
@@ -415,13 +433,20 @@ Emacs, through tmux-editor.sh."
                            (shell-quote-argument (expand-file-name "tmux-editor.sh" alan-dotemacs-dir))))
                  (format "new-session -A -s %s \\; set-option mouse on \\; set-option status off \\; set-option set-titles on \\; set-option set-titles-string '#{pane_title}'"
                          (shell-quote-argument session))))
+               (vterm-shell
+                (concat "bash -c "
+                        (shell-quote-argument (format "stty rows %d && exec %s" height tmux))))
                (process-environment
                 (if local
                     (append (list (concat "EMACS_SOCKET_NAME=" (expand-file-name server-name server-socket-dir))
                                   (concat "ALAN_EMACSCLIENT=" with-editor-emacsclient-executable))
                             process-environment)
                   process-environment)))
-          (vterm-mode))))))
+          (vterm-mode)
+          (setq alan-vterm--full-height t)
+          (let ((inhibit-read-only t))
+            (vterm--set-size vterm--term height
+                             (car (vterm--calculate-size vterm--process (list (selected-window)))))))))))
 
 (defun alan-vterm-kill-process ()
   (interactive)
