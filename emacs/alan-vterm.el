@@ -396,8 +396,10 @@ Emacs, through tmux-editor.sh."
         ;; tmux request mouse reporting, so `vterm-scroll-up' sends it wheel
         ;; events and tmux scrolls its own history; vterm only ever holds
         ;; the visible screen.  With the status line off, panes fill the
-        ;; whole window.  Mouse and status are session options, so other
-        ;; clients of the session get them too.
+        ;; whole window.  set-titles forwards the active pane's title
+        ;; (OSC 0/2 from its program) to vterm, where it shows in the mode
+        ;; line.  These are session options, so other clients of the
+        ;; session get them too.
         ;;
         ;; The session outlives this Emacs, and a pane's environment is
         ;; fixed when the pane starts, so $EDITOR is a script that asks tmux
@@ -411,7 +413,7 @@ Emacs, through tmux-editor.sh."
                  (when local
                    (format "set-option -g 'update-environment[90]' EMACS_SOCKET_NAME \\; set-option -g 'update-environment[91]' ALAN_EMACSCLIENT \\; set-environment -g EDITOR %s \\; "
                            (shell-quote-argument (expand-file-name "tmux-editor.sh" alan-dotemacs-dir))))
-                 (format "new-session -A -s %s \\; set-option mouse on \\; set-option status off"
+                 (format "new-session -A -s %s \\; set-option mouse on \\; set-option status off \\; set-option set-titles on \\; set-option set-titles-string '#{pane_title}'"
                          (shell-quote-argument session))))
                (process-environment
                 (if local
