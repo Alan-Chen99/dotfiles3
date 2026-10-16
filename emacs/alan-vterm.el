@@ -468,7 +468,10 @@ tmux-editor.sh, until a client other than this Emacs attaches."
                                   (concat "ALAN_EMACSCLIENT=" with-editor-emacsclient-executable))
                           (list (concat "ALAN_REMOTE_EDITOR=" (alan-with-editor-install "remote-editor.sh"))))
                         process-environment)))
-          (vterm-mode))))))
+          (vterm-mode)
+          ;; The process is only a tmux client: killing it detaches, and the
+          ;; session keeps running, so there is nothing to confirm.
+          (set-process-query-on-exit-flag vterm--process nil))))))
 
 (defun alan-vterm-tmux-sh (session)
   "Like `alan-vterm-tmux', but start tmux without bash on the host.
