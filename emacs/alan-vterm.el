@@ -395,7 +395,9 @@ Emacs, through tmux-editor.sh."
         ;; option with no per-session scope, hence global.  Mouse mode makes
         ;; tmux request mouse reporting, so `vterm-scroll-up' sends it wheel
         ;; events and tmux scrolls its own history; vterm only ever holds
-        ;; the visible screen.
+        ;; the visible screen.  With the status line off, panes fill the
+        ;; whole window.  Mouse and status are session options, so other
+        ;; clients of the session get them too.
         ;;
         ;; The session outlives this Emacs, and a pane's environment is
         ;; fixed when the pane starts, so $EDITOR is a script that asks tmux
@@ -409,7 +411,7 @@ Emacs, through tmux-editor.sh."
                  (when local
                    (format "set-option -g 'update-environment[90]' EMACS_SOCKET_NAME \\; set-option -g 'update-environment[91]' ALAN_EMACSCLIENT \\; set-environment -g EDITOR %s \\; "
                            (shell-quote-argument (expand-file-name "tmux-editor.sh" alan-dotemacs-dir))))
-                 (format "new-session -A -s %s \\; set-option mouse on"
+                 (format "new-session -A -s %s \\; set-option mouse on \\; set-option status off"
                          (shell-quote-argument session))))
                (process-environment
                 (if local
