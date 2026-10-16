@@ -22,14 +22,4 @@ eval "$v"
 # emacsclient's own message.
 unset ALTERNATE_EDITOR
 
-esc() { printf '%s' "$1" | sed 's/[\\"]/\\&/g'; }
-
-# Emacs opens marked files in with-editor-mode, as it does git commit
-# messages, so finish and cancel work the same for every program.
-for f in "$@"; do
-	case $f in
-	[-+]*) continue ;;
-	esac
-	"$ALAN_EMACSCLIENT" --eval "(alan-vterm-tmux-editor-expect \"$(esc "$f")\" \"$(esc "$PWD")\")" >/dev/null
-done
 exec "$ALAN_EMACSCLIENT" "$@"

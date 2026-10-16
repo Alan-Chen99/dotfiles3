@@ -369,25 +369,6 @@ For example, pressing x sends C-x to the terminal."
         nil)
        (t (error "tmux list-sessions exited %s: %s" rc (string-trim (buffer-string))))))))
 
-(defvar alan-vterm--tmux-editor-files nil
-  "Files that tmux-editor.sh is about to open through emacsclient.")
-
-(defun alan-vterm-tmux-editor-expect (file dir)
-  "Open the next emacsclient visit of FILE, relative to DIR, in `with-editor-mode'.
-tmux-editor.sh calls this through emacsclient --eval before the visit."
-  (push (expand-file-name file dir) alan-vterm--tmux-editor-files)
-  nil)
-
-(defun alan-vterm--tmux-editor-visit ()
-  (when-let* ((file (seq-find (lambda (f) (file-equal-p f buffer-file-name))
-                              alan-vterm--tmux-editor-files)))
-    (setq alan-vterm--tmux-editor-files (delete file alan-vterm--tmux-editor-files))
-    ;; Already on for commit messages, through `git-commit-setup'.
-    (unless with-editor-mode
-      (with-editor-mode 1))))
-
-(add-hook 'server-visit-hook #'alan-vterm--tmux-editor-visit)
-
 (defun alan-vterm-tmux (session)
   "Show tmux SESSION in a vterm buffer, attaching or creating it.
 Completes over existing sessions; a new name creates that session.
