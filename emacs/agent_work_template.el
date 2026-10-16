@@ -124,6 +124,21 @@
 ;;       (agent-q (run-with-timer 0.1 nil #'execute-kbd-macro (kbd "y"))
 ;;                (y-or-n-p "..."))
 ;;
+;;   - `execute-kbd-macro' answers a prompt, but do not RUN a command under
+;;     test with it.  Keys in a macro are not interactive input
+;;     (INTERACTIVE, src/commands.h), so a command that asks only when
+;;     called interactively acts without asking: `kill-buffer' kills a
+;;     modified file buffer with no save prompt, and the edit is lost.  To
+;;     run a command as typed, queue its keys in a query of their own:
+;;
+;;       --eval (agent-async (setq unread-command-events
+;;                                 (listify-key-sequence (kbd "w <up>"))))
+;;
+;;     Keys queued so ran at once in buffers that a shell's $EDITOR opened.
+;;     In buffers a timer had visited with `find-file-noselect' they ran no
+;;     command, and in some runs the session stopped answering until a key
+;;     arrived through the X display, below.
+;;
 ;;   - `server-eval-at' to this session's OWN server deadlocks it: the
 ;;     outer request holds the filter, so the nested one is never served
 ;;     and Emacs waits in `accept-process-output' forever.  Only a kill
