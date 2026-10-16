@@ -277,6 +277,7 @@ For example, pressing x sends C-x to the terminal."
     "<wheel-down>" #'vterm-scroll-down-mouse
 
     "SPC m" #'vterm-copy-mode
+    "SPC p" #'alan-vterm-cc-pretty
     ;; "<escape>" #'vterm--self-insert
     )
 
@@ -510,6 +511,109 @@ panes send no prompt or directory marks even if they run bash."
    :prompt "Vterm: "
    :history 'consult--buffer-history
    :sort nil))
+
+(defun alan-vterm--program-tty ()
+  "Terminal that the program shown in this vterm buffer reads input from.
+A tmux client only displays a pane; the pane's own tty is where its
+program runs."
+  (let ((tty (process-tty-name vterm--process)))
+    (unless tty
+      (error "vterm process %s has no tty" vterm--process))
+    (or (and (executable-find "tmux")
+             ;; Not "display-message -c TTY": with no client on TTY it
+             ;; answers for some other client, exit status 0.
+             (with-temp-buffer
+               (let ((rc (call-process "tmux" nil t nil "list-clients" "-F" "#{client_tty} #{pane_tty}")))
+                 (cond
+                  ((eq rc 0)
+                   (seq-some (lambda (line)
+                               (pcase (split-string line " ")
+                                 (`(,client ,pane) (and (equal client tty) pane))))
+                             (split-string (buffer-string) "\n" t)))
+                  ((save-excursion
+                     (goto-char (point-min))
+                     (re-search-forward "^\\(no server running\\|error connecting to\\)" nil t))
+                   nil)
+                  (t (error "tmux list-clients exited %s: %s" rc (string-trim (buffer-string))))))))
+        tty)))
+
+(defun alan-vterm--claude-sessions-on-tty (tty)
+  "Live interactive Claude Code sessions reading their input from TTY.
+Each is the alist of its ~/.claude/sessions/<pid>.json, which Claude
+Code rewrites on /clear and /resume and deletes on exit."
+  (let ((dir (expand-file-name "sessions" (or (getenv "CLAUDE_CONFIG_DIR") "~/.claude")))
+        found)
+    (dolist (file (directory-files dir t "\\`[0-9]+\\.json\\'"))
+      (let ((s (condition-case nil
+                   (with-temp-buffer
+                     (insert-file-contents file)
+                     (json-parse-buffer :object-type 'alist))
+                 ;; The process exited between listing and reading.
+                 (file-missing nil))))
+        (when (and s
+                   (equal (alist-get 'kind s) "interactive")
+                   ;; Not `process-attributes': its ttname drops a slash ("/dev/pts13").
+                   (equal (file-symlink-p (format "/proc/%d/fd/0" (alist-get 'pid s))) tty)
+                   ;; A file left by a crashed claude can name a pid since
+                   ;; reused; procStart is /proc/<pid>/stat's starttime.
+                   (equal (alist-get 'procStart s)
+                          (with-temp-buffer
+                            (insert-file-contents (format "/proc/%d/stat" (alist-get 'pid s)))
+                            ;; comm, field 2, may hold spaces; fields after its ")" start at 3.
+                            (re-search-forward ") ")
+                            (nth 19 (split-string (buffer-substring (point) (point-max)))))))
+          (push s found))))
+    found))
+
+(defvar-local alan-cc-pretty--session nil
+  "Session id this cc-pretty buffer renders.")
+
+(defun alan-cc-pretty--revert (&rest _)
+  (let ((id alan-cc-pretty--session)
+        (line (line-number-at-pos))
+        (inhibit-read-only t))
+    (erase-buffer)
+    (let ((rc (call-process "agent-tools" nil t nil "cc-pretty" id "--color")))
+      (unless (eq rc 0)
+        (error "agent-tools cc-pretty %s exited %s; its output is in %s" id rc (buffer-name))))
+    ;; Faces as plain `face': `font-lock-face' needs font-lock-mode.
+    (let ((ansi-color-apply-face-function
+           (lambda (beg end face) (when face (put-text-property beg end 'face face)))))
+      (ansi-color-apply-on-region (point-min) (point-max)))
+    (goto-char (point-min))
+    (forward-line (1- line))))
+
+(define-derived-mode alan-cc-pretty-mode special-mode "cc-pretty"
+  "A Claude Code session rendered by `agent-tools cc-pretty'; \\[revert-buffer] re-renders."
+  (setq-local truncate-lines t)
+  (setq-local revert-buffer-function #'alan-cc-pretty--revert))
+
+(defun alan-vterm-cc-pretty ()
+  "Render the Claude Code session running in this vterm into another window.
+Works through a tmux client too: the session is the one in its active pane."
+  (interactive)
+  (unless (derived-mode-p 'vterm-mode)
+    (user-error "Not a vterm buffer"))
+  (require 'ansi-color)
+  ;; The vterm's tty, its tmux client and the claude on it are all local,
+  ;; even when the buffer's directory is remote.
+  (let* ((default-directory (expand-file-name "~/"))
+         (tty (alan-vterm--program-tty))
+         (sessions (alan-vterm--claude-sessions-on-tty tty)))
+    (when (cdr sessions)
+      (user-error "Several claude sessions on %s: %s" tty
+                  (mapconcat (lambda (s) (format "pid %s %s" (alist-get 'pid s) (alist-get 'sessionId s)))
+                             sessions ", ")))
+    (unless sessions
+      (user-error "No claude reading input from %s" tty))
+    (let* ((s (car sessions))
+           (buf (get-buffer-create (format "*cc-pretty:%s*" (or (alist-get 'name s) (alist-get 'sessionId s))))))
+      (with-current-buffer buf
+        (unless (derived-mode-p 'alan-cc-pretty-mode)
+          (alan-cc-pretty-mode))
+        (setq alan-cc-pretty--session (alist-get 'sessionId s))
+        (revert-buffer))
+      (display-buffer buf '(nil (inhibit-same-window . t))))))
 
 (defun alan-vterm-kill-process ()
   (interactive)
