@@ -27,6 +27,11 @@ sleep 604800 &
 s=$!
 trap 'kill "$s"; exit 0' USR1
 trap 'kill "$s"; exit 1' USR2
+# A background job of a non-interactive shell ignores C-c, so the sleep
+# would outlive this script by up to 7 days.
+trap 'kill "$s"; exit 129' HUP
+trap 'kill "$s"; exit 130' INT
+trap 'kill "$s"; exit 143' TERM
 wait "$s"
 echo "remote-editor.sh: no answer from Emacs in 7 days" >&2
 exit 1
