@@ -2,6 +2,7 @@
 
 (require 'alan-core)
 (require 'alan-comint)
+(require 'alan-with-editor)
 
 (require-if-is-bytecompile comint)
 
@@ -49,6 +50,7 @@
   (if (alan-use-prompt-dirtrack)
       (let ((ans (funcall fn)))
         (append
+         (alan-with-editor-remote-env)
          ans alan-bash-fns-env-vars
          (list
           ;; TODO: append instead
@@ -97,7 +99,11 @@
         (if remote
             (setq default-directory
                   (concat (file-remote-p default-directory) (file-name-as-directory cmd)))
-          (cd-absolute (file-name-as-directory cmd)))))))
+          (cd-absolute (file-name-as-directory cmd)))))
+    (when (= subcmd (eval-when-compile (string-to-char "E")))
+      (pcase (split-string-and-unquote cmd)
+        (`("alan-with-editor-open" ,pid ,hex) (alan-with-editor-open pid hex))
+        (_ (error "Unsupported OSC 51;E message: %S" cmd))))))
 
 
 (eval-after-load! comint

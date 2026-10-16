@@ -158,6 +158,8 @@ For example, pressing x sends C-x to the terminal."
 
   (setq vterm-shell "/bin/bash")
 
+  (add-to-list 'vterm-eval-cmds '("alan-with-editor-open" alan-with-editor-open))
+
   (defadvice! alan-vterm--get-shell ()
     :override #'vterm--get-shell
     ;; (let ((f
@@ -348,12 +350,14 @@ For example, pressing x sends C-x to the terminal."
           (setq dir (with-current-buffer (get-buffer name) default-directory))
           (kill-buffer (get-buffer name)))
         (pop-to-buffer-same-window (let ((default-directory dir)) (get-buffer-create name)))
-        (vterm-mode)))))
+        (let ((vterm-environment (append (alan-with-editor-remote-env) vterm-environment)))
+          (vterm-mode))))))
 
 (defun alan-vterm-run (command)
   (interactive
    (list (read-shell-command "Vterm: ")))
-  (let ((vterm-shell command))
+  (let ((vterm-shell command)
+        (vterm-environment (append (alan-with-editor-remote-env) vterm-environment)))
     (vterm t)))
 
 (defun alan-vterm--tmux-sessions ()
@@ -430,7 +434,9 @@ Emacs, through tmux-editor.sh."
         ;; fixed when the pane starts, so $EDITOR is a script that asks tmux
         ;; for the socket on every call.  update-environment refreshes the
         ;; session's copy on each attach.  A remote host cannot reach this
-        ;; Emacs's socket, so its environment is left alone.
+        ;; Emacs's socket, and remote-editor.sh would wait forever in a pane
+        ;; whose client is not this Emacs, so a remote session's environment
+        ;; is left alone.
         (let* ((local (not (file-remote-p dir)))
                (vterm-shell
                 (concat
