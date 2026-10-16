@@ -144,6 +144,61 @@ the status with-editor would give."
                      (apply delete name args)))))
         (funcall fn cancel)))))
 
+;; Emacs's own backup copies a file before its first save, so for a commit
+;; message it holds git's template, and the auto-save file is deleted on save
+;; and reused by the next edit of the same file.  The caller then overwrites
+;; or deletes the file: git on the next commit, and callers that edit a
+;; temporary file once they read it.  So an edit that was cancelled, killed
+;; unsaved or rejected by the caller survives only in the copy written here
+;; when its buffer is killed.  A buffer that emacsclient found already open is
+;; buried instead, and keeps the edit itself.
+
+(defvar alan-with-editor-backup-directory
+  (expand-file-name "with-editor-backups/" user-emacs-directory)
+  "Where a buffer that an $EDITOR waits on is copied when killed.
+Each copy is named after the file, with / as !, and the time of the kill.")
+
+(defun alan-with-editor--backup ()
+  "Copy the current buffer to `alan-with-editor-backup-directory'."
+  (make-directory alan-with-editor-backup-directory t)
+  (let ((name (decode-coding-string
+               (string-limit
+                (concat (subst-char-in-string
+                         ?/ ?! (or buffer-file-name (buffer-name)))
+                        (format-time-string "~%Y%m%dT%H%M%S.%3N"))
+                ;; NAME_MAX bytes; the end, with the file and time, is kept.
+                255 t 'utf-8)
+               'utf-8))
+        ;; Encodes any buffer text without asking, which a kill cannot.
+        (coding-system-for-write 'utf-8-emacs-unix))
+    (save-restriction
+      (widen)
+      (write-region nil nil
+                    (expand-file-name name alan-with-editor-backup-directory)
+                    nil 'quiet nil 'excl))))
+
+(put 'alan-with-editor--backup 'permanent-local-hook t)
+
+(defun alan-with-editor--mark ()
+  "Copy the current buffer when it is killed.
+Buffer-local and first: the local hook runs before the global one, and
+server.el's own entry, which releases emacsclient, is local too.  A copy
+that fails then leaves the buffer alive and its $EDITOR still waiting."
+  (add-hook 'kill-buffer-hook #'alan-with-editor--backup -90 t))
+
+(add-hook 'with-editor-filter-visit-hook #'alan-with-editor--mark)
+
+(defadvice! alan-with-editor-mark-client-buffers (fn files proc &optional nowait)
+  "Copy the buffers that emacsclient waits on when they are killed.
+An emacsclient -n does not wait, and is not an $EDITOR."
+  :around #'server-visit-files
+  (let ((buffers (funcall fn files proc nowait)))
+    (unless nowait
+      (dolist (b buffers)
+        (with-current-buffer b
+          (alan-with-editor--mark))))
+    buffers))
+
 (defun alan-with-editor-open (pid hex)
   "Visit the file that remote-editor.sh process PID asks for.
 HEX is its working directory and arguments, NUL-terminated and hex-encoded.
