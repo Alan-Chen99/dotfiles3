@@ -353,6 +353,19 @@ For example, pressing x sends C-x to the terminal."
         (let ((vterm-environment (append (alan-with-editor-remote-env) vterm-environment)))
           (vterm-mode))))))
 
+;; vterm's wrapper and `vterm-shell' are bash, so a host without bash needs
+;; these.  sh drops the exported bash functions in `vterm-environment', so the
+;; shell sends no prompt or directory marks.
+(defun alan-vterm-sh (&optional arg)
+  "Like `alan-vterm', but run /bin/sh and need no bash on the host."
+  (interactive "P")
+  ;; Loaded first: setting up vterm inside the let would set the let's
+  ;; binding of `vterm-shell', lost when the let ends.
+  (require 'vterm)
+  (let ((vterm-wrapper-shell "/bin/sh")
+        (vterm-shell "/bin/sh"))
+    (alan-vterm arg)))
+
 (defun alan-vterm-run (command)
   (interactive
    (list (read-shell-command "Vterm: ")))
@@ -456,6 +469,16 @@ tmux-editor.sh, until a client other than this Emacs attaches."
                           (list (concat "ALAN_REMOTE_EDITOR=" (alan-with-editor-install "remote-editor.sh"))))
                         process-environment)))
           (vterm-mode))))))
+
+(defun alan-vterm-tmux-sh (session)
+  "Like `alan-vterm-tmux', but start tmux without bash on the host.
+A tmux server this starts lacks the exported bash functions, so its
+panes send no prompt or directory marks even if they run bash."
+  (interactive
+   (list (completing-read "tmux session: " (alan-vterm--tmux-sessions))))
+  (require 'vterm)
+  (let ((vterm-wrapper-shell "/bin/sh"))
+    (alan-vterm-tmux session)))
 
 (defun alan-vterm-kill-process ()
   (interactive)
