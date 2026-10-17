@@ -117,6 +117,9 @@ For example, pressing x sends C-x to the terminal."
 (defvar-local alan-vterm-current-title nil
   "Title the terminal application last set with OSC 0/2, or nil.")
 
+(defvar-local alan-vterm--id nil
+  "Value of ALAN_VTERM_ID in the environment of this buffer's process.")
+
 (add-to-list 'alan-modeline-lhs
              '(alan-vterm-current-title (" [" (-60 "" alan-vterm-current-title) "]"))
              t)
@@ -183,6 +186,16 @@ For example, pressing x sends C-x to the terminal."
     :override #'vterm--get-directory
     ;; (span-dbgf path)
     (concat (file-remote-p default-directory) (file-name-as-directory path)))
+
+  (defadvice! alan-vterm--tag-process (fn &rest args)
+    ;; Lets `alan-vterm--remote-tty' find, on a remote host, the process
+    ;; this buffer started.
+    :around #'vterm-mode
+    (let* ((id (substring (md5 (format "%s %s %s %s" (system-name) (emacs-pid) (float-time) (random))) 0 16))
+           (vterm-environment (cons (concat "ALAN_VTERM_ID=" id) vterm-environment)))
+      (apply fn args)
+      ;; After `vterm-mode', whose `kill-all-local-variables' would drop it.
+      (setq-local alan-vterm--id id)))
 
   (defadvice! alan-vterm--set-title (title)
     :override #'vterm--set-title
@@ -512,18 +525,54 @@ panes send no prompt or directory marks even if they run bash."
    :history 'consult--buffer-history
    :sort nil))
 
+(defun alan-vterm--remote-tty ()
+  "Pty on its host that the process this remote vterm started reads input from.
+Locally that process is ssh, whose tty says nothing about the pty
+sshd opened on the host; `alan-vterm--id' finds the process there."
+  (let ((id (or alan-vterm--id
+                (user-error "%s was started without ALAN_VTERM_ID; restart it" (buffer-name)))))
+    (with-temp-buffer
+      ;; Only the user's own environ files are readable, and a process
+      ;; exiting mid-scan fails its grep the same as a non-match.
+      (let ((rc (process-file
+                 "sh" nil t nil "-c"
+                 "for d in /proc/[0-9]*; do
+  if [ -O \"$d/environ\" ] && grep -qzx \"ALAN_VTERM_ID=$1\" \"$d/environ\" 2>/dev/null; then
+    echo ${d#/proc/} $(ps -o ppid= -p ${d#/proc/}) $(readlink $d/fd/0)
+  fi
+done"
+                 "sh" id)))
+        (unless (eq rc 0)
+          (error "Scanning %s for ALAN_VTERM_ID exited %s: %s"
+                 (file-remote-p default-directory) rc (string-trim (buffer-string))))
+        ;; A line short of three fields is a process that exited mid-scan.
+        (let* ((procs (seq-filter (lambda (f) (length= f 3))
+                                  (mapcar #'split-string (split-string (buffer-string) "\n" t))))
+               (pids (mapcar #'car procs))
+               ;; The shell and everything it starts inherit the ID; the
+               ;; process vterm started is the one whose parent lacks it.
+               (roots (seq-remove (lambda (f) (member (nth 1 f) pids)) procs)))
+          (pcase roots
+            (`((,_ ,_ ,tty)) tty)
+            ('() (error "No process on %s carries ALAN_VTERM_ID=%s"
+                        (file-remote-p default-directory) id))
+            (_ (error "Several processes on %s carry ALAN_VTERM_ID=%s: %S"
+                      (file-remote-p default-directory) id roots))))))))
+
 (defun alan-vterm--program-tty ()
   "Terminal that the program shown in this vterm buffer reads input from.
-A tmux client only displays a pane; the pane's own tty is where its
-program runs."
-  (let ((tty (process-tty-name vterm--process)))
-    (unless tty
-      (error "vterm process %s has no tty" vterm--process))
-    (or (and (executable-find "tmux")
+The terminal is on `default-directory''s host, which must be the
+host the vterm's process runs on.  A tmux client only displays a
+pane; the pane's own tty is where its program runs."
+  (let ((tty (if (file-remote-p default-directory)
+                 (alan-vterm--remote-tty)
+               (or (process-tty-name vterm--process)
+                   (error "vterm process %s has no tty" vterm--process)))))
+    (or (and (executable-find "tmux" t)
              ;; Not "display-message -c TTY": with no client on TTY it
              ;; answers for some other client, exit status 0.
              (with-temp-buffer
-               (let ((rc (call-process "tmux" nil t nil "list-clients" "-F" "#{client_tty} #{pane_tty}")))
+               (let ((rc (process-file "tmux" nil t nil "list-clients" "-F" "#{client_tty} #{pane_tty}")))
                  (cond
                   ((eq rc 0)
                    (seq-some (lambda (line)
@@ -537,13 +586,25 @@ program runs."
                   (t (error "tmux list-clients exited %s: %s" rc (string-trim (buffer-string))))))))
         tty)))
 
+(defun alan-vterm--claude-config-dir ()
+  "Claude Code's config dir on `default-directory''s host.
+A remote host's $CLAUDE_CONFIG_DIR is not consulted."
+  (let ((remote (file-remote-p default-directory)))
+    (if remote
+        (expand-file-name (concat remote "~/.claude"))
+      (expand-file-name (or (getenv "CLAUDE_CONFIG_DIR") "~/.claude")))))
+
 (defun alan-vterm--claude-sessions-on-tty (tty)
   "Live interactive Claude Code sessions reading their input from TTY.
-Each is the alist of its ~/.claude/sessions/<pid>.json, which Claude
-Code rewrites on /clear and /resume and deletes on exit."
-  (let ((dir (expand-file-name "sessions" (or (getenv "CLAUDE_CONFIG_DIR") "~/.claude")))
+TTY and the sessions are on `default-directory''s host.  Each is the
+alist of its ~/.claude/sessions/<pid>.json, which Claude Code rewrites
+on /clear and /resume and deletes on exit."
+  (let ((remote (file-remote-p default-directory))
+        ;; Tramp caches listings and attributes; these files change under it.
+        (remote-file-name-inhibit-cache t)
         found)
-    (dolist (file (directory-files dir t "\\`[0-9]+\\.json\\'"))
+    (dolist (file (directory-files (expand-file-name "sessions" (alan-vterm--claude-config-dir))
+                                   t "\\`[0-9]+\\.json\\'"))
       (let ((s (condition-case nil
                    (with-temp-buffer
                      (insert-file-contents file)
@@ -553,12 +614,17 @@ Code rewrites on /clear and /resume and deletes on exit."
         (when (and s
                    (equal (alist-get 'kind s) "interactive")
                    ;; Not `process-attributes': its ttname drops a slash ("/dev/pts13").
-                   (equal (file-symlink-p (format "/proc/%d/fd/0" (alist-get 'pid s))) tty)
+                   (equal (file-symlink-p (format "%s/proc/%d/fd/0" (or remote "") (alist-get 'pid s))) tty)
                    ;; A file left by a crashed claude can name a pid since
                    ;; reused; procStart is /proc/<pid>/stat's starttime.
                    (equal (alist-get 'procStart s)
                           (with-temp-buffer
-                            (insert-file-contents (format "/proc/%d/stat" (alist-get 'pid s)))
+                            ;; Not `insert-file-contents': through Tramp it reads
+                            ;; nothing of a file whose reported size is 0.
+                            (let ((rc (process-file "cat" nil t nil (format "/proc/%d/stat" (alist-get 'pid s)))))
+                              (unless (eq rc 0)
+                                (error "cat /proc/%d/stat exited %s: %s" (alist-get 'pid s) rc (buffer-string))))
+                            (goto-char (point-min))
                             ;; comm, field 2, may hold spaces; fields after its ")" start at 3.
                             (re-search-forward ") ")
                             (nth 19 (split-string (buffer-substring (point) (point-max)))))))
@@ -566,16 +632,35 @@ Code rewrites on /clear and /resume and deletes on exit."
     found))
 
 (defvar-local alan-cc-pretty--session nil
-  "Session id this cc-pretty buffer renders.")
+  "Session id this cc-pretty buffer renders.
+The session is on `default-directory''s host.")
 
 (defun alan-cc-pretty--revert (&rest _)
-  (let ((id alan-cc-pretty--session)
-        (line (line-number-at-pos))
-        (inhibit-read-only t))
+  (let* ((id alan-cc-pretty--session)
+         (line (line-number-at-pos))
+         (inhibit-read-only t)
+         ;; agent-tools runs here, so a remote log is rendered from a local
+         ;; copy.  The copy outlives the render: cc-pretty's header names
+         ;; it for recovering a block with sed.
+         (copy (when (file-remote-p default-directory)
+                 (let* ((remote-file-name-inhibit-cache t)
+                        (pattern (expand-file-name (format "projects/*/%s.jsonl" id)
+                                                   (alan-vterm--claude-config-dir)))
+                        (log (pcase (file-expand-wildcards pattern)
+                               (`(,log) log)
+                               ('() (error "No log matches %s" pattern))
+                               (logs (error "Several logs match %s: %s" pattern logs))))
+                        (copy (expand-file-name
+                               (format "alan-cc-pretty/%s/%s.jsonl" (file-remote-p log 'host) id)
+                               temporary-file-directory)))
+                   (make-directory (file-name-directory copy) t)
+                   (copy-file log copy t)
+                   copy))))
     (erase-buffer)
-    (let ((rc (call-process "agent-tools" nil t nil "cc-pretty" id "--color")))
+    (let ((rc (let ((default-directory (expand-file-name "~/")))
+                (call-process "agent-tools" nil t nil "cc-pretty" (or copy id) "--color"))))
       (unless (eq rc 0)
-        (error "agent-tools cc-pretty %s exited %s; its output is in %s" id rc (buffer-name))))
+        (error "agent-tools cc-pretty %s exited %s; its output is in %s" (or copy id) rc (buffer-name))))
     ;; Faces as plain `face': `font-lock-face' needs font-lock-mode.
     (let ((ansi-color-apply-face-function
            (lambda (beg end face) (when face (put-text-property beg end 'face face)))))
@@ -590,27 +675,33 @@ Code rewrites on /clear and /resume and deletes on exit."
 
 (defun alan-vterm-cc-pretty ()
   "Render the Claude Code session running in this vterm into another window.
-Works through a tmux client too: the session is the one in its active pane."
+Works through a tmux client too: the session is the one in its active
+pane.  In a remote vterm the session is looked up on the remote host."
   (interactive)
   (unless (derived-mode-p 'vterm-mode)
     (user-error "Not a vterm buffer"))
   (require 'ansi-color)
-  ;; The vterm's tty, its tmux client and the claude on it are all local,
-  ;; even when the buffer's directory is remote.
-  (let* ((default-directory (expand-file-name "~/"))
+  ;; The vterm's process runs on the host of the directory it started in,
+  ;; whose remote prefix `alan-vterm--get-directory' keeps.
+  (let* ((default-directory (expand-file-name (concat (file-remote-p default-directory) "~/")))
          (tty (alan-vterm--program-tty))
-         (sessions (alan-vterm--claude-sessions-on-tty tty)))
+         (sessions (alan-vterm--claude-sessions-on-tty tty))
+         (host (file-remote-p default-directory 'host)))
     (when (cdr sessions)
-      (user-error "Several claude sessions on %s: %s" tty
+      (user-error "Several claude sessions on %s%s: %s" (if host (concat host ":") "") tty
                   (mapconcat (lambda (s) (format "pid %s %s" (alist-get 'pid s) (alist-get 'sessionId s)))
                              sessions ", ")))
     (unless sessions
-      (user-error "No claude reading input from %s" tty))
+      (user-error "No claude reading input from %s%s" (if host (concat host ":") "") tty))
     (let* ((s (car sessions))
-           (buf (get-buffer-create (format "*cc-pretty:%s*" (or (alist-get 'name s) (alist-get 'sessionId s))))))
+           (dir default-directory)
+           (buf (get-buffer-create (format "*cc-pretty:%s%s*"
+                                           (if host (concat host ":") "")
+                                           (or (alist-get 'name s) (alist-get 'sessionId s))))))
       (with-current-buffer buf
         (unless (derived-mode-p 'alan-cc-pretty-mode)
           (alan-cc-pretty-mode))
+        (setq default-directory dir)
         (setq alan-cc-pretty--session (alist-get 'sessionId s))
         (revert-buffer))
       (display-buffer buf '(nil (inhibit-same-window . t))))))
