@@ -32,47 +32,31 @@
 (defmacro vterm-with-send-key (expr)
   `(lambda () (interactive) (vterm-send ,expr)))
 
-(defun alan-vterm--wheel (button col-row fallback)
-  "Send SGR mouse BUTTON at window-relative 0-based COL-ROW, or call FALLBACK.
-The event goes to the application only when it has enabled mouse
-reporting; otherwise FALLBACK scrolls the Emacs window."
-  (if (vterm-mouse-reporting-p)
-      ;; SGR coordinates are 1-based.  The row decides which tmux pane or
-      ;; status line receives the wheel, so it has to be exact.
-      (vterm-send-string (format "\e[<%d;%d;%dM" button (1+ (car col-row)) (1+ (cdr col-row))))
+(defun alan-vterm--wheel (posn up fallback)
+  "Send a wheel step at POSN to the terminal, or call FALLBACK.
+UP is the direction; see `vterm-mouse-wheel-at'."
+  (unless (vterm-mouse-wheel-at (selected-window) posn up)
     (funcall fallback)))
 
-(defun alan-vterm--point-col-row ()
-  (cons (current-column) (count-screen-lines (window-start) (line-beginning-position))))
-
-(defun alan-vterm--mouse-col-row ()
-  "Window-relative column and row of the mouse wheel event or the pointer.
-Keyboard bindings reach here too, so fall back to the pointer position."
-  (posn-col-row
-   (if (consp last-input-event)
-       (event-start last-input-event)
-     (let ((mp (mouse-pixel-position)))
-       (posn-at-x-y (cadr mp) (cddr mp) (car mp))))))
-
 (defun vterm-scroll-up ()
-  "Scroll up at point: wheel event to the application, else `scroll-down-command'."
+  "Scroll up at point: wheel step to the terminal, else `scroll-down-command'."
   (interactive)
-  (alan-vterm--wheel 64 (alan-vterm--point-col-row) #'scroll-down-command))
+  (alan-vterm--wheel (posn-at-point) t #'scroll-down-command))
 
 (defun vterm-scroll-down ()
-  "Scroll down at point: wheel event to the application, else `scroll-up-command'."
+  "Scroll down at point: wheel step to the terminal, else `scroll-up-command'."
   (interactive)
-  (alan-vterm--wheel 65 (alan-vterm--point-col-row) #'scroll-up-command))
+  (alan-vterm--wheel (posn-at-point) nil #'scroll-up-command))
 
 (defun vterm-scroll-up-mouse ()
   "Like `vterm-scroll-up', but at the mouse pointer."
   (interactive)
-  (alan-vterm--wheel 64 (alan-vterm--mouse-col-row) #'scroll-down-command))
+  (alan-vterm--wheel nil t #'scroll-down-command))
 
 (defun vterm-scroll-down-mouse ()
   "Like `vterm-scroll-down', but at the mouse pointer."
   (interactive)
-  (alan-vterm--wheel 65 (alan-vterm--mouse-col-row) #'scroll-up-command))
+  (alan-vterm--wheel nil nil #'scroll-up-command))
 
 (defun alan-vterm-send-ctrl-next-key ()
   "Read the next key and send it to vterm with Control added.
@@ -246,8 +230,6 @@ For example, pressing x sends C-x to the terminal."
 
     "C-k" #'vterm-scroll-up
     "C-J" #'vterm-scroll-down
-    "<wheel-up>" #'vterm-scroll-up-mouse
-    "<wheel-down>" #'vterm-scroll-down-mouse
 
     "S-SPC" #'alan-vterm-send-ctrl-next-key
     "<.> 2" #'alan-vterm-send-ctrl-next-key
@@ -287,9 +269,6 @@ For example, pressing x sends C-x to the terminal."
     "SPC <up>" #'alan-vterm-kill-process
 
     "SPC c" (vterm-with-send-key "C-c")
-
-    "<wheel-up>" #'vterm-scroll-up-mouse
-    "<wheel-down>" #'vterm-scroll-down-mouse
 
     "SPC m" #'vterm-copy-mode
     "SPC p" #'alan-vterm-cc-pretty
@@ -465,9 +444,9 @@ tmux-editor.sh, until a client other than this Emacs attaches."
         ;; Passthrough carries the shell's OSC 51 prompt/directory marks
         ;; (see vterm_printf), which tmux otherwise drops.  It is a window
         ;; option with no per-session scope, hence global.  Mouse mode makes
-        ;; tmux request mouse reporting, so `vterm-scroll-up' sends it wheel
-        ;; events and tmux scrolls its own history; vterm only ever holds
-        ;; the visible screen.  With the status line off, panes fill the
+        ;; tmux request mouse reporting, so vterm sends it clicks, drags
+        ;; and wheel steps, and tmux scrolls its own history; vterm only
+        ;; ever holds the visible screen.  With the status line off, panes fill the
         ;; whole window.  set-titles forwards the active pane's title
         ;; (OSC 0/2 from its program) to vterm, where it shows in the mode
         ;; line.  These are session options, so other clients of the
