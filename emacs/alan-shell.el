@@ -43,7 +43,15 @@
 (defvar alan-bash-fns-env-vars nil)
 (if (eq system-type 'windows-nt)
     (span-msg "TODO")
-  (setq alan-bash-fns-env-vars (alan-load-shell-bash-fns)))
+  (setq alan-bash-fns-env-vars (alan-load-shell-bash-fns))
+  ;; An Emacs started from one of its own terminals inherits these.  Tramp
+  ;; sends a remote process only the entries that differ from the toplevel
+  ;; `process-environment', so the inherited copies would keep them from
+  ;; reaching a host whose bashrc does not define them.  Every terminal gets
+  ;; them from `alan-bash-fns-env-vars' anyway.
+  (let ((names (--map (car (split-string it "=")) alan-bash-fns-env-vars)))
+    (setq process-environment
+          (--remove (member (car (split-string it "=")) names) process-environment))))
 
 (defadvice! comint-term-environment--inject (fn)
   :around #'comint-term-environment
