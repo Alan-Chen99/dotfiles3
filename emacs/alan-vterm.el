@@ -419,6 +419,10 @@ The path is on `default-directory''s host, without a remote prefix."
         nil)
        (t (error "tmux display-message exited %s: %s" rc (string-trim (buffer-string))))))))
 
+(defvar-local alan-vterm--tmux-target nil
+  "(REMOTE . SESSION) of the tmux session this buffer shows.
+REMOTE is the `file-remote-p' prefix of the host, nil for this one.")
+
 (defun alan-vterm-tmux (session)
   "Show tmux SESSION in a vterm buffer, attaching or creating it.
 Completes over existing sessions; a new name creates that session.
@@ -430,11 +434,18 @@ tmux-editor.sh, until a client other than this Emacs attaches."
     (user-error "Empty tmux session name"))
   (require 'vterm)
   (alan-setup-with-editor)
-  ;; Each host has its own tmux server, so the name carries the remote
-  ;; prefix: same-named sessions on two hosts get two buffers, and a dead
-  ;; buffer reattaches on the host it was on.
-  (let* ((name (format "*tmux:%s%s*" (or (file-remote-p default-directory) "") session))
-         (buf (get-buffer name)))
+  (let* ((target (cons (file-remote-p default-directory) session))
+         (buf (seq-find (lambda (b) (equal (buffer-local-value 'alan-vterm--tmux-target b) target))
+                        (buffer-list)))
+         (host (file-remote-p default-directory 'host))
+         ;; The full remote prefix would crowd the mode line; the target,
+         ;; not the name, tells same-named sessions on two hosts apart.
+         (name (if buf
+                   (buffer-name buf)
+                 (generate-new-buffer-name
+                  (if host
+                      (format "*tmux:%s@%s*" session (car (split-string host "\\.")))
+                    (format "*tmux:%s*" session))))))
     (if (and buf (process-live-p (buffer-local-value 'vterm--process buf)))
         (switch-to-buffer buf)
       (let ((dir default-directory))
@@ -486,6 +497,7 @@ tmux-editor.sh, until a client other than this Emacs attaches."
                           (list (concat "ALAN_REMOTE_EDITOR=" (alan-with-editor-install "remote-editor.sh"))))
                         process-environment)))
           (vterm-mode)
+          (setq alan-vterm--tmux-target target)
           ;; The process is only a tmux client: killing it detaches, and the
           ;; session keeps running, so there is nothing to confirm.
           (set-process-query-on-exit-flag vterm--process nil))))))
