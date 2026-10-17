@@ -548,31 +548,41 @@ sshd opened on the host; `alan-vterm--id' finds the process there."
                 (user-error "%s was started without ALAN_VTERM_ID; restart it" (buffer-name)))))
     (with-temp-buffer
       ;; Only the user's own environ files are readable, and a process
-      ;; exiting mid-scan fails its grep the same as a non-match.
+      ;; exiting mid-scan fails its grep the same as a non-match.  Each
+      ;; line is pid, ppid, starttime and fd 0; stat's fields after comm's
+      ;; ")" start at 3, so ppid is the 2nd and starttime the 20th.
       (let ((rc (process-file
                  "sh" nil t nil "-c"
                  "for d in /proc/[0-9]*; do
   if [ -O \"$d/environ\" ] && grep -qzx \"ALAN_VTERM_ID=$1\" \"$d/environ\" 2>/dev/null; then
-    echo ${d#/proc/} $(ps -o ppid= -p ${d#/proc/}) $(readlink $d/fd/0)
+    s=$(cat \"$d/stat\" 2>/dev/null)
+    echo ${d#/proc/} $(echo \"${s##*) }\" | cut -d' ' -f2,20) $(readlink $d/fd/0)
   fi
 done"
                  "sh" id)))
         (unless (eq rc 0)
           (error "Scanning %s for ALAN_VTERM_ID exited %s: %s"
                  (file-remote-p default-directory) rc (string-trim (buffer-string))))
-        ;; A line short of three fields is a process that exited mid-scan.
-        (let* ((procs (seq-filter (lambda (f) (length= f 3))
+        ;; A line short of four fields is a process that exited mid-scan.
+        (let* ((procs (seq-filter (lambda (f) (length= f 4))
                                   (mapcar #'split-string (split-string (buffer-string) "\n" t))))
                (pids (mapcar #'car procs))
-               ;; The shell and everything it starts inherit the ID; the
-               ;; process vterm started is the one whose parent lacks it.
-               (roots (seq-remove (lambda (f) (member (nth 1 f) pids)) procs)))
-          (pcase roots
-            (`((,_ ,_ ,tty)) tty)
+               ;; Everything carrying the ID descends from the process vterm
+               ;; started, so that process is the oldest.  Its parent lacks
+               ;; the ID, but so does the reaper of a daemon or orphan it
+               ;; left, such as the tmux server a tmux client starts.  A
+               ;; child forked within the root's clock tick ties on
+               ;; starttime; its parent has the ID.
+               (roots (seq-remove (lambda (f) (member (nth 1 f) pids)) procs))
+               (oldest (when roots
+                         (let ((start (seq-min (mapcar (lambda (f) (string-to-number (nth 2 f))) roots))))
+                           (seq-filter (lambda (f) (= (string-to-number (nth 2 f)) start)) roots)))))
+          (pcase oldest
+            (`((,_ ,_ ,_ ,tty)) tty)
             ('() (error "No process on %s carries ALAN_VTERM_ID=%s"
                         (file-remote-p default-directory) id))
-            (_ (error "Several processes on %s carry ALAN_VTERM_ID=%s: %S"
-                      (file-remote-p default-directory) id roots))))))))
+            (_ (error "Several processes on %s carry ALAN_VTERM_ID=%s and started first: %S"
+                      (file-remote-p default-directory) id oldest))))))))
 
 (defun alan-vterm--program-tty ()
   "Terminal that the program shown in this vterm buffer reads input from.
