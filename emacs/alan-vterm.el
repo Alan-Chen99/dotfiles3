@@ -430,7 +430,10 @@ tmux-editor.sh, until a client other than this Emacs attaches."
     (user-error "Empty tmux session name"))
   (require 'vterm)
   (alan-setup-with-editor)
-  (let* ((name (format "*tmux:%s*" session))
+  ;; Each host has its own tmux server, so the name carries the remote
+  ;; prefix: same-named sessions on two hosts get two buffers, and a dead
+  ;; buffer reattaches on the host it was on.
+  (let* ((name (format "*tmux:%s%s*" (or (file-remote-p default-directory) "") session))
          (buf (get-buffer name)))
     (if (and buf (process-live-p (buffer-local-value 'vterm--process buf)))
         (switch-to-buffer buf)
