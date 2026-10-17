@@ -7,9 +7,8 @@
 (require 'alan-modeline)
 (require 'alan-with-editor)
 (require 'alan-transient)
-(require 'transient)
 
-(require-if-is-bytecompile consult evil-collection-vterm with-editor server)
+(require-if-is-bytecompile consult evil-collection-vterm with-editor server transient)
 ;; (pkg! 'mistty)
 ;; (eval-after-load! mistty
 ;;   (general-def mistty-mode-map
@@ -734,59 +733,62 @@ A plist of :dir, the session's host's home; :session, its id; and
                             (if host (concat host ":") "")
                             (or (alist-get 'name s) (alist-get 'sessionId s)))))))
 
-(transient-define-prefix alan-vterm-cc-pretty ()
-  "Render the Claude Code session running in this vterm into another window.
+;; Requiring transient at load time, before elpaca extends load-path, loads
+;; Emacs's bundled transient in place of the elpaca one magit is built for.
+(eval-after-load! transient
+  (transient-define-prefix alan-vterm-cc-pretty ()
+    "Render the Claude Code session running in this vterm into another window.
 Works through a tmux client too: the session is the one in its active
 pane.  In a remote vterm the session is looked up on the remote host.
 In a cc-pretty buffer, re-render it.  The flags start as those of the
 session's cc-pretty buffer, if it has one."
-  :init-value (lambda (obj)
-                (let ((buf (get-buffer (plist-get (oref obj scope) :buffer))))
-                  (oset obj value (and buf (buffer-local-value 'alan-cc-pretty--args buf)))))
-  :incompatible '(("--chat-only" "--skeleton")
-                  ("--compact-all" "--compact-leg="))
-  ["Selection"
-   ("a" "All compaction legs" "--compact-all")
-   ("n" "Only compaction leg (0 = pre-compact)" "--compact-leg="
-    :reader transient-read-number-N0)
-   ("r" "Rewound branches" "--show-rewound")
-   ("s" "Non-model records" "--show-all")
-   ("p" "No progress records (with --show-all)" "--no-progress")]
-  ["Density"
-   ("c" "Chat only" "--chat-only")
-   ("o" "Skeleton" "--skeleton")]
-  ["Body detail"
-   ("m" "Max tool output chars (default 200)" "--tool-max="
-    :reader transient-read-number-N+)
-   ("i" "Truncate tool input too" "--truncate-input")
-   ("t" "Collapse thinking" "--no-thinking")
-   ("u" "Per-turn usage" "--show-usage")]
-  [("=" "Render" alan-cc-pretty-render)]
-  (interactive)
-  (transient-setup
-   'alan-vterm-cc-pretty nil nil
-   :scope (cond
-           ((derived-mode-p 'alan-cc-pretty-mode)
-            (list :dir default-directory :session alan-cc-pretty--session :buffer (buffer-name)))
-           ((derived-mode-p 'vterm-mode)
-            (alan-cc-pretty--vterm-scope))
-           (t (user-error "Neither a vterm nor a cc-pretty buffer")))))
+    :init-value (lambda (obj)
+                  (let ((buf (get-buffer (plist-get (oref obj scope) :buffer))))
+                    (oset obj value (and buf (buffer-local-value 'alan-cc-pretty--args buf)))))
+    :incompatible '(("--chat-only" "--skeleton")
+                    ("--compact-all" "--compact-leg="))
+    ["Selection"
+     ("a" "All compaction legs" "--compact-all")
+     ("n" "Only compaction leg (0 = pre-compact)" "--compact-leg="
+      :reader transient-read-number-N0)
+     ("r" "Rewound branches" "--show-rewound")
+     ("s" "Non-model records" "--show-all")
+     ("p" "No progress records (with --show-all)" "--no-progress")]
+    ["Density"
+     ("c" "Chat only" "--chat-only")
+     ("o" "Skeleton" "--skeleton")]
+    ["Body detail"
+     ("m" "Max tool output chars (default 200)" "--tool-max="
+      :reader transient-read-number-N+)
+     ("i" "Truncate tool input too" "--truncate-input")
+     ("t" "Collapse thinking" "--no-thinking")
+     ("u" "Per-turn usage" "--show-usage")]
+    [("=" "Render" alan-cc-pretty-render)]
+    (interactive)
+    (transient-setup
+     'alan-vterm-cc-pretty nil nil
+     :scope (cond
+             ((derived-mode-p 'alan-cc-pretty-mode)
+              (list :dir default-directory :session alan-cc-pretty--session :buffer (buffer-name)))
+             ((derived-mode-p 'vterm-mode)
+              (alan-cc-pretty--vterm-scope))
+             (t (user-error "Neither a vterm nor a cc-pretty buffer")))))
 
-(transient-define-suffix alan-cc-pretty-render (scope args)
-  "Render the session in SCOPE with cc-pretty flags ARGS into its buffer."
-  (interactive (list (transient-scope 'alan-vterm-cc-pretty)
-                     (transient-args 'alan-vterm-cc-pretty)))
-  (require 'ansi-color)
-  (let ((buf (get-buffer-create (plist-get scope :buffer))))
-    (with-current-buffer buf
-      (unless (derived-mode-p 'alan-cc-pretty-mode)
-        (alan-cc-pretty-mode))
-      (setq default-directory (plist-get scope :dir))
-      (setq alan-cc-pretty--session (plist-get scope :session))
-      (setq alan-cc-pretty--args args)
-      (revert-buffer))
-    (unless (eq buf (current-buffer))
-      (display-buffer buf '(nil (inhibit-same-window . t))))))
+  (transient-define-suffix alan-cc-pretty-render (scope args)
+    "Render the session in SCOPE with cc-pretty flags ARGS into its buffer."
+    (interactive (list (transient-scope 'alan-vterm-cc-pretty)
+                       (transient-args 'alan-vterm-cc-pretty)))
+    (require 'ansi-color)
+    (let ((buf (get-buffer-create (plist-get scope :buffer))))
+      (with-current-buffer buf
+        (unless (derived-mode-p 'alan-cc-pretty-mode)
+          (alan-cc-pretty-mode))
+        (setq default-directory (plist-get scope :dir))
+        (setq alan-cc-pretty--session (plist-get scope :session))
+        (setq alan-cc-pretty--args args)
+        (revert-buffer))
+      (unless (eq buf (current-buffer))
+        (display-buffer buf '(nil (inhibit-same-window . t)))))))
 
 (defun alan-vterm-kill-process ()
   (interactive)
