@@ -252,6 +252,7 @@ For example, pressing x sends C-x to the terminal."
 
     "S-SPC" #'alan-vterm-send-ctrl-next-key
     "<.> 2" #'alan-vterm-send-ctrl-next-key
+    "<.> <x>" #'vterm-send-next-key
     ;; "<S-.>" #'vterm-send-next-key
 
     [remap previous-line] (vterm-with-send-key "<up>")
@@ -745,22 +746,22 @@ session's cc-pretty buffer, if it has one."
   :incompatible '(("--chat-only" "--skeleton")
                   ("--compact-all" "--compact-leg="))
   ["Selection"
-   ("-a" "All compaction legs" "--compact-all")
-   ("-n" "Only compaction leg (0 = pre-compact)" "--compact-leg="
+   ("a" "All compaction legs" "--compact-all")
+   ("n" "Only compaction leg (0 = pre-compact)" "--compact-leg="
     :reader transient-read-number-N0)
-   ("-r" "Rewound branches" "--show-rewound")
-   ("-s" "Non-model records" "--show-all")
-   ("-p" "No progress records (with --show-all)" "--no-progress")]
+   ("r" "Rewound branches" "--show-rewound")
+   ("s" "Non-model records" "--show-all")
+   ("p" "No progress records (with --show-all)" "--no-progress")]
   ["Density"
-   ("-c" "Chat only" "--chat-only")
-   ("-o" "Skeleton" "--skeleton")]
+   ("c" "Chat only" "--chat-only")
+   ("o" "Skeleton" "--skeleton")]
   ["Body detail"
-   ("-m" "Max tool output chars (default 200)" "--tool-max="
+   ("m" "Max tool output chars (default 200)" "--tool-max="
     :reader transient-read-number-N+)
-   ("-i" "Truncate tool input too" "--truncate-input")
-   ("-t" "Collapse thinking" "--no-thinking")
-   ("-u" "Per-turn usage" "--show-usage")]
-  [("RET" "Render" alan-cc-pretty-render)]
+   ("i" "Truncate tool input too" "--truncate-input")
+   ("t" "Collapse thinking" "--no-thinking")
+   ("u" "Per-turn usage" "--show-usage")]
+  [("=" "Render" alan-cc-pretty-render)]
   (interactive)
   (transient-setup
    'alan-vterm-cc-pretty nil nil
