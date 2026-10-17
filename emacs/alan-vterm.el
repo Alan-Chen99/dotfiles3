@@ -6,6 +6,8 @@
 (require 'alan-theme)
 (require 'alan-modeline)
 (require 'alan-with-editor)
+(require 'alan-transient)
+(require 'transient)
 
 (require-if-is-bytecompile consult evil-collection-vterm with-editor server)
 ;; (pkg! 'mistty)
@@ -660,6 +662,9 @@ on /clear and /resume and deletes on exit."
   "Session id this cc-pretty buffer renders.
 The session is on `default-directory''s host.")
 
+(defvar-local alan-cc-pretty--args nil
+  "Flags this cc-pretty buffer passes to `agent-tools cc-pretty'.")
+
 (defun alan-cc-pretty--revert (&rest _)
   (let* ((id alan-cc-pretty--session)
          (line (line-number-at-pos))
@@ -683,9 +688,11 @@ The session is on `default-directory''s host.")
                    copy))))
     (erase-buffer)
     (let ((rc (let ((default-directory (expand-file-name "~/")))
-                (call-process "agent-tools" nil t nil "cc-pretty" (or copy id) "--color"))))
+                (apply #'call-process "agent-tools" nil t nil
+                       "cc-pretty" (or copy id) "--color" alan-cc-pretty--args))))
       (unless (eq rc 0)
-        (error "agent-tools cc-pretty %s exited %s; its output is in %s" (or copy id) rc (buffer-name))))
+        (error "agent-tools cc-pretty %s exited %s; its output is in %s"
+               (string-join (cons (or copy id) alan-cc-pretty--args) " ") rc (buffer-name))))
     ;; Faces as plain `face': `font-lock-face' needs font-lock-mode.
     (let ((ansi-color-apply-face-function
            (lambda (beg end face) (when face (put-text-property beg end 'face face)))))
@@ -694,18 +701,19 @@ The session is on `default-directory''s host.")
     (forward-line (1- line))))
 
 (define-derived-mode alan-cc-pretty-mode special-mode "cc-pretty"
-  "A Claude Code session rendered by `agent-tools cc-pretty'; \\[revert-buffer] re-renders."
+  "A Claude Code session rendered by `agent-tools cc-pretty'.
+\\[revert-buffer] re-renders; \\[alan-vterm-cc-pretty] re-renders with other flags."
   (setq-local truncate-lines t)
   (setq-local revert-buffer-function #'alan-cc-pretty--revert))
 
-(defun alan-vterm-cc-pretty ()
-  "Render the Claude Code session running in this vterm into another window.
-Works through a tmux client too: the session is the one in its active
-pane.  In a remote vterm the session is looked up on the remote host."
-  (interactive)
-  (unless (derived-mode-p 'vterm-mode)
-    (user-error "Not a vterm buffer"))
-  (require 'ansi-color)
+(general-def alan-cc-pretty-mode-map
+  :states 'motion
+  "SPC p" #'alan-vterm-cc-pretty)
+
+(defun alan-cc-pretty--vterm-scope ()
+  "The Claude Code session running in this vterm, as a transient scope.
+A plist of :dir, the session's host's home; :session, its id; and
+:buffer, the name of the buffer that renders it."
   ;; The vterm's process runs on the host of the directory it started in,
   ;; whose remote prefix `alan-vterm--get-directory' keeps.
   (let* ((default-directory (expand-file-name (concat (file-remote-p default-directory) "~/")))
@@ -718,17 +726,65 @@ pane.  In a remote vterm the session is looked up on the remote host."
                              sessions ", ")))
     (unless sessions
       (user-error "No claude reading input from %s%s" (if host (concat host ":") "") tty))
-    (let* ((s (car sessions))
-           (dir default-directory)
-           (buf (get-buffer-create (format "*cc-pretty:%s%s*"
-                                           (if host (concat host ":") "")
-                                           (or (alist-get 'name s) (alist-get 'sessionId s))))))
-      (with-current-buffer buf
-        (unless (derived-mode-p 'alan-cc-pretty-mode)
-          (alan-cc-pretty-mode))
-        (setq default-directory dir)
-        (setq alan-cc-pretty--session (alist-get 'sessionId s))
-        (revert-buffer))
+    (let ((s (car sessions)))
+      (list :dir default-directory
+            :session (alist-get 'sessionId s)
+            :buffer (format "*cc-pretty:%s%s*"
+                            (if host (concat host ":") "")
+                            (or (alist-get 'name s) (alist-get 'sessionId s)))))))
+
+(transient-define-prefix alan-vterm-cc-pretty ()
+  "Render the Claude Code session running in this vterm into another window.
+Works through a tmux client too: the session is the one in its active
+pane.  In a remote vterm the session is looked up on the remote host.
+In a cc-pretty buffer, re-render it.  The flags start as those of the
+session's cc-pretty buffer, if it has one."
+  :init-value (lambda (obj)
+                (let ((buf (get-buffer (plist-get (oref obj scope) :buffer))))
+                  (oset obj value (and buf (buffer-local-value 'alan-cc-pretty--args buf)))))
+  :incompatible '(("--chat-only" "--skeleton")
+                  ("--compact-all" "--compact-leg="))
+  ["Selection"
+   ("-a" "All compaction legs" "--compact-all")
+   ("-n" "Only compaction leg (0 = pre-compact)" "--compact-leg="
+    :reader transient-read-number-N0)
+   ("-r" "Rewound branches" "--show-rewound")
+   ("-s" "Non-model records" "--show-all")
+   ("-p" "No progress records (with --show-all)" "--no-progress")]
+  ["Density"
+   ("-c" "Chat only" "--chat-only")
+   ("-o" "Skeleton" "--skeleton")]
+  ["Body detail"
+   ("-m" "Max tool output chars (default 200)" "--tool-max="
+    :reader transient-read-number-N+)
+   ("-i" "Truncate tool input too" "--truncate-input")
+   ("-t" "Collapse thinking" "--no-thinking")
+   ("-u" "Per-turn usage" "--show-usage")]
+  [("RET" "Render" alan-cc-pretty-render)]
+  (interactive)
+  (transient-setup
+   'alan-vterm-cc-pretty nil nil
+   :scope (cond
+           ((derived-mode-p 'alan-cc-pretty-mode)
+            (list :dir default-directory :session alan-cc-pretty--session :buffer (buffer-name)))
+           ((derived-mode-p 'vterm-mode)
+            (alan-cc-pretty--vterm-scope))
+           (t (user-error "Neither a vterm nor a cc-pretty buffer")))))
+
+(transient-define-suffix alan-cc-pretty-render (scope args)
+  "Render the session in SCOPE with cc-pretty flags ARGS into its buffer."
+  (interactive (list (transient-scope 'alan-vterm-cc-pretty)
+                     (transient-args 'alan-vterm-cc-pretty)))
+  (require 'ansi-color)
+  (let ((buf (get-buffer-create (plist-get scope :buffer))))
+    (with-current-buffer buf
+      (unless (derived-mode-p 'alan-cc-pretty-mode)
+        (alan-cc-pretty-mode))
+      (setq default-directory (plist-get scope :dir))
+      (setq alan-cc-pretty--session (plist-get scope :session))
+      (setq alan-cc-pretty--args args)
+      (revert-buffer))
+    (unless (eq buf (current-buffer))
       (display-buffer buf '(nil (inhibit-same-window . t))))))
 
 (defun alan-vterm-kill-process ()
