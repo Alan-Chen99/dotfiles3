@@ -7,24 +7,44 @@
 ;; --user "" is required here: without it Emacs skips init.el and
 ;; early-init.el, and (require 'alan) fails with nothing on stderr.
 ;;
+;; Every file a run writes for you -- its log, its work file, anything its
+;; work section writes -- goes in your session's scratchpad (<scratchpad>
+;; below) under a name no other run uses: the `mktemp' below names the
+;; log, and the other files take their names from it (from `log-file'
+;; inside the work section).  A path the user names wins; otherwise never
+;; /tmp: every agent session on the machine shares it, and your subagents
+;; share your scratchpad, so a fixed name lets another run truncate your
+;; log and replace line 1 -- the pid you kill and the socket you query.
+;; Given no scratchpad, make a private one with `mktemp -d' and use that
+;; as <scratchpad>.
+;;
+;; The log path comes from AGENT_LOG, which must start with /; without one
+;; the run exits 2 within seconds, with the reason on stderr -- for a
+;; session, that lands in the capture file the wrapper prints, and the wait
+;; times out at 124.
+;;
 ;; Two ways to run this file, differing only in how the WORK SECTION ends.
 ;;
 ;; 1. SESSION -- run it unchanged, straight from the repo.  It parks
 ;;    instead of exiting, and you query it with emacsclient.
 ;;
-;;      : > /tmp/debug.log   # else the wait below matches the LAST run
+;;      LOG=$(mktemp <scratchpad>/emacs-XXXXXX.log) && echo "$LOG"
 ;;      agent-tools run --background --desc "emacs session" \
 ;;        nix shell nixpkgs#xvfb-run -c xvfb-run -a -s "-screen 0 1920x1080x24" \
-;;        env GDK_BACKEND=x11 emacs --user "" \
+;;        env GDK_BACKEND=x11 AGENT_LOG="$LOG" emacs --user "" \
 ;;        -l /repos/dotfiles/emacs/agent_work_template.el
 ;;
 ;;      timeout 180 grep -m1 -a -E '^[0-9.]+ +% ----parked----' \
-;;        < <(tail -n +1 -F --retry /tmp/debug.log)
+;;        < <(tail -n +1 -F --retry "$LOG")
 ;;
-;;      SOCK=$(sed -n '1s/.* socket \([^ ]*\) .*/\1/p'           /tmp/debug.log)
-;;      PID=$( sed -n '1s/^==== span run pid \([0-9]*\) .*/\1/p' /tmp/debug.log)
+;;      SOCK=$(sed -n '1s/.* socket \([^ ]*\) .*/\1/p'           "$LOG")
+;;      PID=$( sed -n '1s/^==== span run pid \([0-9]*\) .*/\1/p' "$LOG")
 ;;      timeout 30 emacsclient -s "$SOCK" --eval '(length (buffer-list))'
-;;      kill "$PID"
+;;      kill "$PID"   # when done
+;;
+;;    Shell variables do not outlive a Bash call: later calls about this
+;;    run name the echoed log path literally and re-read SOCK and PID from
+;;    it.  A new run gets a new `mktemp'.
 ;;
 ;;    `--background' is required, the run never returns on its own.  It
 ;;    also means `timeout' bounds nothing: it wraps the wrapper, which
@@ -38,10 +58,12 @@
 ;;    (kill-emacs 0) instead of (agent-park), so the run exits by itself.
 ;;    Cheaper when you already know what you want to find out.
 ;;
-;;      cp emacs/agent_work_template.el /tmp/agent-work.el
+;;      LOG=$(mktemp <scratchpad>/emacs-XXXXXX.log) && WORK=${LOG%.log}.el
+;;      echo "$LOG $WORK"
+;;      cp /repos/dotfiles/emacs/agent_work_template.el "$WORK"
 ;;      timeout 300 agent-tools run --desc "emacs agent work" \
 ;;        nix shell nixpkgs#xvfb-run -c xvfb-run -a -s "-screen 0 1920x1080x24" \
-;;        env GDK_BACKEND=x11 emacs --user "" -l /tmp/agent-work.el
+;;        env GDK_BACKEND=x11 AGENT_LOG="$LOG" emacs --user "" -l "$WORK"
 ;;
 ;; Run either under `agent-tools run'.  span reports a failure of the log
 ;; handler on stderr -- the one failure the log itself cannot carry -- and
@@ -50,7 +72,8 @@
 ;; Key rules:
 ;;   - This file is SELF-CONTAINED.  Do NOT add -e/--eval flags.
 ;;   - Do NOT use --batch.  It skips normal config and (require 'alan) fails.
-;;   - All output goes to /tmp/debug.log, not stdout.  Log with `span-msg'.
+;;   - All output goes to the log at $AGENT_LOG, not stdout.  Log with
+;;     `span-msg'.
 ;;   - This file must RETURN before startup completes, so all work goes on
 ;;     timers, never at top level.  Top level also runs before anything the
 ;;     timer `require's has configured itself, so read config values inside
@@ -63,7 +86,9 @@
 ;;     without -s, or with a guessed name: this directory also holds the
 ;;     user's own editors, named server<pid>, and a bare or mistyped
 ;;     emacsclient evaluates your form inside one of those.  The session is
-;;     agent-work-<pid>, outside that namespace, so a typo exits 2.
+;;     agent-work-<pid>-<log name>, outside that namespace, and the random
+;;     log name keeps a mistyped pid from reaching another run, so a typo
+;;     fails to connect.
 ;;
 ;;   - WRAP EVERY QUERY: `agent-q' to ask something, `agent-async' to do
 ;;     something.  A bare --eval is answered exactly as stock Emacs would
@@ -153,11 +178,15 @@
 ;;     mid-request leaves the server logging `connection broken by remote
 ;;     peer' against the query it was still answering.
 ;;
-;;       DISPLAY=:99            # from /proc/<pid>/environ of the session
-;;       W=$(for w in $(xdotool search --onlyvisible --class emacs); do
-;;             eval $(xdotool getwindowgeometry --shell $w)
+;;       D=$(tr '\0' '\n' < /proc/$PID/environ | sed -n 's/^DISPLAY=//p')
+;;       W=$(for w in $(DISPLAY=$D xdotool search --onlyvisible --class emacs); do
+;;             eval $(DISPLAY=$D xdotool getwindowgeometry --shell $w)
 ;;             echo "$((WIDTH*HEIGHT)) $w"; done | sort -rn | head -1 | cut -d' ' -f2)
-;;       xdotool windowfocus $W; xdotool key y      # or: xdotool type ...
+;;       DISPLAY=$D xdotool windowfocus $W; DISPLAY=$D xdotool key y   # or: type ...
+;;
+;;     Every xdotool names its display because the agent shell exports
+;;     DISPLAY for the user's own screen: an xdotool that inherits it types
+;;     there.  An empty $D makes xdotool fail instead.
 ;;
 ;;     The frame is picked by area because the class also matches a 10x10
 ;;     leader window and any warning popup, and PGTK Emacs cannot tell you
@@ -168,9 +197,10 @@
 ;; reading the log:
 ;;   - The log holds exactly one run: the setup below empties it and writes
 ;;     a `==== span run' line naming the pid, the socket and the wall clock.
-;;     Check that line 1's pid is alive before trusting anything below it --
-;;     a reader that starts watching before the run truncates the file sees
-;;     the PREVIOUS run's markers.
+;;     A reader that starts watching a REUSED log before the new run
+;;     truncates it sees the previous run's markers, which is why each run
+;;     gets a fresh `mktemp' log; on a reused one, check that line 1's pid
+;;     is alive before trusting a session's log.
 ;;   - The `----start----' grep shows the work section and nothing before
 ;;     it.  An empty result does NOT mean nothing happened -- it means the
 ;;     run never reached the marker, which is what a work file that failed
@@ -207,6 +237,20 @@
 
 ;; --- setup (do not modify) -------------------------------------------
 
+;; From the caller, never a default: a fixed path is shared by every agent
+;; session on the machine, and each run truncates it.  Reported on stderr
+;; because no log exists yet to carry it.  A leading / rather than
+;; `file-name-absolute-p', which accepts ~/x: the agent's quoted "$LOG"
+;; never expands that ~, so it would watch a file the run never writes.
+(defvar log-file
+  (let ((f (getenv "AGENT_LOG")))
+    (unless (and f (string-prefix-p "/" f))
+      (princ (format "%s: AGENT_LOG must be an absolute path in your scratchpad, got %S; see this file's header\n"
+                     load-file-name f)
+             #'external-debugging-output)
+      (kill-emacs 2))
+    f))
+
 ;; Before `require', because this is what decides whether the `require'
 ;; below reads alan.el or a stale alan.elc.  alan.el sets this too, but by
 ;; then it has already been loaded from whichever file won.
@@ -216,7 +260,6 @@
 
 (elpaca-process-queues)
 
-(defvar log-file "/tmp/debug.log")
 ;; Cut each logged line here.  200 rather than 100 because
 ;; `span-fmt-print-limit' is 100: printed values end around that column
 ;; and their "..." markers sit just past it, so a width of 100 removes
@@ -231,9 +274,12 @@
 ;; `server--file-name' just expands `server-name' against that directory,
 ;; so the path is known before anything is listening and the log header
 ;; below can carry it.  `with-editor' reuses `server-name', so the path
-;; stays valid.
+;; stays valid.  The socket stays in `server-socket-dir', not beside the
+;; log: a scratchpad path runs past the 108-byte limit on socket paths.
+;; The pid keeps concurrent runs apart, and the log's random name keeps a
+;; mistyped pid from reaching another agent's run.
 (require 'server)
-(setq server-name (format "agent-work-%s" (emacs-pid)))
+(setq server-name (format "agent-work-%s-%s" (emacs-pid) (file-name-base log-file)))
 (defvar agent-socket (server--file-name))
 
 ;; The log is opened for append and nothing else truncates it, so without

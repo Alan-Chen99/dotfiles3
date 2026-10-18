@@ -89,18 +89,37 @@ SHOULD NOT use `--batch` — it skips config loading and `(require 'alan)` fails
 MUST NOT ask users to run your scripts for interactive emacs.
 MUST NOT use code to find something that can be found by running emacs.
 
+Every file a run writes for you — its log, its work file, anything its
+work section writes — goes in your session's scratchpad (`<scratchpad>`
+below) under a name no other run uses: the `mktemp` below names the log,
+and the other files take their names from it (from `log-file` inside the
+work section). A path the user names wins; otherwise never `/tmp`: every
+agent session on this machine shares it, and your subagents share your
+scratchpad, so a fixed name lets another run truncate your log and replace
+line 1 — the pid you `kill` and the socket you query. Given no scratchpad,
+make a private one with `mktemp -d` and use that as `<scratchpad>`.
+
+The template takes the log path from `AGENT_LOG`, which must start with
+`/`; without one the run exits 2 within seconds, with the reason on stderr
+— for a session, that lands in the capture file the wrapper prints, and the
+wait times out at 124.
+
 A **session** — run the template unchanged. It parks instead of exiting,
 and you evaluate forms in it with `emacsclient`.
 
 ```sh
-: > /tmp/debug.log   # else the wait below matches the LAST run's marker
-agent-tools run --background --desc "emacs session" nix shell nixpkgs#xvfb-run -c xvfb-run -a -s "-screen 0 1920x1080x24" env GDK_BACKEND=x11 emacs --user "" -l /repos/dotfiles/emacs/agent_work_template.el
-timeout 180 grep -m1 -a -E '^[0-9.]+ +% ----parked----' < <(tail -n +1 -F --retry /tmp/debug.log)
-SOCK=$(sed -n '1s/.* socket \([^ ]*\) .*/\1/p'           /tmp/debug.log)
-PID=$( sed -n '1s/^==== span run pid \([0-9]*\) .*/\1/p' /tmp/debug.log)
+LOG=$(mktemp <scratchpad>/emacs-XXXXXX.log) && echo "$LOG"
+agent-tools run --background --desc "emacs session" nix shell nixpkgs#xvfb-run -c xvfb-run -a -s "-screen 0 1920x1080x24" env GDK_BACKEND=x11 AGENT_LOG="$LOG" emacs --user "" -l /repos/dotfiles/emacs/agent_work_template.el
+timeout 180 grep -m1 -a -E '^[0-9.]+ +% ----parked----' < <(tail -n +1 -F --retry "$LOG")
+SOCK=$(sed -n '1s/.* socket \([^ ]*\) .*/\1/p'           "$LOG")
+PID=$( sed -n '1s/^==== span run pid \([0-9]*\) .*/\1/p' "$LOG")
 timeout 30 emacsclient -s "$SOCK" --eval '(length (buffer-list))'
-kill "$PID"   # nothing else reaps it
+kill "$PID"   # when done; nothing else reaps it
 ```
+
+Shell variables do not outlive a Bash call: later calls about this run
+name the echoed log path literally and re-read `SOCK` and `PID` from it. A
+new run gets a new `mktemp`.
 
 `--background` is required; the run never returns. It also means `timeout`
 bounds nothing — it wraps the wrapper, which returns once the child starts.
@@ -112,8 +131,9 @@ A **work file** — copy it, edit the WORK SECTION, and end with
 Cheaper when you already know what you want to find out.
 
 ```sh
-cp emacs/agent_work_template.el /tmp/agent-work.el
-timeout 300 agent-tools run --desc "emacs agent work" nix shell nixpkgs#xvfb-run -c xvfb-run -a -s "-screen 0 1920x1080x24" env GDK_BACKEND=x11 emacs --user "" -l /tmp/agent-work.el
+LOG=$(mktemp <scratchpad>/emacs-XXXXXX.log) && WORK=${LOG%.log}.el && echo "$LOG $WORK"
+cp /repos/dotfiles/emacs/agent_work_template.el "$WORK"
+timeout 300 agent-tools run --desc "emacs agent work" nix shell nixpkgs#xvfb-run -c xvfb-run -a -s "-screen 0 1920x1080x24" env GDK_BACKEND=x11 AGENT_LOG="$LOG" emacs --user "" -l "$WORK"
 ```
 
 Run either under `agent-tools run`: span reports a log-handler failure on
@@ -169,8 +189,8 @@ Read it the same way in both modes — a session writes it while parked.
 Two greps, and you need both:
 
 ```sh
-grep -a -A9999 -- '% ----start----' /tmp/debug.log   # the work section
-grep -anE '^[0-9.]+ +! |span--debug' /tmp/debug.log  # failures, anywhere
+grep -a -A9999 -- '% ----start----' "$LOG"   # the work section
+grep -anE '^[0-9.]+ +! |span--debug' "$LOG"  # failures, anywhere
 ```
 
 `-a` is required: the log embeds raw subprocess output, so plain `grep` can
@@ -187,10 +207,11 @@ included — `ignore-errors` in `alan-early-init.el` logs
 `! :set-startup-frame-size` on every startup under xvfb.
 
 One file holds one run: the template empties the log and writes a
-`==== span run` header naming pid, socket and wall clock. Check that line
-1's pid is alive before trusting anything below it, because a reader that
-starts watching before the run truncates the file sees the previous run's
-markers.
+`==== span run` header naming pid, socket and wall clock. A reader that
+starts watching a reused log before the new run truncates it sees the
+previous run's markers, which is why each run gets a fresh `mktemp` log;
+on a reused one, check that line 1's pid is alive before trusting a
+session's log.
 
 Any file the work section writes itself MUST bind `coding-system-for-write`
 to `utf-8-emacs-unix`, or `write-region` stops on a coding-system prompt
