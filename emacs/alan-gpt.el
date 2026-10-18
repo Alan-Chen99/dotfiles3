@@ -76,7 +76,7 @@ Today is %s.
                     google/gemini-2.5-pro
                     deepseek/deepseek-r1-0528
                     deepseek/deepseek-v4-pro
-                    deepseek/deepseek-v4-flash
+                    deepseek/deepseek-v4.1-flash
                     test-noexist
                     )
           :request-params
@@ -86,7 +86,7 @@ Today is %s.
             )))
 
   ;; (setq gptel-model 'google/gemini-3-pro-preview)
-  (setq gptel-model 'gpt-5.4)
+  (setq gptel-model 'deepseek/deepseek-v4.1-flash)
 
   (setq gptel-use-context 'user)
 
