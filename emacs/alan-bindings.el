@@ -48,6 +48,8 @@
 
   ;; "TAB" #'self-insert-command
 
+  "C-p" #'yank-media
+
   "<C-wheel-up>" #'alan-font-inc
   "<C-wheel-down>" #'alan-font-dec
   "C-=" #'alan-font-inc
@@ -432,7 +434,10 @@
   ;; "TAB" (lambda () (interactive) (insert-tab))
 
   "<.> <down>" #'alan-completion-at-point
-  "C-<.> J" #'alan-consult-complete)
+  "C-<.> J" #'alan-consult-complete
+
+  "C-P" nil ;; evil-complete-previous
+  )
 
 ;; makes number keys replace in replace mode
 (general-def evil-read-key-map
