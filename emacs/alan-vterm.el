@@ -272,6 +272,7 @@ For example, pressing x sends C-x to the terminal."
 
     "SPC m" #'vterm-copy-mode
     "SPC p" #'alan-vterm-cc-pretty
+    "SPC y" #'alan-vterm-copy-log-path
     ;; "<escape>" #'vterm--self-insert
     )
 
@@ -644,6 +645,16 @@ The session is on `default-directory''s host.")
 (defvar-local alan-cc-pretty--args nil
   "Flags this cc-pretty buffer passes to `agent-tools cc-pretty'.")
 
+(defun alan-cc-pretty--log (id)
+  "Log of session ID on `default-directory''s host."
+  (let* ((remote-file-name-inhibit-cache t)
+         (pattern (expand-file-name (format "projects/*/%s.jsonl" id)
+                                    (alan-vterm--claude-config-dir))))
+    (pcase (file-expand-wildcards pattern)
+      (`(,log) log)
+      ('() (error "No log matches %s" pattern))
+      (logs (error "Several logs match %s: %s" pattern logs)))))
+
 (defun alan-cc-pretty--revert (&rest _)
   (let* ((id alan-cc-pretty--session)
          (line (line-number-at-pos))
@@ -653,12 +664,7 @@ The session is on `default-directory''s host.")
          ;; it for recovering a block with sed.
          (copy (when (file-remote-p default-directory)
                  (let* ((remote-file-name-inhibit-cache t)
-                        (pattern (expand-file-name (format "projects/*/%s.jsonl" id)
-                                                   (alan-vterm--claude-config-dir)))
-                        (log (pcase (file-expand-wildcards pattern)
-                               (`(,log) log)
-                               ('() (error "No log matches %s" pattern))
-                               (logs (error "Several logs match %s: %s" pattern logs))))
+                        (log (alan-cc-pretty--log id))
                         (copy (expand-file-name
                                (format "alan-cc-pretty/%s/%s.jsonl" (file-remote-p log 'host) id)
                                temporary-file-directory)))
@@ -681,13 +687,15 @@ The session is on `default-directory''s host.")
 
 (define-derived-mode alan-cc-pretty-mode special-mode "cc-pretty"
   "A Claude Code session rendered by `agent-tools cc-pretty'.
-\\[revert-buffer] re-renders; \\[alan-vterm-cc-pretty] re-renders with other flags."
+\\[revert-buffer] re-renders; \\[alan-vterm-cc-pretty] re-renders with other flags;
+\\[alan-vterm-copy-log-path] copies the log's path."
   (setq-local truncate-lines t)
   (setq-local revert-buffer-function #'alan-cc-pretty--revert))
 
 (general-def alan-cc-pretty-mode-map
   :states 'motion
-  "SPC p" #'alan-vterm-cc-pretty)
+  "SPC p" #'alan-vterm-cc-pretty
+  "SPC y" #'alan-vterm-copy-log-path)
 
 (defun alan-cc-pretty--vterm-scope ()
   "The Claude Code session running in this vterm, as a transient scope.
@@ -711,6 +719,27 @@ A plist of :dir, the session's host's home; :session, its id; and
             :buffer (format "*cc-pretty:%s%s*"
                             (if host (concat host ":") "")
                             (or (alist-get 'name s) (alist-get 'sessionId s)))))))
+
+(defun alan-cc-pretty--scope ()
+  "The session this vterm runs or this cc-pretty buffer renders.
+A plist as from `alan-cc-pretty--vterm-scope'."
+  (cond
+   ((derived-mode-p 'alan-cc-pretty-mode)
+    (list :dir default-directory :session alan-cc-pretty--session :buffer (buffer-name)))
+   ((derived-mode-p 'vterm-mode)
+    (alan-cc-pretty--vterm-scope))
+   (t (user-error "Neither a vterm nor a cc-pretty buffer"))))
+
+(defun alan-vterm-copy-log-path ()
+  "Copy the log path of the Claude Code session running in this vterm.
+In a cc-pretty buffer, of the session it renders.  A remote log is
+copied as its Tramp name."
+  (interactive)
+  (let* ((scope (alan-cc-pretty--scope))
+         (log (let ((default-directory (plist-get scope :dir)))
+                (alan-cc-pretty--log (plist-get scope :session)))))
+    (message "%s" log)
+    (kill-new log)))
 
 ;; Requiring transient at load time, before elpaca extends load-path, loads
 ;; Emacs's bundled transient in place of the elpaca one magit is built for.
@@ -744,14 +773,7 @@ session's cc-pretty buffer, if it has one."
      ("u" "Per-turn usage" "--show-usage")]
     [("=" "Render" alan-cc-pretty-render)]
     (interactive)
-    (transient-setup
-     'alan-vterm-cc-pretty nil nil
-     :scope (cond
-             ((derived-mode-p 'alan-cc-pretty-mode)
-              (list :dir default-directory :session alan-cc-pretty--session :buffer (buffer-name)))
-             ((derived-mode-p 'vterm-mode)
-              (alan-cc-pretty--vterm-scope))
-             (t (user-error "Neither a vterm nor a cc-pretty buffer")))))
+    (transient-setup 'alan-vterm-cc-pretty nil nil :scope (alan-cc-pretty--scope)))
 
   (transient-define-suffix alan-cc-pretty-render (scope args)
     "Render the session in SCOPE with cc-pretty flags ARGS into its buffer."
