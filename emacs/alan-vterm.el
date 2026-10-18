@@ -699,7 +699,7 @@ The session is on `default-directory''s host.")
 
 (defun alan-cc-pretty--vterm-scope ()
   "The Claude Code session running in this vterm, as a transient scope.
-A plist of :dir, the session's host's home; :session, its id; and
+A plist of :dir, the session's cwd on its host; :session, its id; and
 :buffer, the name of the buffer that renders it."
   ;; The vterm's process runs on the host of the directory it started in,
   ;; whose remote prefix `alan-vterm--get-directory' keeps.
@@ -714,7 +714,7 @@ A plist of :dir, the session's host's home; :session, its id; and
     (unless sessions
       (user-error "No claude reading input from %s%s" (if host (concat host ":") "") tty))
     (let ((s (car sessions)))
-      (list :dir default-directory
+      (list :dir (file-name-as-directory (concat (file-remote-p default-directory) (alist-get 'cwd s)))
             :session (alist-get 'sessionId s)
             :buffer (format "*cc-pretty:%s%s*"
                             (if host (concat host ":") "")
