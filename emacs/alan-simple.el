@@ -58,6 +58,50 @@
         (cl-remove-if (lambda (e) (memq (car e) '(STRING text/plain COMPOUND_TEXT TEXT)))
                       selection-converter-alist)))
 
+;; Emacs claims a selection with the time of the last input event it saw, and
+;; afterwards believes it owns the selection whether or not the X server took
+;; the claim.  The server ignores a claim older than the current owner's
+;; (ICCCM 2.1), and Emacs, never having been the owner, gets no SelectionClear:
+;; it answers every later yank with its own stale text, blind to copies made in
+;; other programs, until a later claim of its own goes through.  cosmic-comp's
+;; Xwayland bridge (Smithay X WM) hands a Wayland copy to X only when an X
+;; window gains focus, so the click that focuses Emacs and starts a vterm drag
+;; predates the bridge's claim, and the OSC 52 copy tmux sends when the drag
+;; ends carries that click's time.  A claim no older than the current owner's
+;; is one the server takes.
+(when (fboundp 'x-own-selection-internal)
+  (defadvice! alan-x-own-selection-not-before-owner (selection _value &optional frame)
+    :before #'x-own-selection-internal
+    (when (and (not (x-selection-owner-p selection frame))
+               (x-selection-exists-p selection frame))
+      ;; A live owner answers TIMESTAMP without fetching any data, so a second
+      ;; is plenty; the default 5 would stall the copy on a hung owner on top
+      ;; of the stall `save-interprogram-paste-before-kill' already took.
+      (let* ((x-selection-timeout 1000)
+             (owner-time (condition-case err
+                             (x-get-selection-internal selection 'TIMESTAMP nil frame)
+                           (error err))))
+        (cond
+         ((natnump owner-time)
+          (x-display-set-last-user-time owner-time frame))
+         ;; `x-selection-exists-p' keeps naming an owner whose window was
+         ;; destroyed, as Emacs does not track that; such an owner answers no
+         ;; TARGETS either, and with no owner any claim is taken.
+         ((and (null owner-time)
+               (null (x-get-selection-internal selection 'TARGETS nil frame)))
+          nil)
+         (t
+          (display-warning
+           'alan-selection
+           (format "%s owner gave no usable TIMESTAMP (%s); the X server ignores Emacs's claim if it is older than the owner's, and yanks then return Emacs's own text"
+                   selection
+                   ;; xclip answers every target but TARGETS with its text,
+                   ;; which can be long or private.
+                   (if (stringp owner-time)
+                       (format "%d characters of text" (length owner-time))
+                     (format "%S" owner-time)))
+           :error)))))))
+
 ;; TODO: this can hang, if the other prog is not responding
 (setq save-interprogram-paste-before-kill 10000)
 
