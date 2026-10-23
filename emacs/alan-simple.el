@@ -58,50 +58,6 @@
         (cl-remove-if (lambda (e) (memq (car e) '(STRING text/plain COMPOUND_TEXT TEXT)))
                       selection-converter-alist)))
 
-;; Emacs claims a selection with the time of the last input event it saw, and
-;; afterwards believes it owns the selection whether or not the X server took
-;; the claim (bug#82091).  The server ignores a claim older than the
-;; selection's last change, even after that owner has gone, and Emacs, never
-;; having been the owner, gets no SelectionClear: it answers every later yank
-;; with its own stale text until a later claim of its own goes through.
-;; Claims from timers, process filters (vterm's OSC 52) and the end of a mouse
-;; drag carry an input time that another client's claim can postdate.  Raising
-;; Emacs's time to the owner's claim time makes the claim one the server
-;; takes; a departed owner or one that does not answer TIMESTAMP leaves the
-;; claim as stock Emacs makes it.
-(when (fboundp 'x-own-selection-internal)
-  (defadvice! alan-x-own-selection-not-before-owner (selection _value &optional frame)
-    :before #'x-own-selection-internal
-    (when (and (not (x-selection-owner-p selection frame))
-               (x-selection-exists-p selection frame))
-      ;; A live owner answers TIMESTAMP without fetching any data, so a second
-      ;; is plenty; the default 5 would stall the copy on a hung owner on top
-      ;; of the stall `save-interprogram-paste-before-kill' already took.
-      (let* ((x-selection-timeout 1000)
-             ;; Stamped CurrentTime (0): owners refuse requests stamped before
-             ;; they took the selection (ICCCM 2.2; Emacs does), and the
-             ;; default stamp, Emacs's last input time, is that old exactly
-             ;; when this matters.
-             (owner-time (condition-case err
-                             (x-get-selection-internal selection 'TIMESTAMP 0 frame)
-                           (error err))))
-        (if (integerp owner-time)
-            ;; X times are unsigned 32-bit, but Emacs reads type INTEGER as
-            ;; signed: negative once the server has run 24.8 days.
-            (x-display-set-last-user-time (logand owner-time #xffffffff) frame)
-          (display-warning
-           'alan-selection
-           (format "%s owner gave no TIMESTAMP (%s); if its claim is newer than Emacs's last input, the X server ignores Emacs's claim and yanks return Emacs's own text"
-                   selection
-                   ;; xclip answers every target but TARGETS with its text,
-                   ;; which can be long or private.
-                   (if (stringp owner-time)
-                       (format "%d characters of text" (length owner-time))
-                     (format "%S" owner-time)))
-           ;; PRIMARY is claimed on every region change; only a copy to
-           ;; CLIPBOARD is worth interrupting for.
-           (if (eq selection 'CLIPBOARD) :error :warning)))))))
-
 ;; TODO: this can hang, if the other prog is not responding
 (setq save-interprogram-paste-before-kill 10000)
 

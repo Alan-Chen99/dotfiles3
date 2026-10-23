@@ -46,6 +46,7 @@
 (require-noerr 'alan-jump)
 (require-noerr 'alan-persistent-undo)
 (require-noerr 'alan-simple)
+(require-noerr 'alan-x-selection)
 (require-noerr 'alan-tramp)
 (require-noerr 'alan-undo-fu)
 (require-noerr 'alan-vundo)

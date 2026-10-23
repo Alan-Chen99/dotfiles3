@@ -832,6 +832,11 @@
                     "*-tests.el" "LICENSE" "README*" "*-pkg.el")))
    :description "Use the Emacsclient as $EDITOR" :date (26443 60752)
    :url "https://github.com/magit/with-editor")
+ (xelb :source "GNU ELPA" :url "https://elpa.gnu.org/packages/xelb.html"
+       :description "X protocol Emacs Lisp Binding" :recipe
+       (:ref "7b63460003ee8f01e70fd2aed5d180d6f1fb3bc7" :package "xelb"
+             :repo ("https://github.com/emacs-exwm/xelb.git" . "xelb")
+             :files ("*" (:exclude ".git"))))
  (xr :source "GNU ELPA" :url "https://elpa.gnu.org/packages/xr.html"
      :description "Convert string regexp to rx notation" :recipe
      (:ref "31cd397f54591e3692bf88d6e1995236928e3561" :package "xr"
