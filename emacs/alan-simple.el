@@ -60,15 +60,15 @@
 
 ;; Emacs claims a selection with the time of the last input event it saw, and
 ;; afterwards believes it owns the selection whether or not the X server took
-;; the claim.  The server ignores a claim older than the current owner's
-;; (ICCCM 2.1), and Emacs, never having been the owner, gets no SelectionClear:
-;; it answers every later yank with its own stale text, blind to copies made in
-;; other programs, until a later claim of its own goes through.  cosmic-comp's
-;; Xwayland bridge (Smithay X WM) hands a Wayland copy to X only when an X
-;; window gains focus, so the click that focuses Emacs and starts a vterm drag
-;; predates the bridge's claim, and the OSC 52 copy tmux sends when the drag
-;; ends carries that click's time.  A claim no older than the current owner's
-;; is one the server takes.
+;; the claim (bug#82091).  The server ignores a claim older than the
+;; selection's last change, even after that owner has gone, and Emacs, never
+;; having been the owner, gets no SelectionClear: it answers every later yank
+;; with its own stale text until a later claim of its own goes through.
+;; Claims from timers, process filters (vterm's OSC 52) and the end of a mouse
+;; drag carry an input time that another client's claim can postdate.  Raising
+;; Emacs's time to the owner's claim time makes the claim one the server
+;; takes; a departed owner or one that does not answer TIMESTAMP leaves the
+;; claim as stock Emacs makes it.
 (when (fboundp 'x-own-selection-internal)
   (defadvice! alan-x-own-selection-not-before-owner (selection _value &optional frame)
     :before #'x-own-selection-internal
@@ -78,29 +78,29 @@
       ;; is plenty; the default 5 would stall the copy on a hung owner on top
       ;; of the stall `save-interprogram-paste-before-kill' already took.
       (let* ((x-selection-timeout 1000)
+             ;; Stamped CurrentTime (0): owners refuse requests stamped before
+             ;; they took the selection (ICCCM 2.2; Emacs does), and the
+             ;; default stamp, Emacs's last input time, is that old exactly
+             ;; when this matters.
              (owner-time (condition-case err
-                             (x-get-selection-internal selection 'TIMESTAMP nil frame)
+                             (x-get-selection-internal selection 'TIMESTAMP 0 frame)
                            (error err))))
-        (cond
-         ((natnump owner-time)
-          (x-display-set-last-user-time owner-time frame))
-         ;; `x-selection-exists-p' keeps naming an owner whose window was
-         ;; destroyed, as Emacs does not track that; such an owner answers no
-         ;; TARGETS either, and with no owner any claim is taken.
-         ((and (null owner-time)
-               (null (x-get-selection-internal selection 'TARGETS nil frame)))
-          nil)
-         (t
+        (if (integerp owner-time)
+            ;; X times are unsigned 32-bit, but Emacs reads type INTEGER as
+            ;; signed: negative once the server has run 24.8 days.
+            (x-display-set-last-user-time (logand owner-time #xffffffff) frame)
           (display-warning
            'alan-selection
-           (format "%s owner gave no usable TIMESTAMP (%s); the X server ignores Emacs's claim if it is older than the owner's, and yanks then return Emacs's own text"
+           (format "%s owner gave no TIMESTAMP (%s); if its claim is newer than Emacs's last input, the X server ignores Emacs's claim and yanks return Emacs's own text"
                    selection
                    ;; xclip answers every target but TARGETS with its text,
                    ;; which can be long or private.
                    (if (stringp owner-time)
                        (format "%d characters of text" (length owner-time))
                      (format "%S" owner-time)))
-           :error)))))))
+           ;; PRIMARY is claimed on every region change; only a copy to
+           ;; CLIPBOARD is worth interrupting for.
+           (if (eq selection 'CLIPBOARD) :error :warning)))))))
 
 ;; TODO: this can hang, if the other prog is not responding
 (setq save-interprogram-paste-before-kill 10000)
