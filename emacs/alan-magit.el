@@ -80,7 +80,7 @@
   (add-to-list 'debug-ignored-errors 'magit-outside-git-repo)
 
   (setf (get #'magit-log-mode 'magit-log-default-arguments)
-        '("--graph" "-n256" "--decorate" "--color"))
+        '("--graph" "-n256" "--decorate" "--color" "--date-order"))
 
   (setq magit-diff-extra-stat-arguments '("--stat-width" "200" "--compact-summary"))
 
