@@ -271,6 +271,7 @@ For example, pressing x sends C-x to the terminal."
     "SPC c" (vterm-with-send-key "C-c")
 
     "SPC m" #'vterm-copy-mode
+    "SPC h" #'alan-vterm-tmux-scrollback
     "SPC p" #'alan-vterm-cc-pretty
     "SPC y" #'alan-vterm-copy-log-path
     ;; "<escape>" #'vterm--self-insert
@@ -566,32 +567,93 @@ done"
             (_ (error "Several processes on %s carry ALAN_VTERM_ID=%s and started first: %S"
                       (file-remote-p default-directory) id oldest))))))))
 
+(defun alan-vterm--tty ()
+  "Pty that this vterm's process reads input from.
+The pty is on `default-directory''s host, which must be the host the
+vterm's process runs on."
+  (if (file-remote-p default-directory)
+      (alan-vterm--remote-tty)
+    (or (process-tty-name vterm--process)
+        (error "vterm process %s has no tty" vterm--process))))
+
+(defun alan-vterm--tmux-client-pane (tty fmt)
+  "FMT expanded for the pane that the tmux client on TTY shows.
+Nil when no tmux client is on TTY.  TTY is on `default-directory''s
+host.  FMT must expand without spaces."
+  ;; Not "display-message -c TTY": with no client on TTY it answers for
+  ;; some other client, exit status 0.
+  (with-temp-buffer
+    (let ((rc (process-file "tmux" nil t nil "list-clients" "-F" (concat "#{client_tty} " fmt))))
+      (cond
+       ((eq rc 0)
+        (seq-some (lambda (line)
+                    (pcase (split-string line " ")
+                      (`(,client ,pane) (and (equal client tty) pane))))
+                  (split-string (buffer-string) "\n" t)))
+       ((save-excursion
+          (goto-char (point-min))
+          (re-search-forward "^\\(no server running\\|error connecting to\\)" nil t))
+        nil)
+       (t (error "tmux list-clients exited %s: %s" rc (string-trim (buffer-string))))))))
+
 (defun alan-vterm--program-tty ()
   "Terminal that the program shown in this vterm buffer reads input from.
 The terminal is on `default-directory''s host, which must be the
 host the vterm's process runs on.  A tmux client only displays a
 pane; the pane's own tty is where its program runs."
-  (let ((tty (if (file-remote-p default-directory)
-                 (alan-vterm--remote-tty)
-               (or (process-tty-name vterm--process)
-                   (error "vterm process %s has no tty" vterm--process)))))
+  (let ((tty (alan-vterm--tty)))
     (or (and (executable-find "tmux" t)
-             ;; Not "display-message -c TTY": with no client on TTY it
-             ;; answers for some other client, exit status 0.
-             (with-temp-buffer
-               (let ((rc (process-file "tmux" nil t nil "list-clients" "-F" "#{client_tty} #{pane_tty}")))
-                 (cond
-                  ((eq rc 0)
-                   (seq-some (lambda (line)
-                               (pcase (split-string line " ")
-                                 (`(,client ,pane) (and (equal client tty) pane))))
-                             (split-string (buffer-string) "\n" t)))
-                  ((save-excursion
-                     (goto-char (point-min))
-                     (re-search-forward "^\\(no server running\\|error connecting to\\)" nil t))
-                   nil)
-                  (t (error "tmux list-clients exited %s: %s" rc (string-trim (buffer-string))))))))
+             (alan-vterm--tmux-client-pane tty "#{pane_tty}"))
         tty)))
+
+(defun alan-vterm-tmux-scrollback ()
+  "Copy the whole history of the tmux pane this vterm shows into a buffer.
+The pane is the active one in the window its tmux client shows, and
+the history is what tmux keeps of it, up to its history-limit.  Lines
+the terminal wrapped are joined.  Running this again from the same
+vterm refills the buffer."
+  (interactive)
+  (unless (derived-mode-p 'vterm-mode)
+    (user-error "Not a vterm buffer"))
+  (require 'ansi-color)
+  (require 'ansi-osc)
+  (let* ((dir default-directory)
+         (name (format "*scrollback:%s*" (string-trim (buffer-name) "\\*" "\\*")))
+         ;; tmux runs on the vterm's host, where its home exists and the
+         ;; shell's last directory may not.
+         (default-directory (expand-file-name (concat (file-remote-p dir) "~/")))
+         (host (file-remote-p default-directory 'host))
+         (tty (alan-vterm--tty))
+         (pane (or (alan-vterm--tmux-client-pane tty "#{pane_id}")
+                   (user-error "No tmux client on %s%s" (if host (concat host ":") "") tty)))
+         (text (with-temp-buffer
+                 ;; tmux prints cells as the UTF-8 it keeps them in, whatever the locale.
+                 (let* ((coding-system-for-read 'utf-8-unix)
+                        ;; -e keeps colors and OSC 8 links.
+                        (rc (process-file "tmux" nil t nil "capture-pane" "-p" "-J" "-e" "-S" "-" "-E" "-" "-t" pane)))
+                   (unless (eq rc 0)
+                     (error "tmux capture-pane -t %s exited %s: %s" pane rc (string-trim (buffer-string))))
+                   (buffer-string))))
+         (buf (get-buffer-create name)))
+    (with-current-buffer buf
+      (let ((inhibit-read-only t))
+        (erase-buffer)
+        (insert text)
+        ;; Faces as plain `face': overlays per colored run are slow over a
+        ;; long history, and `font-lock-face' needs font-lock-mode.
+        (let ((ansi-color-apply-face-function
+               (lambda (beg end face) (when face (put-text-property beg end 'face face)))))
+          (ansi-color-apply-on-region (point-min) (point-max)))
+        (ansi-osc-apply-on-region (point-min) (point-max))
+        ;; The screen's rows below its last output are blank.
+        (goto-char (point-max))
+        (skip-chars-backward " \n")
+        (delete-region (point) (point-max))
+        (setq default-directory dir)
+        (setq buffer-read-only t)))
+    (pop-to-buffer buf '(nil (inhibit-same-window . t)))
+    (goto-char (point-max))
+    (recenter -1)))
 
 (defun alan-vterm--claude-config-dir ()
   "Claude Code's config dir on `default-directory''s host.
