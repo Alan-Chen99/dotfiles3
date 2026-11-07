@@ -72,6 +72,8 @@ Today is %s.
                     gpt-5-chat
                     gpt-4.1
                     ;;
+                    anthropic/claude-opus-5.5
+                    ;;
                     google/gemini-3-pro-preview
                     google/gemini-2.5-pro
                     deepseek/deepseek-r1-0528
